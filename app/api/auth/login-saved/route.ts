@@ -11,10 +11,9 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
     
-    // Exchange refresh token to establish active cookies/session
-    const { data, error } = await supabase.auth.setSession({
+    // Restore session using the refresh token
+    const { data, error } = await supabase.auth.refreshSession({
       refresh_token: refreshToken,
-      access_token: "", 
     });
 
     if (error || !data.user) {
