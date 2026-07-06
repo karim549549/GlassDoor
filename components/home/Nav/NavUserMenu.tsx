@@ -66,12 +66,16 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
       {user ? (
         <>
           <DropdownMenu>
-            <DropdownMenuTrigger className={`relative flex h-7 w-7 items-center justify-center font-mono text-[0.7rem] font-bold border focus:outline-none transition-all duration-150 rounded-none cursor-pointer ${
+            <DropdownMenuTrigger className={`relative flex h-7 w-7 items-center justify-center font-mono text-[0.7rem] font-bold border focus:outline-none transition-all duration-150 rounded-none cursor-pointer overflow-hidden ${
               isScrolled
                 ? "bg-[#F1EFE9] text-[#0E0E0D] border-[#F1EFE9]/20 hover:border-[#F1EFE9]"
                 : "bg-[#0E0E0D] text-[#F1EFE9] border-[#0E0E0D]/20 hover:border-[#0E0E0D]"
             }`}>
-              {user.fullName ? user.fullName.slice(0, 2).toUpperCase() : user.email.slice(0, 2).toUpperCase()}
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                user.fullName ? user.fullName.slice(0, 2).toUpperCase() : user.email.slice(0, 2).toUpperCase()
+              )}
               {notifications.filter(n => !n.read).length > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange opacity-75" />
