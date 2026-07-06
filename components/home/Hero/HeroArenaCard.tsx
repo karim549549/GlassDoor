@@ -220,6 +220,19 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
                    .to(".arena-enter-button", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75);
       });
 
+      // Dedicated ScrollTrigger to manage carousel controls visibility when Section 3 is visible
+      ScrollTrigger.create({
+        trigger: ".pink-section-container",
+        start: "top 60%",       // Fade in when Section 3 is 60% into the viewport
+        end: "bottom 40%",     // Fade out when scrolling past Section 3
+        onToggle: (self) => {
+          setShowCarouselControls(self.isActive);
+        },
+        onUpdate: (self) => {
+          setShowCarouselControls(self.isActive);
+        }
+      });
+
       // Trigger 4: Transition cards as user scrolls from ArenasSection down into the PinkSection.
       // The cards stack back up and align on the right column (desktop) or center (mobile) at y: 100vh.
       // Concurrently morphs the background color back to Section 1 color (light cream #F1EFE9).
@@ -230,13 +243,6 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             start: "top bottom", // Starts as soon as pink section enters from bottom
             end: "top top",      // Ends when pink section fills the viewport
             scrub: true,
-            onToggle: (self) => {
-              // Enable carousel controls ONLY when fully settled inside Section 3
-              setShowCarouselControls(self.isActive && self.progress > 0.8);
-            },
-            onUpdate: (self) => {
-              setShowCarouselControls(self.isActive && self.progress > 0.8);
-            }
           }
         });
 
@@ -265,12 +271,6 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             start: "top bottom",
             end: "top top",
             scrub: true,
-            onToggle: (self) => {
-              setShowCarouselControls(self.isActive && self.progress > 0.8);
-            },
-            onUpdate: (self) => {
-              setShowCarouselControls(self.isActive && self.progress > 0.8);
-            }
           }
         });
 
