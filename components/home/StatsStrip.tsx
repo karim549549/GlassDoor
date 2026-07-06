@@ -1,3 +1,8 @@
+"use client";
+
+import React from "react";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+
 const STATS = [
   { value: "4,200+", label: "salary submissions" },
   { value: "312", label: "companies indexed" },
@@ -12,7 +17,7 @@ export function StatsStrip() {
         {STATS.map((s) => (
           <div key={s.label}>
             <div className="font-mono" style={{ fontSize: "clamp(1.25rem, 2vw, 1.75rem)", fontWeight: 500, lineHeight: 1 }}>
-              {s.value}
+              <AnimatedCounter value={s.value} />
             </div>
             <div className="font-mono text-[0.55rem] opacity-45 uppercase tracking-wider mt-1.5">
               {s.label}
