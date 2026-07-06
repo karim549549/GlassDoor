@@ -4,7 +4,7 @@ import { createClient } from "@/app/api/lib/supabase/server";
 export async function POST() {
   try {
     const supabase = await createClient();
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Failed to sign out." }, { status: 500 });
