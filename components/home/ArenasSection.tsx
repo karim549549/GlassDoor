@@ -41,7 +41,9 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
     return (
       <section
         ref={ref}
-        className="arenas-section-container relative min-h-screen h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-10 border-b border-[#0E0E0D]"
+        // Set z-index to z-30 (up from z-10) to force the container and its absolute children (the cards) 
+        // to render on top of the subsequent pink section (z-10) during scroll translations.
+        className="arenas-section-container relative min-h-screen h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-30 border-b border-[#0E0E0D]"
         {...props}
       >
         {/* Technical Section Header */}
