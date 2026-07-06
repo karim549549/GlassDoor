@@ -90,7 +90,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
     const mm = gsap.matchMedia();
 
-    // 1. GSAP Card Gathering Entrance Animation
+    // 1. GSAP Card Gathering Entrance Animation (Lands centered relative to Hero)
     const ctx = gsap.context(() => {
       // Set initial scattered positions completely OUTSIDE the screen frame/viewport
       gsap.set(cards[0], { opacity: 0, x: -1400, y: 1000, rotate: -75, scale: 0.8 });
@@ -102,7 +102,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       const isDesktop = window.innerWidth >= 768;
       const scaleBase = isDesktop ? 1.5 : 1.0;
 
-      // Cards fly in from outside and gather into the Hero center (y: -100vh relative to ArenasSection)
+      // Cards gather in the center of the Hero section (which is top: -100vh relative to ArenasSection container)
       tl.to(cards[0], { opacity: 1, x: 0, y: "-100vh", rotate: -4, scale: scaleBase, duration: 1.15, ease: "power3.out" })
         .to(cards[1], { opacity: 1, x: 0, y: "-100vh", rotate: 3, scale: scaleBase, duration: 1.15, ease: "power3.out" }, "-=0.85")
         .to(cards[2], { 
@@ -123,7 +123,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     };
   }, []);
 
-  // 2. GSAP ScrollTrigger Pinned Separation & Theme Morphing Animations
+  // 2. GSAP ScrollTrigger Animations (Pure, standard browser pin scrolling)
   useEffect(() => {
     if (!entranceFinished || !containerRef.current || !arenasRef.current) return;
 
@@ -133,65 +133,68 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     const scrollCtx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
-      // Desktop: Pinned viewport, slide sections up, cards translate y (-100vh -> 0) and fan out concurrently
+      // Trigger 1: Smoothly fade out Hero text and fade in ArenasSection background color
+      const fadeTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: arenasRef.current,
+          start: "top bottom", // Starts when ArenasSection enters from bottom
+          end: "top top",      // Ends when ArenasSection fills the screen
+          scrub: true,
+        }
+      });
+      fadeTimeline.to(".hero-section-container", { opacity: 0, ease: "none" }, 0);
+      fadeTimeline.to(arenasRef.current, {
+        backgroundColor: "#0E0E0D",
+        color: "#F1EFE9",
+        borderColor: "rgba(241, 239, 233, 0.15)",
+        ease: "none"
+      }, 0);
+
+      // Trigger 2: Slide the cards down to stay locked in viewport during natural scroll down the Hero
+      const slideTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: arenasRef.current,
+          start: "top bottom",
+          end: "top top",
+          scrub: true,
+        }
+      });
+      // Move cards down from y: -100vh (Hero center) to y: 0 (ArenasSection center) as page scrolls
+      slideTimeline.to(cards[0], { y: 0, ease: "none" }, 0);
+      slideTimeline.to(cards[1], { y: 0, ease: "none" }, 0);
+      slideTimeline.to(cards[2], { y: 0, ease: "none" }, 0);
+
+      // Trigger 3: Lock/Pin scrolling exactly when ArenasSection hits the top of the viewport,
+      // and separate the cards gradually while pinned.
       mm.add("(min-width: 768px)", () => {
-        const scrollTimeline = gsap.timeline({
+        gsap.timeline({
           scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top top",
-            end: "+=1600",
+            trigger: arenasRef.current,
+            start: "top top",    // Pin exactly when top of ArenasSection hits top of screen
+            end: "+=1200",       // Lock/Pin duration scroll length
             scrub: 1,
-            pin: true,
+            pin: true,           // Native GSAP scroll lock (never locks forever)
           }
-        });
-
-        // Slide sections up & morph background
-        scrollTimeline.to(".hero-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
-        scrollTimeline.to(".arenas-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
-        scrollTimeline.to(".hero-section-container", { opacity: 0, duration: 0.45, ease: "power1.out" }, 0);
-
-        scrollTimeline.to(arenasRef.current, {
-          backgroundColor: "#0E0E0D",
-          color: "#F1EFE9",
-          borderColor: "rgba(241, 239, 233, 0.15)",
-          duration: 1,
-          ease: "none"
-        }, 0);
-
-        // Concurrently separate horizontally, translate y to center of ArenasSection, and scale to 1.0
-        scrollTimeline.to(cards[0], { y: 0, x: -380, scale: 1.0, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
-        scrollTimeline.to(cards[1], { y: 0, x: 0, scale: 1.0, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
-        scrollTimeline.to(cards[2], { y: 0, x: 380, scale: 1.0, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
+        })
+        .to(cards[0], { x: -380, scale: 1.0, rotate: 0, ease: "power1.inOut" }, 0)
+        .to(cards[1], { x: 0, scale: 1.0, rotate: 0, ease: "power1.inOut" }, 0)
+        .to(cards[2], { x: 380, scale: 1.0, rotate: 0, ease: "power1.inOut" }, 0);
       });
 
-      // Mobile: Pin layout, vertical stack separation
+      // Mobile Pinned separation
       mm.add("(max-width: 767px)", () => {
-        const scrollTimeline = gsap.timeline({
+        gsap.timeline({
           scrollTrigger: {
-            trigger: containerRef.current,
+            trigger: arenasRef.current,
             start: "top top",
-            end: "+=1600",
+            end: "+=1200",
             scrub: 1,
             pin: true,
           }
-        });
-
-        scrollTimeline.to(".hero-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
-        scrollTimeline.to(".arenas-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
-        scrollTimeline.to(".hero-section-container", { opacity: 0, duration: 0.45, ease: "power1.out" }, 0);
-
-        scrollTimeline.to(arenasRef.current, {
-          backgroundColor: "#0E0E0D",
-          color: "#F1EFE9",
-          borderColor: "rgba(241, 239, 233, 0.15)",
-          duration: 1,
-          ease: "none"
-        }, 0);
-
-        // Stack vertically and scale to 0.82
-        scrollTimeline.to(cards[0], { y: "-24vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
-        scrollTimeline.to(cards[1], { y: "0vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
-        scrollTimeline.to(cards[2], { y: "24vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
+        })
+        .to(cards[0], { y: "-24vh", scale: 0.82, rotate: 0, ease: "power1.inOut" }, 0)
+        .to(cards[1], { y: "0vh", scale: 0.82, rotate: 0, ease: "power1.inOut" }, 0)
+        .to(cards[2], { y: "24vh", scale: 0.82, rotate: 0, ease: "power1.inOut" }, 0);
       });
 
     }, containerRef);
