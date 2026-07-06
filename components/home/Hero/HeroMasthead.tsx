@@ -1,7 +1,7 @@
 export function HeroMasthead() {
   return (
     <div
-      className="absolute top-0 left-0 right-0 border-b border-border flex items-baseline justify-between z-20 text-[#0E0E0D]"
+      className="absolute top-0 left-0 right-0 flex items-baseline justify-between z-20 text-[#0E0E0D]"
       style={{
         paddingLeft: "clamp(1.25rem, 3vw, 2.5rem)",
         paddingRight: "clamp(1.25rem, 3vw, 2.5rem)",
@@ -10,7 +10,7 @@ export function HeroMasthead() {
       }}
     >
       <h1
-        className="font-display select-none uppercase text-left font-black"
+        className="font-display select-none uppercase text-left font-normal"
         style={{ fontSize: "clamp(2.2rem, 7vw, 7rem)", lineHeight: 0.9, letterSpacing: "-0.02em" }}
       >
         Devs Arena

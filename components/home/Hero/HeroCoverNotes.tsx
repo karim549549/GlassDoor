@@ -30,14 +30,58 @@ export function HeroCoverNotes() {
     return () => ctx.revert();
   }, []);
 
+  // Highly Engineered Hover Animation Sequence
   const handleMouseEnter = () => {
-    gsap.to(arrowRef.current, { x: 8, duration: 0.25, ease: "power2.out" });
-    gsap.to(bgBlockRef.current, { skewX: -8, scaleY: 1.05, duration: 0.25, ease: "power2.out" });
+    // Springy elastic stretch on the background highlight block
+    gsap.to(bgBlockRef.current, {
+      skewX: -12,
+      scaleX: 1.06,
+      scaleY: 1.04,
+      duration: 0.65,
+      ease: "elastic.out(1, 0.4)"
+    });
+
+    // Slight floating offset for 'Join an' text
+    gsap.to(joinAnRef.current, {
+      x: -6,
+      y: -2,
+      duration: 0.35,
+      ease: "power2.out"
+    });
+
+    // Arrow flythrough wrap-around animation
+    const arrow = arrowRef.current;
+    if (arrow) {
+      gsap.timeline()
+        .to(arrow, { x: 20, opacity: 0, duration: 0.15, ease: "power2.in" })
+        .set(arrow, { x: -20 })
+        .to(arrow, { x: 0, opacity: 1, duration: 0.25, ease: "power2.out" });
+    }
   };
 
   const handleMouseLeave = () => {
-    gsap.to(arrowRef.current, { x: 0, duration: 0.25, ease: "power2.out" });
-    gsap.to(bgBlockRef.current, { skewX: 0, scaleY: 1, duration: 0.25, ease: "power2.out" });
+    // Smooth release back to resting states
+    gsap.to(bgBlockRef.current, {
+      skewX: 0,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 0.45,
+      ease: "power2.out"
+    });
+
+    gsap.to(joinAnRef.current, {
+      x: 0,
+      y: 0,
+      duration: 0.45,
+      ease: "power2.out"
+    });
+
+    gsap.to(arrowRef.current, {
+      x: 0,
+      opacity: 1,
+      duration: 0.45,
+      ease: "power2.out"
+    });
   };
 
   return (
@@ -139,7 +183,7 @@ export function HeroCoverNotes() {
             {/* Text and arrow animation element */}
             <span ref={textOverlayRef} className="relative z-10 flex items-center gap-1.5">
               Open seat{" "}
-              <span ref={arrowRef} className="inline-block transition-transform duration-100">&rarr;</span>
+              <span ref={arrowRef} className="inline-block">&rarr;</span>
             </span>
           </span>
         </Link>

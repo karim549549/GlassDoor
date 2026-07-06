@@ -9,7 +9,7 @@ export function HeroHeadline() {
         maxWidth: "calc(100% - 2.5rem)"
       }}
     >
-      <div className="font-display font-black uppercase tracking-tight" style={{ fontSize: "clamp(1.5rem, 3.8vw, 3.25rem)", lineHeight: 0.95 }}>
+      <div className="font-display font-normal uppercase tracking-tight" style={{ fontSize: "clamp(1.5rem, 3.8vw, 3.25rem)", lineHeight: 0.95 }}>
         Developer <span className="text-orange">network.</span>
       </div>
 
