@@ -2,6 +2,9 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface ArenaCardData {
   id: string;
@@ -50,8 +53,13 @@ const ARENA_CARDS: ArenaCardData[] = [
   },
 ];
 
-export function HeroArenaCard() {
-  const containerRef = useRef<HTMLDivElement>(null);
+interface HeroArenaCardProps {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  arenasRef: React.RefObject<HTMLDivElement | null>;
+}
+
+export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
+  const stackRef = useRef<HTMLDivElement>(null);
   
   // Refs for each card element
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -74,116 +82,184 @@ export function HeroArenaCard() {
       setActiveTimer(`${hrs}:${mins}:${secs}`);
     }, 1000);
 
-    // GSAP Card Gathering Entrance Animation
-    const ctx = gsap.context(() => {
-      const cards = cardRefs.current;
-      if (!cards) return;
+    const cards = cardRefs.current;
+    if (!cards) return;
 
-      // Set starting positions completely OUTSIDE the screen frame/viewport
-      // Card 3 (Bottom): flies in from far bottom-left
+    // 1. GSAP Card Gathering Entrance Animation
+    const ctx = gsap.context(() => {
+      // Set initial scattered positions (Magician gathering cards from outside viewport)
       gsap.set(cards[0], { opacity: 0, x: -1200, y: 800, rotate: -75, scale: 0.8 });
-      // Card 2 (Middle): flies in from far top-right
       gsap.set(cards[1], { opacity: 0, x: 1200, y: -800, rotate: 65, scale: 0.85 });
-      // Card 1 (Top): flies in from far top-left
       gsap.set(cards[2], { opacity: 0, x: -1000, y: -1000, rotate: -90, scale: 0.9 });
 
       // Coordinated timeline to gather them into a neat stack
       const tl = gsap.timeline({ delay: 0.4 });
       
-      // Cards fly in from outside the screen, fading in as they travel, snapping into position
       tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1, duration: 1.1, ease: "power3.out" })
         .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1, duration: 1.1, ease: "power3.out" }, "-=0.85")
         .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1, duration: 1.25, ease: "back.out(1.1)" }, "-=0.85");
+    }, stackRef);
+
+    // 2. GSAP ScrollTrigger Separation & Theme Morphing Animation
+    const scrollCtx = gsap.context(() => {
+      if (!containerRef.current || !arenasRef.current) return;
+
+      const mm = gsap.matchMedia();
+
+      // Desktop: Horizontal flex separation and docking
+      mm.add("(min-width: 768px)", () => {
+        const scrollTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top top",
+            end: "bottom bottom",
+            scrub: 1, // Smooth momentum follow
+          }
+        });
+
+        // Smoothly fade ArenasSection background to dark theme (#0E0E0D)
+        scrollTimeline.to(arenasRef.current, {
+          backgroundColor: "#0E0E0D",
+          color: "#F1EFE9",
+          borderColor: "rgba(241, 239, 233, 0.15)",
+          duration: 1,
+          ease: "none",
+        }, 0);
+
+        // Card 3 (Bottom): moves left, straightens rotation, drops into Section 2
+        scrollTimeline.to(cards[0], {
+          y: "92vh",
+          x: -380,
+          rotate: 0,
+          boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
+          duration: 1,
+          ease: "none",
+        }, 0);
+
+        // Card 2 (Middle): stays center, straightens rotation, drops into Section 2
+        scrollTimeline.to(cards[1], {
+          y: "92vh",
+          x: 0,
+          rotate: 0,
+          boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
+          duration: 1,
+          ease: "none",
+        }, 0);
+
+        // Card 1 (Top): moves right, straightens rotation, drops into Section 2
+        scrollTimeline.to(cards[2], {
+          y: "92vh",
+          x: 380,
+          rotate: 0,
+          boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
+          duration: 1,
+          ease: "none",
+        }, 0);
+      });
+
+      // Mobile: Vertical list separation
+      mm.add("(max-width: 767px)", () => {
+        const scrollTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top top",
+            end: "bottom bottom",
+            scrub: 1,
+          }
+        });
+
+        scrollTimeline.to(arenasRef.current, {
+          backgroundColor: "#0E0E0D",
+          color: "#F1EFE9",
+          borderColor: "rgba(241, 239, 233, 0.15)",
+          duration: 1,
+          ease: "none",
+        }, 0);
+
+        // Stack vertically in Section 2
+        scrollTimeline.to(cards[0], {
+          y: "65vh",
+          x: 0,
+          rotate: 0,
+          duration: 1,
+          ease: "none",
+        }, 0);
+
+        scrollTimeline.to(cards[1], {
+          y: "95vh",
+          x: 0,
+          rotate: 0,
+          duration: 1,
+          ease: "none",
+        }, 0);
+
+        scrollTimeline.to(cards[2], {
+          y: "125vh",
+          x: 0,
+          rotate: 0,
+          duration: 1,
+          ease: "none",
+        }, 0);
+      });
 
     }, containerRef);
 
     return () => {
       ctx.revert();
+      scrollCtx.revert();
       clearInterval(interval);
     };
-  }, []);
+  }, [containerRef, arenasRef]);
 
-  // Hover: Fan out cards slightly so the background cards peek out clearly
-  const handleMouseEnter = () => {
+  // Hover animations: logic changes dynamically depending on whether cards are stacked (top) or fanned (scrolled)
+  const handleMouseEnterCard = (idx: number) => {
     const cards = cardRefs.current;
     if (!cards) return;
 
-    // Card 3 (Bottom) fans out left and down
-    gsap.to(cards[0], {
-      rotate: -7,
-      x: -18,
-      y: 10,
-      scale: 0.99,
-      boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.7)",
-      duration: 0.4,
-      ease: "power2.out"
-    });
-
-    // Card 2 (Middle) fans out right and up
-    gsap.to(cards[1], {
-      rotate: 5,
-      x: 18,
-      y: -10,
-      scale: 1.01,
-      boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.8)",
-      duration: 0.4,
-      ease: "power2.out"
-    });
-
-    // Card 1 (Top) lifts up, centers slightly, and increases shadow
-    gsap.to(cards[2], {
-      rotate: -1,
-      x: 0,
-      y: -6,
-      scale: 1.025,
-      boxShadow: "8px 8px 0px 0px rgba(14,14,13,1)",
-      duration: 0.4,
-      ease: "power2.out"
-    });
+    if (window.scrollY < 100) {
+      // Stack Hover: Fan out whole deck
+      gsap.to(cards[0], { rotate: -7, x: -18, y: 10, scale: 0.99, boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.7)", duration: 0.4, ease: "power2.out" });
+      gsap.to(cards[1], { rotate: 5, x: 18, y: -10, scale: 1.01, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.8)", duration: 0.4, ease: "power2.out" });
+      gsap.to(cards[2], { rotate: -1, x: 0, y: -6, scale: 1.025, boxShadow: "8px 8px 0px 0px rgba(14,14,13,1)", duration: 0.4, ease: "power2.out" });
+    } else {
+      // Docked Hover: Lift individual card
+      const targetY = window.innerWidth >= 768 ? "90vh" : idx === 0 ? "63vh" : idx === 1 ? "93vh" : "123vh";
+      gsap.to(cards[idx], {
+        y: targetY,
+        scale: 1.02,
+        boxShadow: "8px 8px 0px 0px rgba(14,14,13,1)",
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    }
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeaveCard = (idx: number) => {
     const cards = cardRefs.current;
     if (!cards) return;
 
-    // Return all cards to their default stacked resting state
-    gsap.to(cards[0], {
-      rotate: -4,
-      x: 0,
-      y: 0,
-      scale: 1,
-      boxShadow: "2px 2px 0px 0px rgba(14,14,13,0.75)",
-      duration: 0.45,
-      ease: "power2.out"
-    });
-
-    gsap.to(cards[1], {
-      rotate: 3,
-      x: 0,
-      y: 0,
-      scale: 1,
-      boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.85)",
-      duration: 0.45,
-      ease: "power2.out"
-    });
-
-    gsap.to(cards[2], {
-      rotate: -1.5,
-      x: 0,
-      y: 0,
-      scale: 1,
-      boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
-      duration: 0.45,
-      ease: "power2.out"
-    });
+    if (window.scrollY < 100) {
+      // Stack MouseLeave: Reset back to tight stack
+      gsap.to(cards[0], { rotate: -4, x: 0, y: 0, scale: 1, boxShadow: "2px 2px 0px 0px rgba(14,14,13,0.75)", duration: 0.45, ease: "power2.out" });
+      gsap.to(cards[1], { rotate: 3, x: 0, y: 0, scale: 1, boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.85)", duration: 0.45, ease: "power2.out" });
+      gsap.to(cards[2], { rotate: -1.5, x: 0, y: 0, scale: 1, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)", duration: 0.45, ease: "power2.out" });
+    } else {
+      // Docked MouseLeave: Reset individual card to resting scroll position
+      const targetY = window.innerWidth >= 768 ? "92vh" : idx === 0 ? "65vh" : idx === 1 ? "95vh" : "125vh";
+      gsap.to(cards[idx], {
+        y: targetY,
+        scale: 1,
+        boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
+        duration: 0.4,
+        ease: "power2.out"
+      });
+    }
   };
 
   return (
     <div
-      ref={containerRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="absolute left-1/2 z-25 w-[min(540px,94%)] min-h-[310px]"
+      ref={stackRef}
+      className="absolute left-1/2 z-25 w-[min(540px,94%)] min-h-[310px] pointer-events-none"
       style={{
         top: "43%",
         transform: "translate(-50%, -50%)",
@@ -191,7 +267,6 @@ export function HeroArenaCard() {
     >
       {ARENA_CARDS.map((card, idx) => {
         // Layout layers: Card 3 is index 0 (rendered first/bottom), Card 1 is index 2 (rendered last/top)
-        const isTop = idx === ARENA_CARDS.length - 1;
         const zIndexClass = idx === 0 ? "z-10" : idx === 1 ? "z-20" : "z-30";
         const shadowStyle = idx === 0 
           ? "2px 2px 0px 0px rgba(14,14,13,0.75)" 
@@ -205,7 +280,9 @@ export function HeroArenaCard() {
             ref={(el) => {
               cardRefs.current[idx] = el;
             }}
-            className={`absolute inset-0 bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-7 md:p-9 cursor-pointer select-none flex flex-col justify-between ${zIndexClass}`}
+            onMouseEnter={() => handleMouseEnterCard(idx)}
+            onMouseLeave={() => handleMouseLeaveCard(idx)}
+            className={`absolute inset-0 bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-7 md:p-9 cursor-pointer select-none flex flex-col justify-between pointer-events-auto ${zIndexClass}`}
             style={{
               boxShadow: shadowStyle,
             }}
@@ -215,7 +292,7 @@ export function HeroArenaCard() {
             <div className="absolute inset-1.5 border border-dashed border-[#0E0E0D]/5 pointer-events-none" />
 
             {/* Poster Header / Title Lockup */}
-            <div className="space-y-4">
+            <div className="space-y-4 text-left">
               <div className="font-display italic text-[clamp(1.4rem,3.2vw,2.3rem)] leading-[1.08] text-[#0E0E0D] tracking-tight">
                 <span className="text-orange font-bold not-italic font-mono text-[0.65rem] tracking-[0.25em] border border-orange px-2 py-0.5 inline-block mr-3.5 align-middle -translate-y-0.5">
                   [{card.tag}]
@@ -229,7 +306,7 @@ export function HeroArenaCard() {
             </div>
 
             {/* Bottom Content Row */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pt-6 border-t border-dashed border-[#0E0E0D]/20 mt-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pt-6 border-t border-dashed border-[#0E0E0D]/20 mt-6 text-left">
               
               {/* Bottom Left: Countdown */}
               <div className="flex flex-col">

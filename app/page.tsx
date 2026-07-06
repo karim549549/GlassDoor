@@ -1,7 +1,6 @@
-import { getDefaultCompanies } from "@/lib/companies/service";
 import { Nav } from "@/components/home/Nav";
 import { Billboard } from "@/components/home/Billboard";
-import { HeroSection } from "@/components/home/Hero/HeroSection";
+import { HeroAndArenas } from "@/components/home/HeroAndArenas";
 import { StatsStrip } from "@/components/home/StatsStrip";
 import { CtaSection } from "@/components/home/CtaSection";
 import { Footer } from "@/components/home/Footer";
@@ -9,8 +8,6 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { Suspense } from "react";
 
 export default async function Home() {
-  const initialCompanies = getDefaultCompanies();
-
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden">
       {/* Editorial Background Blueprint Grid */}
@@ -28,7 +25,7 @@ export default async function Home() {
       <div className="relative z-10 flex flex-col min-h-screen">
         <Nav />
         <Billboard />
-        <HeroSection />
+        <HeroAndArenas />
         <StatsStrip />
         <CtaSection />
         <Footer />

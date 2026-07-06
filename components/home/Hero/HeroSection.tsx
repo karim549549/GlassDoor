@@ -1,12 +1,11 @@
 import { HeroMasthead } from "./HeroMasthead";
 import { HeroCoverNotes } from "./HeroCoverNotes";
 import { HeroHeadline } from "./HeroHeadline";
-import { HeroArenaCard } from "./HeroArenaCard";
 
 export function HeroSection() {
   return (
     <section
-      className="relative overflow-hidden border-b border-border bg-[#F1EFE9] text-[#0E0E0D]"
+      className="relative bg-[#F1EFE9] text-[#0E0E0D] border-b border-border overflow-visible"
       style={{ height: "calc(100svh - 88px)", minHeight: 680, maxHeight: 960 }}
     >
       {/* Darker Blueprint Grid Backdrop Overlay */}
@@ -30,10 +29,6 @@ export function HeroSection() {
       {/* Scattered Magazine Typographic Layers */}
       <HeroMasthead />
       <HeroCoverNotes />
-      
-      {/* Center-Aligned Hero Arena Card (Paper/Poster Brief) */}
-      <HeroArenaCard />
-
       <HeroHeadline />
     </section>
   );
