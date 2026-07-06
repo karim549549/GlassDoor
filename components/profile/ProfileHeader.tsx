@@ -18,7 +18,7 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: ProfileHeaderProps) {
-  const { setAuth } = useAuthStore();
+  const { setAuth, roles } = useAuthStore();
   const [profile, setProfile] = useState(userProfile);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropType, setCropType] = useState<"avatar" | "cover">("avatar");
@@ -84,7 +84,9 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
         };
         setProfile(updated);
 
-        // Sync local auth context store if updating own active profile
+        // Sync local auth context store if updating own active profile.
+        // Preserve the real roles from the store instead of hardcoding one -
+        // this store update only changes avatar/cover, not the user's role.
         if (isOwner) {
           setAuth(
             {
@@ -94,7 +96,7 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
               avatarUrl: cropType === "avatar" ? result.url : profile.avatarUrl,
               coverUrl: cropType === "cover" ? result.url : profile.coverUrl,
             },
-            ["USER"]
+            roles
           );
         }
 

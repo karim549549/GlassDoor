@@ -1,4 +1,5 @@
 import "server-only";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma";
 
 /**
@@ -23,28 +24,51 @@ export async function syncUser(params: {
     where: { name: roleName },
   });
 
-  const [user] = await prisma.$transaction([
-    prisma.user.upsert({
-      where: { id },
-      update: { email, fullName, emailVerified },
-      create: { id, email, fullName, emailVerified },
-    }),
-    prisma.userRole.upsert({
-      where: {
-        userId_roleId: {
+  const syncTransaction = () =>
+    prisma.$transaction([
+      prisma.user.upsert({
+        where: { id },
+        update: { email, fullName, emailVerified },
+        create: { id, email, fullName, emailVerified },
+      }),
+      prisma.userRole.upsert({
+        where: {
+          userId_roleId: {
+            userId: id,
+            roleId: role.id,
+          },
+        },
+        update: {},
+        create: {
           userId: id,
           roleId: role.id,
         },
-      },
-      update: {},
-      create: {
-        userId: id,
-        roleId: role.id,
-      },
-    }),
-  ]);
+      }),
+    ]);
 
-  return user;
+  try {
+    const [user] = await syncTransaction();
+    return user;
+  } catch (err) {
+    // P2002 here can only be the `email` unique constraint - `id` is the
+    // primary key and the upsert's `where: { id }` already established no row
+    // with that id exists, so the conflict must come from a stale row: a
+    // Postgres user profile left over under a different id after the
+    // corresponding Supabase auth user was deleted and recreated (or
+    // re-provisioned) with the same email. Supabase is the source of truth
+    // for identity, so the stale row is safe to replace with one matching
+    // the current session id.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      const staleUser = await prisma.user.findUnique({ where: { email } });
+      if (staleUser && staleUser.id !== id) {
+        await prisma.userRole.deleteMany({ where: { userId: staleUser.id } });
+        await prisma.user.delete({ where: { id: staleUser.id } });
+        const [user] = await syncTransaction();
+        return user;
+      }
+    }
+    throw err;
+  }
 }
 
 /**
