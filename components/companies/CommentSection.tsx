@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { MessageSquare, CornerDownRight, Send } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuthStore } from "@/lib/store/useAuthStore";
+import { MessageSquare, CornerDownRight, Send, Lock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface Comment {
@@ -46,15 +48,29 @@ const INITIAL_MOCK_COMMENTS: Comment[] = [
 ];
 
 export function CommentSection({ companyId }: { companyId: number }) {
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [comments, setComments] = useState<Comment[]>(INITIAL_MOCK_COMMENTS);
   const [newCommentText, setNewCommentText] = useState("");
-  const [authorName, setAuthorName] = useState("");
+
+  const handleFocus = () => {
+    if (!user) {
+      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+    }
+  };
 
   const handlePostRootComment = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
     if (!newCommentText.trim()) return;
 
-    const author = authorName.trim() || "Anonymous Egyptian";
+    const author = user.fullName || user.email.split("@")[0];
     const newComment: Comment = {
       id: `rc-${Date.now()}`,
       author,
@@ -65,11 +81,12 @@ export function CommentSection({ companyId }: { companyId: number }) {
 
     setComments([newComment, ...comments]);
     setNewCommentText("");
-    setAuthorName("");
   };
 
-  const handleAddReply = (targetCommentId: string, replyText: string, replierName: string) => {
-    const author = replierName.trim() || "Anonymous Egyptian";
+  const handleAddReply = (targetCommentId: string, replyText: string) => {
+    if (!user) return; // Guarded by UI
+
+    const author = user.fullName || user.email.split("@")[0];
     const newReply: Comment = {
       id: `rep-${Date.now()}`,
       author,
@@ -112,32 +129,34 @@ export function CommentSection({ companyId }: { companyId: number }) {
 
       {/* Root Comment Form */}
       <form onSubmit={handlePostRootComment} className="border-2 border-foreground bg-card p-5 mb-10">
-        <span className="font-mono text-[0.55rem] uppercase tracking-wider text-muted-foreground mb-3 block">
-          Write a Review or Ask a Question
+        <span className="font-mono text-[0.55rem] uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5 font-bold">
+          {!user && <Lock className="h-3 w-3 text-orange" />}
+          Write a Review or Ask a Question {!user && "(Sign In Required)"}
         </span>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div className="md:col-span-1">
-            <input
-              type="text"
-              placeholder="Your name / title (Optional)"
-              value={authorName}
-              onChange={(e) => setAuthorName(e.target.value)}
-              className="w-full border border-border p-3 font-mono text-[0.65rem] uppercase bg-transparent outline-none focus:border-foreground"
-            />
-          </div>
-          <div className="md:col-span-3">
-            <textarea
-              placeholder="What is your experience working or interviewing here? No HR filters, share honest feedback..."
-              value={newCommentText}
-              onChange={(e) => setNewCommentText(e.target.value)}
-              rows={3}
-              className="w-full border border-border p-3 font-mono text-[0.65rem] uppercase bg-transparent outline-none focus:border-foreground resize-none"
-            />
-          </div>
+        <div className="w-full mb-4">
+          <textarea
+            placeholder={
+              user
+                ? "What is your experience working or interviewing here? No HR filters, share honest feedback..."
+                : "Please click here or sign in to write a review or reply..."
+            }
+            value={newCommentText}
+            onChange={(e) => setNewCommentText(e.target.value)}
+            onFocus={handleFocus}
+            rows={3}
+            className="w-full border border-border p-3 font-mono text-[0.65rem] uppercase bg-transparent outline-none focus:border-foreground resize-none"
+          />
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
+          <div className="font-mono text-[0.55rem] text-muted-foreground uppercase tracking-wide">
+            {user ? (
+              <span>Posting as: <strong className="text-foreground">{user.fullName || user.email}</strong></span>
+            ) : (
+              <span className="text-orange">Login required to publish feedback</span>
+            )}
+          </div>
           <Button type="submit" className="flex items-center gap-2">
             <Send className="h-3.5 w-3.5" />
             Publish feedback
@@ -161,22 +180,37 @@ export function CommentSection({ companyId }: { companyId: number }) {
 
 interface CommentNodeProps {
   comment: Comment;
-  onAddReply: (targetId: string, text: string, name: string) => void;
+  onAddReply: (targetId: string, text: string) => void;
   depth?: number;
 }
 
 function CommentNode({ comment, onAddReply, depth = 0 }: CommentNodeProps) {
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
-  const [replierName, setReplierName] = useState("");
+
+  const handleReplyTrigger = () => {
+    if (!user) {
+      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    setIsReplying(!isReplying);
+  };
 
   const handleSubmitReply = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
     if (!replyText.trim()) return;
 
-    onAddReply(comment.id, replyText, replierName);
+    onAddReply(comment.id, replyText);
     setReplyText("");
-    setReplierName("");
     setIsReplying(false);
   };
 
@@ -207,37 +241,36 @@ function CommentNode({ comment, onAddReply, depth = 0 }: CommentNodeProps) {
         {/* Reply Action Trigger */}
         <div className="mt-3 flex justify-end">
           <button
-            onClick={() => setIsReplying(!isReplying)}
-            className="font-mono text-[0.55rem] text-muted-foreground hover:text-foreground hover:underline uppercase tracking-wider cursor-pointer bg-transparent border-none p-0"
+            onClick={handleReplyTrigger}
+            className="font-mono text-[0.55rem] text-muted-foreground hover:text-foreground hover:underline uppercase tracking-wider cursor-pointer bg-transparent border-none p-0 flex items-center gap-1"
           >
+            {!user && <Lock className="h-2.5 w-2.5 text-orange" />}
             {isReplying ? "Cancel" : "Reply"}
           </button>
         </div>
 
         {/* Inline Nesting Form */}
-        {isReplying && (
+        {isReplying && user && (
           <form onSubmit={handleSubmitReply} className="mt-4 p-4 border-t border-dashed border-border bg-secondary/20">
-            <span className="font-mono text-[0.52rem] uppercase tracking-wider text-muted-foreground mb-2 block">
-              Reply to {comment.author}
-            </span>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-              <input
-                type="text"
-                placeholder="Your Name (Optional)"
-                value={replierName}
-                onChange={(e) => setReplierName(e.target.value)}
-                className="w-full border border-border p-2 font-mono text-[0.6rem] uppercase bg-transparent outline-none focus:border-foreground"
-              />
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-mono text-[0.52rem] uppercase tracking-wider text-muted-foreground">
+                Reply to {comment.author}
+              </span>
+              <span className="font-mono text-[0.52rem] text-muted-foreground uppercase">
+                As: <strong className="text-foreground">{user.fullName || user.email}</strong>
+              </span>
+            </div>
+            
+            <div className="flex gap-3">
               <input
                 type="text"
                 placeholder="Write your reply..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                className="w-full md:col-span-3 border border-border p-2 font-mono text-[0.6rem] uppercase bg-transparent outline-none focus:border-foreground"
+                className="flex-1 border border-border p-2 font-mono text-[0.6rem] uppercase bg-transparent outline-none focus:border-foreground"
+                autoFocus
               />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="submit" className="!py-1.5 !px-3 !text-[0.55rem]">
+              <Button type="submit" className="!py-1.5 !px-3 !text-[0.55rem] shrink-0">
                 Post reply
               </Button>
             </div>

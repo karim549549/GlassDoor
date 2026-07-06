@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getCompanyById } from "@/lib/companies/service";
 import { Nav } from "@/components/home/Nav";
+import { Footer } from "@/components/home/Footer";
 import { CompanyDetailView } from "@/components/companies/CompanyDetailView";
 
 interface PageProps {
@@ -53,6 +54,7 @@ export default async function CompanyPage({ params }: PageProps) {
         <main className="flex-1">
           <CompanyDetailView company={company} />
         </main>
+        <Footer />
       </div>
     </div>
   );
