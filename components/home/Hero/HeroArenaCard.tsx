@@ -85,28 +85,28 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     const cards = cardRefs.current;
     if (!cards) return;
 
-    // 1. GSAP Card Gathering Entrance Animation
+    // 1. GSAP Card Gathering Entrance Animation (Lands at double-scale: 1.8)
     const ctx = gsap.context(() => {
-      // Set initial scattered positions (Magician gathering cards from outside viewport)
-      gsap.set(cards[0], { opacity: 0, x: -1200, y: 800, rotate: -75, scale: 0.8 });
-      gsap.set(cards[1], { opacity: 0, x: 1200, y: -800, rotate: 65, scale: 0.85 });
-      gsap.set(cards[2], { opacity: 0, x: -1000, y: -1000, rotate: -90, scale: 0.9 });
+      // Set initial scattered positions completely OUTSIDE the screen frame/viewport
+      gsap.set(cards[0], { opacity: 0, x: -1400, y: 1000, rotate: -75, scale: 0.8 });
+      gsap.set(cards[1], { opacity: 0, x: 1400, y: -1000, rotate: 65, scale: 0.9 });
+      gsap.set(cards[2], { opacity: 0, x: -1200, y: -1200, rotate: -90, scale: 1.0 });
 
       // Coordinated timeline to gather them into a neat stack
       const tl = gsap.timeline({ delay: 0.4 });
       
-      tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1, duration: 1.1, ease: "power3.out" })
-        .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1, duration: 1.1, ease: "power3.out" }, "-=0.85")
-        .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1, duration: 1.25, ease: "back.out(1.1)" }, "-=0.85");
+      tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1.8, duration: 1.15, ease: "power3.out" })
+        .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1.8, duration: 1.15, ease: "power3.out" }, "-=0.85")
+        .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1.8, duration: 1.3, ease: "back.out(1.1)" }, "-=0.85");
     }, stackRef);
 
-    // 2. GSAP ScrollTrigger Separation & Theme Morphing Animation
+    // 2. GSAP ScrollTrigger Separation, Scaling, & Theme Morphing Animation
     const scrollCtx = gsap.context(() => {
       if (!containerRef.current || !arenasRef.current) return;
 
       const mm = gsap.matchMedia();
 
-      // Desktop: Horizontal flex separation and docking
+      // Desktop: Horizontal flex separation, scale reset (1.8 -> 1.0), and docking
       mm.add("(min-width: 768px)", () => {
         const scrollTimeline = gsap.timeline({
           scrollTrigger: {
@@ -126,38 +126,41 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           ease: "none",
         }, 0);
 
-        // Card 3 (Bottom): moves left, straightens rotation, drops into Section 2
+        // Card 3 (Bottom): moves left, scales down to 1.0, straightens, drops into Section 2
         scrollTimeline.to(cards[0], {
-          y: "92vh",
+          y: "100vh",
           x: -380,
           rotate: 0,
+          scale: 1,
           boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
           duration: 1,
           ease: "none",
         }, 0);
 
-        // Card 2 (Middle): stays center, straightens rotation, drops into Section 2
+        // Card 2 (Middle): stays center, scales down to 1.0, straightens, drops into Section 2
         scrollTimeline.to(cards[1], {
-          y: "92vh",
+          y: "100vh",
           x: 0,
           rotate: 0,
+          scale: 1,
           boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
           duration: 1,
           ease: "none",
         }, 0);
 
-        // Card 1 (Top): moves right, straightens rotation, drops into Section 2
+        // Card 1 (Top): moves right, scales down to 1.0, straightens, drops into Section 2
         scrollTimeline.to(cards[2], {
-          y: "92vh",
+          y: "100vh",
           x: 380,
           rotate: 0,
+          scale: 1,
           boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
           duration: 1,
           ease: "none",
         }, 0);
       });
 
-      // Mobile: Vertical list separation
+      // Mobile: Vertical list separation, scale reset
       mm.add("(max-width: 767px)", () => {
         const scrollTimeline = gsap.timeline({
           scrollTrigger: {
@@ -176,27 +179,30 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           ease: "none",
         }, 0);
 
-        // Stack vertically in Section 2
+        // Stack vertically in Section 2, scaling down to 1.0
         scrollTimeline.to(cards[0], {
-          y: "65vh",
+          y: "70vh",
           x: 0,
           rotate: 0,
+          scale: 1,
           duration: 1,
           ease: "none",
         }, 0);
 
         scrollTimeline.to(cards[1], {
-          y: "95vh",
+          y: "100vh",
           x: 0,
           rotate: 0,
+          scale: 1,
           duration: 1,
           ease: "none",
         }, 0);
 
         scrollTimeline.to(cards[2], {
-          y: "125vh",
+          y: "130vh",
           x: 0,
           rotate: 0,
+          scale: 1,
           duration: 1,
           ease: "none",
         }, 0);
@@ -217,13 +223,13 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     if (!cards) return;
 
     if (window.scrollY < 100) {
-      // Stack Hover: Fan out whole deck
-      gsap.to(cards[0], { rotate: -7, x: -18, y: 10, scale: 0.99, boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.7)", duration: 0.4, ease: "power2.out" });
-      gsap.to(cards[1], { rotate: 5, x: 18, y: -10, scale: 1.01, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.8)", duration: 0.4, ease: "power2.out" });
-      gsap.to(cards[2], { rotate: -1, x: 0, y: -6, scale: 1.025, boxShadow: "8px 8px 0px 0px rgba(14,14,13,1)", duration: 0.4, ease: "power2.out" });
+      // Stack Hover: Fan out whole deck (at double scale: 1.8)
+      gsap.to(cards[0], { rotate: -7, x: -28, y: 15, scale: 1.8 * 0.99, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.7)", duration: 0.4, ease: "power2.out" });
+      gsap.to(cards[1], { rotate: 5, x: 28, y: -15, scale: 1.8 * 1.01, boxShadow: "5px 5px 0px 0px rgba(14,14,13,0.8)", duration: 0.4, ease: "power2.out" });
+      gsap.to(cards[2], { rotate: -1, x: 0, y: -8, scale: 1.8 * 1.025, boxShadow: "10px 10px 0px 0px rgba(14,14,13,1)", duration: 0.4, ease: "power2.out" });
     } else {
-      // Docked Hover: Lift individual card
-      const targetY = window.innerWidth >= 768 ? "90vh" : idx === 0 ? "63vh" : idx === 1 ? "93vh" : "123vh";
+      // Docked Hover: Lift individual card (at normal scale: 1.0)
+      const targetY = window.innerWidth >= 768 ? "98vh" : idx === 0 ? "68vh" : idx === 1 ? "98vh" : "128vh";
       gsap.to(cards[idx], {
         y: targetY,
         scale: 1.02,
@@ -239,13 +245,13 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     if (!cards) return;
 
     if (window.scrollY < 100) {
-      // Stack MouseLeave: Reset back to tight stack
-      gsap.to(cards[0], { rotate: -4, x: 0, y: 0, scale: 1, boxShadow: "2px 2px 0px 0px rgba(14,14,13,0.75)", duration: 0.45, ease: "power2.out" });
-      gsap.to(cards[1], { rotate: 3, x: 0, y: 0, scale: 1, boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.85)", duration: 0.45, ease: "power2.out" });
-      gsap.to(cards[2], { rotate: -1.5, x: 0, y: 0, scale: 1, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)", duration: 0.45, ease: "power2.out" });
+      // Stack MouseLeave: Reset back to tight stack (at double scale: 1.8)
+      gsap.to(cards[0], { rotate: -4, x: 0, y: 0, scale: 1.8, boxShadow: "2px 2px 0px 0px rgba(14,14,13,0.75)", duration: 0.45, ease: "power2.out" });
+      gsap.to(cards[1], { rotate: 3, x: 0, y: 0, scale: 1.8, boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.85)", duration: 0.45, ease: "power2.out" });
+      gsap.to(cards[2], { rotate: -1.5, x: 0, y: 0, scale: 1.8, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)", duration: 0.45, ease: "power2.out" });
     } else {
-      // Docked MouseLeave: Reset individual card to resting scroll position
-      const targetY = window.innerWidth >= 768 ? "92vh" : idx === 0 ? "65vh" : idx === 1 ? "95vh" : "125vh";
+      // Docked MouseLeave: Reset individual card to resting scroll position (at normal scale: 1.0)
+      const targetY = window.innerWidth >= 768 ? "100vh" : idx === 0 ? "70vh" : idx === 1 ? "100vh" : "130vh";
       gsap.to(cards[idx], {
         y: targetY,
         scale: 1,
@@ -261,12 +267,11 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       ref={stackRef}
       className="absolute left-1/2 z-25 w-[min(540px,94%)] min-h-[310px] pointer-events-none"
       style={{
-        top: "43%",
+        top: "calc(50vh - 44px)", // Starts exactly in the vertical center of the Hero screen
         transform: "translate(-50%, -50%)",
       }}
     >
       {ARENA_CARDS.map((card, idx) => {
-        // Layout layers: Card 3 is index 0 (rendered first/bottom), Card 1 is index 2 (rendered last/top)
         const zIndexClass = idx === 0 ? "z-10" : idx === 1 ? "z-20" : "z-30";
         const shadowStyle = idx === 0 
           ? "2px 2px 0px 0px rgba(14,14,13,0.75)" 
