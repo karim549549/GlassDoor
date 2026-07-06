@@ -29,7 +29,6 @@ export default function SignupForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -125,29 +124,27 @@ export default function SignupForm() {
         setServerError(result.error || "Registration failed.");
         setIsLoading(false);
       } else if (result.success) {
-        if (rememberMe) {
-          try {
-            const stored = localStorage.getItem("devs_arena_saved_users");
-            let accounts = stored ? JSON.parse(stored) : [];
-            const existingIndex = accounts.findIndex(
-              (acc: any) => acc.email.toLowerCase() === data.email.toLowerCase()
-            );
+        try {
+          const stored = localStorage.getItem("devs_arena_saved_users");
+          let accounts = stored ? JSON.parse(stored) : [];
+          const existingIndex = accounts.findIndex(
+            (acc: any) => acc.email.toLowerCase() === data.email.toLowerCase()
+          );
 
-            const accountData = {
-              email: data.email,
-              name: data.fullName || data.email.split("@")[0],
-              refreshToken: result.session?.refreshToken || null,
-            };
+          const accountData = {
+            email: data.email,
+            name: data.fullName || data.email.split("@")[0],
+            refreshToken: result.session?.refreshToken || null,
+          };
 
-            if (existingIndex > -1) {
-              accounts[existingIndex] = accountData;
-            } else {
-              accounts.push(accountData);
-            }
-            localStorage.setItem("devs_arena_saved_users", JSON.stringify(accounts));
-          } catch (e) {
-            console.error("Failed to save local account", e);
+          if (existingIndex > -1) {
+            accounts[existingIndex] = accountData;
+          } else {
+            accounts.push(accountData);
           }
+          localStorage.setItem("devs_arena_saved_users", JSON.stringify(accounts));
+        } catch (e) {
+          console.error("Failed to save local account", e);
         }
 
         setIsSuccess(true);
@@ -269,23 +266,6 @@ export default function SignupForm() {
           disabled={isLoading}
           {...register("password")}
         />
-
-        {/* Remember Me Checkbox */}
-        <div className="flex items-center gap-2 py-1 select-none">
-          <input
-            type="checkbox"
-            id="rememberMe"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-3.5 w-3.5 accent-orange rounded-none border border-border cursor-pointer focus:ring-0 focus:ring-offset-0"
-          />
-          <label
-            htmlFor="rememberMe"
-            className="font-mono text-[0.65rem] uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-          >
-            Remember this account
-          </label>
-        </div>
 
         <div className="pt-2">
           <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
