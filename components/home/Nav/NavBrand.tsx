@@ -9,9 +9,6 @@ export function NavBrand({ isScrolled }: NavBrandProps) {
     <div className="flex items-center gap-3">
       <Link href="/" className="flex items-center gap-3">
         <span className="font-display text-[1.1rem]">Devs Arena</span>
-        <span className="font-mono text-[0.6rem] text-orange tracking-[0.2em]">
-          شرح
-        </span>
       </Link>
       <span className={`font-mono text-[0.6rem] opacity-35 border-l pl-3 hidden sm:block transition-colors duration-300 ${
         isScrolled ? "border-[#F1EFE9]/20" : "border-[#0E0E0D]/20"

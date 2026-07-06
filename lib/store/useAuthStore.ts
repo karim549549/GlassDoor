@@ -40,7 +40,7 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: "3",
-    message: "Welcome to Sherh! Your profile sync is complete.",
+    message: "Welcome to Devs Arena! Your profile sync is complete.",
     read: true,
     date: "3 days ago",
   },

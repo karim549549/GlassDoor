@@ -22,7 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sherh — Egypt tech salary transparency",
+  title: "Devs Arena — Egypt tech salary transparency",
   description: "Real salaries. Real reviews. Every Egyptian tech company, indexed.",
 };
 

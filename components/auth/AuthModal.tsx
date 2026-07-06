@@ -32,7 +32,7 @@ export function AuthModal() {
   useEffect(() => {
     if (isOpen) {
       try {
-        const stored = localStorage.getItem("sherh_saved_users");
+        const stored = localStorage.getItem("devs_arena_saved_users");
         if (stored) {
           const accounts = JSON.parse(stored);
           setHasAccounts(accounts.length > 0);
@@ -138,7 +138,7 @@ export function AuthModal() {
           <div className="z-10 flex flex-col justify-between h-full">
             <div>
               <span className="font-mono text-[0.6rem] tracking-[0.2em] uppercase text-orange font-bold">
-                Sherh شرح
+                Devs Arena
               </span>
               <h3 className="font-display text-[2.4rem] leading-tight italic mt-12 font-medium">
                 Real salaries.<br />
@@ -148,7 +148,7 @@ export function AuthModal() {
             </div>
             
             <div className="font-mono text-[0.55rem] tracking-wider opacity-40 uppercase mt-auto">
-              Sherh Egypt © 2026 · Salary Transparency Project
+              Devs Arena © 2026 · Salary Transparency Project
             </div>
           </div>
         </div>

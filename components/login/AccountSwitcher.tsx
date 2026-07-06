@@ -34,7 +34,7 @@ export function AccountSwitcher({
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("sherh_saved_users");
+      const stored = localStorage.getItem("devs_arena_saved_users");
       if (stored) {
         setAccounts(JSON.parse(stored));
       }
@@ -48,7 +48,7 @@ export function AccountSwitcher({
     const updated = accounts.filter((acc) => acc.email !== email);
     setAccounts(updated);
     try {
-      localStorage.setItem("sherh_saved_users", JSON.stringify(updated));
+      localStorage.setItem("devs_arena_saved_users", JSON.stringify(updated));
     } catch (err) {
       console.error("Failed to save accounts update", err);
     }
@@ -76,12 +76,12 @@ export function AccountSwitcher({
       if (response.ok && result.success) {
         // Update user state and store new refresh token (if rotated)
         try {
-          const stored = localStorage.getItem("sherh_saved_users");
+          const stored = localStorage.getItem("devs_arena_saved_users");
           let storedAccounts: SavedAccount[] = stored ? JSON.parse(stored) : [];
           const index = storedAccounts.findIndex(acc => acc.email === account.email);
           if (index > -1 && result.session?.refreshToken) {
             storedAccounts[index].refreshToken = result.session.refreshToken;
-            localStorage.setItem("sherh_saved_users", JSON.stringify(storedAccounts));
+            localStorage.setItem("devs_arena_saved_users", JSON.stringify(storedAccounts));
           }
         } catch (e) {
           console.error("Failed to update rotated token", e);

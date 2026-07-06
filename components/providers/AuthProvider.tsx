@@ -15,7 +15,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setAuth(data.user, data.roles);
           // Sync session details to local storage saved accounts
           try {
-            const stored = localStorage.getItem("sherh_saved_users");
+            const stored = localStorage.getItem("devs_arena_saved_users");
             let accounts = stored ? JSON.parse(stored) : [];
             const email = data.user.email;
             const index = accounts.findIndex(
@@ -31,11 +31,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (index > -1) {
               if (accounts[index].refreshToken !== accountData.refreshToken) {
                 accounts[index] = { ...accounts[index], ...accountData };
-                localStorage.setItem("sherh_saved_users", JSON.stringify(accounts));
+                localStorage.setItem("devs_arena_saved_users", JSON.stringify(accounts));
               }
             } else {
               accounts.push(accountData);
-              localStorage.setItem("sherh_saved_users", JSON.stringify(accounts));
+              localStorage.setItem("devs_arena_saved_users", JSON.stringify(accounts));
             }
           } catch (e) {
             console.error("Local account session sync failed", e);

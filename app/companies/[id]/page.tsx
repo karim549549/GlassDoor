@@ -16,12 +16,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!company) {
     return {
-      title: "Company Not Found | Sherh",
+      title: "Company Not Found | Devs Arena",
     };
   }
 
   return {
-    title: `${company.name} Salaries & Reviews | Sherh Egypt`,
+    title: `${company.name} Salaries & Reviews | Devs Arena`,
     description: `Browse salary ranges, average pay rates, and community reviews for tech roles at ${company.name} in Egypt. Data transparency without HR filters.`,
   };
 }

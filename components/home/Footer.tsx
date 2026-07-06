@@ -4,7 +4,7 @@ export function Footer() {
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="font-display font-medium">
-            Sherh شرح
+            Devs Arena
           </span>
           <span className="font-mono text-[0.6rem] text-muted-foreground">
             Egypt tech salary transparency - 2024
