@@ -7,11 +7,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    console.warn("WARNING: DATABASE_URL is not defined. PrismaClient initialized without direct connection adapter.");
-    return new PrismaClient();
-  }
+  const connectionString = process.env.DATABASE_URL || "postgresql://postgres:placeholder@localhost:5432/postgres";
   const pool = new pg.Pool({ connectionString });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
