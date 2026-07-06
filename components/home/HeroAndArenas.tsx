@@ -17,6 +17,9 @@ export function HeroAndArenas() {
       {/* Arenas Section */}
       <ArenasSection ref={arenasRef} />
 
+      {/* Extra Scroll Height Buffer (Dark spacer to allow ScrollTrigger to complete fully on short pages) */}
+      <div className="h-[80vh] bg-[#0E0E0D] w-full" />
+
       {/* Floating Animated Cards Stack */}
       <HeroArenaCard containerRef={containerRef} arenasRef={arenasRef} />
     </div>
