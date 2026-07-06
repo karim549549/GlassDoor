@@ -107,16 +107,16 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
             containerRef={containerRef || { current: null }}
             arenasRef={ref as React.RefObject<HTMLDivElement | null>}
           />
+        </div>
 
-          {/* Enter the Arena Action Button (Reveals dynamically centered beneath middle slot) */}
-          <div className="arena-enter-button absolute left-1/2 bottom-[-110px] md:bottom-[-130px] -translate-x-1/2 opacity-0 translate-y-4 pointer-events-none transition-all duration-300">
-            <a
-              href="/arenas"
-              className="px-8 py-3.5 bg-orange text-[#FAF8F5] border border-orange font-mono text-[0.65rem] font-bold tracking-[0.25em] uppercase hover:bg-[#FAF8F5] hover:text-[#0E0E0D] hover:border-[#0E0E0D] transition-colors shadow-[4px_4px_0px_0px_rgba(14,14,13,1)] hover:shadow-[6px_6px_0px_0px_rgba(14,14,13,1)] active:translate-y-0.5 flex items-center gap-2 pointer-events-auto"
-            >
-              Enter the Arena <span className="font-sans font-normal text-xs">→</span>
-            </a>
-          </div>
+        {/* Enter the Arena Action Button (Contained naturally within vertical flex flow under the cards grid) */}
+        <div className="arena-enter-button w-full flex justify-center py-6 opacity-0 translate-y-4 pointer-events-none transition-all duration-300">
+          <a
+            href="/arenas"
+            className="px-8 py-3.5 bg-orange text-[#FAF8F5] border border-orange font-mono text-[0.65rem] font-bold tracking-[0.25em] uppercase hover:bg-[#FAF8F5] hover:text-[#0E0E0D] hover:border-[#0E0E0D] transition-colors shadow-[4px_4px_0px_0px_rgba(14,14,13,1)] hover:shadow-[6px_6px_0px_0px_rgba(14,14,13,1)] active:translate-y-0.5 flex items-center gap-2 pointer-events-auto"
+          >
+            Enter the Arena <span className="font-sans font-normal text-xs">→</span>
+          </a>
         </div>
 
         {/* Section Footer / Tech Ticker */}
