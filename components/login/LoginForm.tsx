@@ -133,8 +133,7 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
         setAuth(result.user, ["USER"]);
 
         const finalTarget = redirectTo || `/user/${result.user.id}`;
-        router.push(finalTarget);
-        router.refresh();
+        window.location.href = finalTarget;
       }
     } catch {
       setServerError("An unexpected error occurred. Please try again.");

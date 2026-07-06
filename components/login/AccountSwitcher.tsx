@@ -97,8 +97,7 @@ export function AccountSwitcher({
         }
 
         const targetUrl = redirectTo || `/user/${meData.user?.id || result.user?.id}`;
-        router.push(targetUrl);
-        router.refresh();
+        window.location.href = targetUrl;
       } else {
         // Token expired/invalid -> fallback to credentials form
         onSelectAccount(account.email);

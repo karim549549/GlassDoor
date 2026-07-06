@@ -44,8 +44,7 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       clearAuth();
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
     } catch {
       // Ignore errors on sign out
     }
