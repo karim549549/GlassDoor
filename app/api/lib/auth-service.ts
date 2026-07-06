@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
-import { Prisma } from "@prisma/client";
+
+type TransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
 /**
  * Synchronize a Supabase authenticated user with our public PostgreSQL database and assign a role.
@@ -12,7 +13,7 @@ export async function syncUser(params: {
 }) {
   const { id, email, fullName, roleName = "USER" } = params;
 
-  return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  return await prisma.$transaction(async (tx: TransactionClient) => {
     // 1. Upsert the User profile
     const user = await tx.user.upsert({
       where: { id },
