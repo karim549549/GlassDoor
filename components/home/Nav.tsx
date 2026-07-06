@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/useAuthStore";
@@ -16,7 +16,16 @@ import { Bell, Settings, LogOut } from "lucide-react";
 export function Nav() {
   const { user, clearAuth, notifications, markNotificationAsRead } = useAuthStore();
   const router = useRouter();
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -30,19 +39,26 @@ export function Nav() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-foreground text-primary-foreground">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? "bg-[#0E0E0D] text-[#F1EFE9] border-b border-[#F1EFE9]/10 shadow-sm" 
+        : "bg-transparent text-[#0E0E0D]"
+    }`}>
       <div className="px-6 h-11 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-3">
-            <span className="font-display text-[1.1rem]">Sherh</span>
+            <span className="font-display text-[1.1rem]">Devs Arena</span>
             <span className="font-mono text-[0.6rem] text-orange tracking-[0.2em]">
               شرح
             </span>
           </Link>
-          <span className="font-mono text-[0.6rem] opacity-35 border-l border-primary-foreground/20 pl-3 hidden sm:block">
+          <span className={`font-mono text-[0.6rem] opacity-35 border-l pl-3 hidden sm:block transition-colors duration-300 ${
+            isScrolled ? "border-[#F1EFE9]/20" : "border-[#0E0E0D]/20"
+          }`}>
             Egypt tech · salary transparency
           </span>
         </div>
+        
         <div className="flex items-center gap-5">
           <a
             href="#"
@@ -62,9 +78,14 @@ export function Nav() {
           >
             Context
           </Link>
-          {user ? (
+          
+          {user && (
             <DropdownMenu>
-              <DropdownMenuTrigger className="relative flex h-7 w-7 items-center justify-center bg-primary-foreground text-foreground font-mono text-[0.7rem] font-bold border border-primary-foreground/20 hover:border-primary-foreground cursor-pointer focus:outline-none transition-all duration-150 rounded-none">
+              <DropdownMenuTrigger className={`relative flex h-7 w-7 items-center justify-center font-mono text-[0.7rem] font-bold border focus:outline-none transition-all duration-150 rounded-none cursor-pointer ${
+                isScrolled 
+                  ? "bg-[#F1EFE9] text-[#0E0E0D] border-[#F1EFE9]/20 hover:border-[#F1EFE9]" 
+                  : "bg-[#0E0E0D] text-[#F1EFE9] border-[#0E0E0D]/20 hover:border-[#0E0E0D]"
+              }`}>
                 {user.fullName ? user.fullName.slice(0, 2).toUpperCase() : user.email.slice(0, 2).toUpperCase()}
                 {notifications.filter(n => !n.read).length > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
@@ -163,9 +184,10 @@ export function Nav() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : null}
+          )}
         </div>
       </div>
     </nav>
   );
 }
+export default Nav;
