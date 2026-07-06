@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/app/api/lib/supabase/server";
 import { syncUser } from "@/app/api/lib/auth-service";
+import { prisma } from "@/app/api/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,6 +9,15 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
+    }
+
+    // Check if user already exists in public DB first
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (existingUser) {
+      return NextResponse.json({ error: "Email address is already registered." }, { status: 400 });
     }
 
     const supabase = await createClient();
