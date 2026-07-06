@@ -5,12 +5,12 @@ export function HeroHeadline() {
       style={{
         bottom: "clamp(45px, 9vh, 75px)",
         left: "clamp(1rem, 3vw, 2.5rem)",
-        maxWidth: "clamp(280px, 48%, 540px)"
+        width: "max-content",
+        maxWidth: "calc(100% - 2.5rem)"
       }}
     >
-      <div className="font-display font-medium uppercase tracking-tight" style={{ fontSize: "clamp(1.5rem, 3.8vw, 3.25rem)", lineHeight: 0.95 }}>
-        Developer<br />
-        <span className="text-orange">network.</span>
+      <div className="font-display font-black uppercase tracking-tight" style={{ fontSize: "clamp(1.5rem, 3.8vw, 3.25rem)", lineHeight: 0.95 }}>
+        Developer <span className="text-orange">network.</span>
       </div>
 
       <div

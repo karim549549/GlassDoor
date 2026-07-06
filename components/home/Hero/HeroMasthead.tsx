@@ -10,8 +10,8 @@ export function HeroMasthead() {
       }}
     >
       <h1
-        className="font-display select-none uppercase text-left"
-        style={{ fontSize: "clamp(2rem, 6.5vw, 6.5rem)", lineHeight: 0.9, letterSpacing: "-0.02em" }}
+        className="font-display select-none uppercase text-left font-black"
+        style={{ fontSize: "clamp(2.2rem, 7vw, 7rem)", lineHeight: 0.9, letterSpacing: "-0.02em" }}
       >
         Devs Arena
       </h1>

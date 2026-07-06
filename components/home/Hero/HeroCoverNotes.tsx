@@ -1,9 +1,45 @@
 "use client";
 
+import React, { useEffect, useRef } from "react";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import Link from "next/link";
+import gsap from "gsap";
 
 export function HeroCoverNotes() {
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const joinAnRef = useRef<HTMLSpanElement>(null);
+  const bgBlockRef = useRef<HTMLSpanElement>(null);
+  const textOverlayRef = useRef<HTMLSpanElement>(null);
+  const arrowRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    // Mount Entrance Animation
+    const ctx = gsap.context(() => {
+      // Set initial states
+      gsap.set(joinAnRef.current, { opacity: 0, y: -15 });
+      gsap.set(bgBlockRef.current, { scaleX: 0, transformOrigin: "right center" });
+      gsap.set(textOverlayRef.current, { opacity: 0 });
+
+      // Run Timeline
+      const tl = gsap.timeline({ delay: 0.3 });
+      tl.to(joinAnRef.current, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" })
+        .to(bgBlockRef.current, { scaleX: 1, duration: 0.7, ease: "power3.out" }, "-=0.3")
+        .to(textOverlayRef.current, { opacity: 1, duration: 0.4 }, "-=0.4");
+    }, linkRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  const handleMouseEnter = () => {
+    gsap.to(arrowRef.current, { x: 8, duration: 0.25, ease: "power2.out" });
+    gsap.to(bgBlockRef.current, { skewX: -8, scaleY: 1.05, duration: 0.25, ease: "power2.out" });
+  };
+
+  const handleMouseLeave = () => {
+    gsap.to(arrowRef.current, { x: 0, duration: 0.25, ease: "power2.out" });
+    gsap.to(bgBlockRef.current, { skewX: 0, scaleY: 1, duration: 0.25, ease: "power2.out" });
+  };
+
   return (
     <>
       {/* TOP LEFT — Salary database label */}
@@ -79,13 +115,32 @@ export function HeroCoverNotes() {
           <div className="text-foreground font-bold">Devs arenas</div>
         </div>
 
-        {/* JOIN AN OPEN SEAT Typography with orange background span highlight */}
-        <Link href="/context" className="inline-block text-right group select-none">
-          <span className="block font-display italic text-[clamp(1.2rem,2.8vw,2.2rem)] text-[#0E0E0D] leading-none uppercase pr-1">
+        {/* JOIN AN OPEN SEAT Typography with GSAP animated orange background highlight */}
+        <Link
+          ref={linkRef}
+          href="/context"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          className="inline-block text-right group select-none cursor-pointer"
+        >
+          <span
+            ref={joinAnRef}
+            className="block font-display italic text-[clamp(1.2rem,2.8vw,2.2rem)] text-[#0E0E0D] leading-none uppercase pr-1.5"
+          >
             Join an
           </span>
-          <span className="relative inline-block font-display italic text-[clamp(1.35rem,3.1vw,2.5rem)] text-[#F1EFE9] leading-none uppercase px-3 py-1 mt-1 bg-orange font-bold transition-transform duration-150 group-hover:scale-[1.02]">
-            Open seat &rarr;
+          
+          <span className="relative inline-block font-display italic text-[clamp(1.35rem,3.1vw,2.5rem)] text-[#F1EFE9] leading-none uppercase px-3 py-1.5 mt-1 font-bold">
+            {/* Background block animation element */}
+            <span
+              ref={bgBlockRef}
+              className="absolute inset-0 bg-orange -z-10"
+            />
+            {/* Text and arrow animation element */}
+            <span ref={textOverlayRef} className="relative z-10 flex items-center gap-1.5">
+              Open seat{" "}
+              <span ref={arrowRef} className="inline-block transition-transform duration-100">&rarr;</span>
+            </span>
           </span>
         </Link>
       </div>
