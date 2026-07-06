@@ -28,7 +28,7 @@ export default async function Home() {
       <div className="relative z-10 flex flex-col min-h-screen">
         <Nav />
         <Billboard />
-        <HeroSection initialCompanies={initialCompanies} />
+        <HeroSection />
         <StatsStrip />
         <CtaSection />
         <Footer />
