@@ -70,6 +70,13 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
   // Track when the entrance animation finishes to safely initialize ScrollTrigger
   const [entranceFinished, setEntranceFinished] = useState(false);
 
+  // Track active state of carousel buttons when user enters Section 3
+  const [showCarouselControls, setShowCarouselControls] = useState(false);
+
+  // Storing stacking state refs for reordering animations
+  const zIndices = useRef<number[]>([10, 20, 30]);
+  const stackOrder = useRef<number[]>([0, 1, 2]); // indices mapping to ARENA_CARDS
+
   useEffect(() => {
     // Dynamic countdown timer loop for the active card
     let totalSeconds = 5 * 3600 + 12 * 60 + 43;
@@ -177,7 +184,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           scrollTrigger: {
             trigger: arenasRef.current,
             start: "top top",    // Pin exactly when top of ArenasSection hits top of screen
-            end: "+=1800",       // Lock/Pin duration scroll length (longer scroll track)
+            end: "+=1800",       // Lock/Pin duration scroll length
             scrub: 1,
             pin: true,           // Native GSAP scroll lock
           }
@@ -215,6 +222,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
       // Trigger 4: Transition cards as user scrolls from ArenasSection down into the PinkSection.
       // The cards stack back up and align on the right column (desktop) or center (mobile) at y: 100vh.
+      // Concurrently morphs the background color back to Section 1 color (light cream #F1EFE9).
       mm.add("(min-width: 768px)", () => {
         const pinkTimeline = gsap.timeline({
           scrollTrigger: {
@@ -222,17 +230,34 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             start: "top bottom", // Starts as soon as pink section enters from bottom
             end: "top top",      // Ends when pink section fills the viewport
             scrub: true,
+            onToggle: (self) => {
+              // Enable carousel controls ONLY when fully settled inside Section 3
+              setShowCarouselControls(self.isActive && self.progress > 0.8);
+            },
+            onUpdate: (self) => {
+              setShowCarouselControls(self.isActive && self.progress > 0.8);
+            }
           }
         });
 
-        // Translate cards' y from 0 to 100vh relative to ArenasSection container to lock them vertically,
-        // while simultaneously re-stacking them and sliding them to the right column (x: 420px)
-        pinkTimeline.to(cards[0], { y: "100vh", x: 420, rotate: -4, scale: 0.9, ease: "power1.inOut" }, 0);
-        pinkTimeline.to(cards[1], { y: "100vh", x: 420, rotate: 3, scale: 0.9, ease: "power1.inOut" }, 0);
-        pinkTimeline.to(cards[2], { y: "100vh", x: 420, rotate: -1.5, scale: 0.9, ease: "power1.inOut" }, 0);
+        // Cards stack back up on the right, scale back to their original Hero scale (1.5)
+        pinkTimeline.to(cards[0], { y: "100vh", x: 420, rotate: -4, scale: 1.5, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[1], { y: "100vh", x: 420, rotate: 3, scale: 1.5, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[2], { y: "100vh", x: 420, rotate: -1.5, scale: 1.5, ease: "power1.inOut" }, 0);
+
+        // Slide the carousel controls container down to Section 3 in sync with cards
+        pinkTimeline.to(".arena-carousel-controls", { y: "100vh", x: 420, ease: "power1.inOut" }, 0);
+
+        // Morph background from dark mode (#0E0E0D) back to light cream (#F1EFE9)
+        pinkTimeline.to(".pink-section-container", {
+          backgroundColor: "#F1EFE9",
+          color: "#0E0E0D",
+          borderColor: "rgba(14, 14, 13, 0.15)",
+          ease: "none"
+        }, 0);
       });
 
-      // Mobile Pink transition: stack cards back up at center (x: 0, y: 100vh)
+      // Mobile Pink transition: stack cards back up at center (x: 0, y: 100vh), scale back to 1.0
       mm.add("(max-width: 767px)", () => {
         const pinkTimeline = gsap.timeline({
           scrollTrigger: {
@@ -240,12 +265,27 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             start: "top bottom",
             end: "top top",
             scrub: true,
+            onToggle: (self) => {
+              setShowCarouselControls(self.isActive && self.progress > 0.8);
+            },
+            onUpdate: (self) => {
+              setShowCarouselControls(self.isActive && self.progress > 0.8);
+            }
           }
         });
 
-        pinkTimeline.to(cards[0], { y: "100vh", x: 0, rotate: -4, scale: 0.82, ease: "power1.inOut" }, 0);
-        pinkTimeline.to(cards[1], { y: "100vh", x: 0, rotate: 3, scale: 0.82, ease: "power1.inOut" }, 0);
-        pinkTimeline.to(cards[2], { y: "100vh", x: 0, rotate: -1.5, scale: 0.82, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[0], { y: "100vh", x: 0, rotate: -4, scale: 1.0, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[1], { y: "100vh", x: 0, rotate: 3, scale: 1.0, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[2], { y: "100vh", x: 0, rotate: -1.5, scale: 1.0, ease: "power1.inOut" }, 0);
+
+        pinkTimeline.to(".arena-carousel-controls", { y: "100vh", x: 0, ease: "power1.inOut" }, 0);
+
+        pinkTimeline.to(".pink-section-container", {
+          backgroundColor: "#F1EFE9",
+          color: "#0E0E0D",
+          borderColor: "rgba(14, 14, 13, 0.15)",
+          ease: "none"
+        }, 0);
       });
 
     }, containerRef);
@@ -254,6 +294,66 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       scrollCtx.revert();
     };
   }, [entranceFinished, containerRef, arenasRef]);
+
+  // Swipe Carousel interaction (reorder stacked cards via GSAP translations on click)
+  const handleCycleStack = (direction: "next" | "prev") => {
+    const cards = cardRefs.current;
+    if (!cards) return;
+
+    const isDesktop = window.innerWidth >= 768;
+    const baseScale = isDesktop ? 1.5 : 1.0;
+    const baseOffsetX = isDesktop ? 420 : 0;
+
+    // Get current top card in visual hierarchy
+    const topCardIdx = direction === "next" 
+      ? stackOrder.current[2] // Last element in array is currently on top
+      : stackOrder.current[0]; // Bottom card to bring to top
+
+    const targetCard = cards[topCardIdx];
+    if (!targetCard) return;
+
+    // 1. Swipe current card out to the right/left
+    const swipeOutX = baseOffsetX + (direction === "next" ? 220 : -220);
+    const restingRotations = [-4, 3, -1.5];
+
+    gsap.timeline()
+      .to(targetCard, {
+        x: swipeOutX,
+        rotate: direction === "next" ? 15 : -15,
+        scale: baseScale * 0.95,
+        duration: 0.24,
+        ease: "power2.out",
+        onComplete: () => {
+          // 2. Re-arrange visual layer indices inside DOM
+          if (direction === "next") {
+            // Cycle order array (move top element to bottom of hierarchy)
+            const first = stackOrder.current.shift() ?? 0;
+            stackOrder.current.push(first);
+          } else {
+            // Cycle backwards (bring bottom element to top of hierarchy)
+            const last = stackOrder.current.pop() ?? 0;
+            stackOrder.current.unshift(last);
+          }
+
+          // Apply updated z-index layering rules to DOM elements
+          stackOrder.current.forEach((cardIdx, layerIndex) => {
+            const cardEl = cards[cardIdx];
+            if (cardEl) {
+              const newZ = (layerIndex + 1) * 10;
+              gsap.set(cardEl, { zIndex: newZ });
+            }
+          });
+        }
+      })
+      // 3. Tuck the card back into the deck stack
+      .to(targetCard, {
+        x: baseOffsetX,
+        rotate: restingRotations[topCardIdx],
+        scale: baseScale,
+        duration: 0.24,
+        ease: "power2.inOut",
+      });
+  };
 
   return (
     <div
@@ -340,6 +440,28 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           </div>
         );
       })}
+
+      {/* Carousel Stack Control Arrows */}
+      <div 
+        className={`arena-carousel-controls absolute left-0 right-0 top-[260px] md:top-[280px] z-40 flex justify-center items-center gap-3 pointer-events-auto transition-all duration-300 ${
+          showCarouselControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+        }`}
+      >
+        <button
+          onClick={() => handleCycleStack("prev")}
+          className="w-10 h-10 border-2 border-[#0E0E0D] bg-[#FAF8F5] text-[#0E0E0D] flex items-center justify-center font-mono font-bold text-xs hover:bg-[#0E0E0D] hover:text-[#FAF8F5] transition-colors shadow-[2px_2px_0px_0px_rgba(14,14,13,1)] active:translate-y-0.5 pointer-events-auto"
+          title="Previous Poster"
+        >
+          [←]
+        </button>
+        <button
+          onClick={() => handleCycleStack("next")}
+          className="w-10 h-10 border-2 border-[#0E0E0D] bg-[#FAF8F5] text-[#0E0E0D] flex items-center justify-center font-mono font-bold text-xs hover:bg-[#0E0E0D] hover:text-[#FAF8F5] transition-colors shadow-[2px_2px_0px_0px_rgba(14,14,13,1)] active:translate-y-0.5 pointer-events-auto"
+          title="Next Poster"
+        >
+          [→]
+        </button>
+      </div>
     </div>
   );
 }
