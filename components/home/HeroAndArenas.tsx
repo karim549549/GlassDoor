@@ -34,7 +34,7 @@ export function HeroAndArenas() {
         <div className="max-w-7xl mx-auto w-full h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-12 relative z-10 pointer-events-none">
           
           {/* Left Column: Asymmetrical Editorial Arena Rules Box (Single unified brutalist box styled like a 4-floor building) */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center text-left pointer-events-auto pr-0 md:pr-16 max-w-xl">
+          <div className="w-full md:w-1/2 flex flex-col justify-center text-left pointer-events-auto pr-0 md:pr-4 max-w-xl">
             
             {/* The 4-Floor Unified Brutalist Grid Box */}
             <div className="w-full border-4 border-double border-current bg-[#FAF8F5]/5 flex flex-col h-[520px] shadow-[4px_4px_0px_0px_currentColor] relative">
@@ -93,6 +93,9 @@ export function HeroAndArenas() {
 
             </div>
           </div>
+
+          {/* Column Divider Line - Matching weight/color of inside floor dividers to unify columns into a building layout */}
+          <div className="hidden md:block w-px h-[520px] bg-current/15 self-center mx-8" />
 
           {/* Right Column Spacer (Provides layout alignment for the absolute stacked cards) */}
           <div className="w-full md:w-1/2 h-[350px] relative pointer-events-none" />
