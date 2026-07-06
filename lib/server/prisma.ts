@@ -1,4 +1,7 @@
-import "server-only";
+// NOTE: no "import server-only" here - this module is also imported by
+// standalone scripts run via `tsx` (prisma/seed.ts, prisma/scripts/clear.ts),
+// which don't go through Next.js's bundler. The server-only package throws
+// unconditionally outside that bundler, so it can't guard this file.
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
