@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       email: user.email || email,
       fullName,
       roleName,
+      emailVerified: false,
     });
 
     return NextResponse.json({ success: true });

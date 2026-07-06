@@ -10,15 +10,16 @@ export async function syncUser(params: {
   email: string;
   fullName?: string;
   roleName?: "ADMIN" | "USER" | "COMPANY";
+  emailVerified?: boolean;
 }) {
-  const { id, email, fullName, roleName = "USER" } = params;
+  const { id, email, fullName, roleName = "USER", emailVerified = false } = params;
 
   return await prisma.$transaction(async (tx: TransactionClient) => {
     // 1. Upsert the User profile
     const user = await tx.user.upsert({
       where: { id },
-      update: { email, fullName },
-      create: { id, email, fullName },
+      update: { email, fullName, emailVerified },
+      create: { id, email, fullName, emailVerified },
     });
 
     // 2. Fetch the corresponding Role ID

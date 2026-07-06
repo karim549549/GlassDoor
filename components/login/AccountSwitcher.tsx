@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { User, Trash2, Key } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuthStore } from "@/lib/store/useAuthStore";
+import { Trash2, Key, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface SavedAccount {
   email: string;
   name: string;
+  refreshToken?: string | null;
 }
 
 interface AccountSwitcherProps {
@@ -20,7 +23,14 @@ export function AccountSwitcher({
   onUseAnother,
   onCreateAccount,
 }: AccountSwitcherProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") || "/";
+  const { setAuth } = useAuthStore();
+
   const [accounts, setAccounts] = useState<SavedAccount[]>([]);
+  const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -44,6 +54,63 @@ export function AccountSwitcher({
     }
   };
 
+  const handleAccountClick = async (account: SavedAccount) => {
+    if (!account.refreshToken) {
+      // Fallback: prompt for credentials if token is missing
+      onSelectAccount(account.email);
+      return;
+    }
+
+    setLoadingEmail(account.email);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/auth/login-saved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: account.refreshToken }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Update user state and store new refresh token (if rotated)
+        try {
+          const stored = localStorage.getItem("sherh_saved_users");
+          let storedAccounts: SavedAccount[] = stored ? JSON.parse(stored) : [];
+          const index = storedAccounts.findIndex(acc => acc.email === account.email);
+          if (index > -1 && result.session?.refreshToken) {
+            storedAccounts[index].refreshToken = result.session.refreshToken;
+            localStorage.setItem("sherh_saved_users", JSON.stringify(storedAccounts));
+          }
+        } catch (e) {
+          console.error("Failed to update rotated token", e);
+        }
+
+        // Fetch user state to fetch active roles
+        const meRes = await fetch("/api/auth/me");
+        const meData = await meRes.json();
+        if (meData.authenticated && meData.user) {
+          setAuth(meData.user, meData.roles);
+        } else {
+          setAuth(result.user, ["USER"]);
+        }
+
+        router.push(redirectTo);
+        router.refresh();
+      } else {
+        // Token expired/invalid -> fallback to credentials form
+        onSelectAccount(account.email);
+      }
+    } catch (err) {
+      console.error("Auto-login error:", err);
+      // Network error -> fallback to credentials form
+      onSelectAccount(account.email);
+    } finally {
+      setLoadingEmail(null);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full justify-between">
       <div>
@@ -54,21 +121,34 @@ export function AccountSwitcher({
           Select an account to log in
         </p>
 
+        {error && (
+          <div className="mb-4 p-2 bg-destructive/10 border border-destructive/20 text-accent font-mono text-[0.6rem] uppercase tracking-wider">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
           {accounts.map((account) => {
             const initials = account.name
               ? account.name.slice(0, 2).toUpperCase()
               : account.email.slice(0, 2).toUpperCase();
+            const isLoading = loadingEmail === account.email;
 
             return (
               <div
                 key={account.email}
-                onClick={() => onSelectAccount(account.email)}
-                className="group flex items-center justify-between p-4 border border-border/80 bg-card hover:border-foreground cursor-pointer transition-all duration-150"
+                onClick={() => !isLoading && handleAccountClick(account)}
+                className={`group flex items-center justify-between p-4 border border-border/80 bg-card hover:border-foreground transition-all duration-150 relative ${
+                  isLoading ? "cursor-wait opacity-80" : "cursor-pointer"
+                }`}
               >
                 <div className="flex items-center gap-4">
                   <div className="h-9 w-9 flex items-center justify-center bg-foreground text-background font-mono text-[0.75rem] font-bold">
-                    {initials}
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-background" />
+                    ) : (
+                      initials
+                    )}
                   </div>
                   <div className="flex flex-col text-left">
                     <span className="font-mono text-[0.8rem] font-semibold text-foreground leading-tight">
@@ -81,7 +161,8 @@ export function AccountSwitcher({
                 </div>
                 <button
                   onClick={(e) => handleRemove(account.email, e)}
-                  className="p-2 text-muted-foreground hover:text-accent cursor-pointer transition-colors"
+                  disabled={isLoading}
+                  className="p-2 text-muted-foreground hover:text-accent cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Remove account"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -117,4 +198,5 @@ export function AccountSwitcher({
     </div>
   );
 }
+
 export default AccountSwitcher;

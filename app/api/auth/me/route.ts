@@ -7,9 +7,11 @@ export async function GET() {
     const supabase = await createClient();
 
     const {
-      data: { user },
+      data: { session },
       error,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getSession();
+
+    const user = session?.user;
 
     if (error || !user) {
       return NextResponse.json({
@@ -28,6 +30,9 @@ export async function GET() {
         fullName: user.user_metadata.full_name || null,
       },
       roles: roles.length > 0 ? roles : ["USER"],
+      session: {
+        refreshToken: session.refresh_token || null,
+      },
     });
   } catch (error) {
     console.error("Auth status query failed (Supabase or database unconfigured/down):", error);

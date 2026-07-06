@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -19,7 +19,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: data.user?.id,
+        email: data.user?.email,
+        fullName: data.user?.user_metadata?.full_name || null,
+      },
+      session: {
+        refreshToken: data.session?.refresh_token || null,
+      },
+    });
   } catch {
     return NextResponse.json({ error: "An unexpected error occurred." }, { status: 500 });
   }

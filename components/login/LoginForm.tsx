@@ -106,14 +106,23 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
       } else {
         try {
           const stored = localStorage.getItem("sherh_saved_users");
-          const accounts = stored ? JSON.parse(stored) : [];
-          if (!accounts.some((acc: any) => acc.email.toLowerCase() === data.email.toLowerCase())) {
-            accounts.push({
-              email: data.email,
-              name: data.email.split("@")[0],
-            });
-            localStorage.setItem("sherh_saved_users", JSON.stringify(accounts));
+          let accounts = stored ? JSON.parse(stored) : [];
+          const existingIndex = accounts.findIndex(
+            (acc: any) => acc.email.toLowerCase() === data.email.toLowerCase()
+          );
+
+          const accountData = {
+            email: data.email,
+            name: result.user?.fullName || data.email.split("@")[0],
+            refreshToken: result.session?.refreshToken || null,
+          };
+
+          if (existingIndex > -1) {
+            accounts[existingIndex] = accountData;
+          } else {
+            accounts.push(accountData);
           }
+          localStorage.setItem("sherh_saved_users", JSON.stringify(accounts));
         } catch (e) {
           console.error("Failed to save local account", e);
         }

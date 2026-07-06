@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     email: user.email ?? "",
     fullName: user.user_metadata.full_name || null,
     roleName: "USER",
+    emailVerified: true,
   });
 
   return NextResponse.redirect(new URL(redirectTo, request.url));
