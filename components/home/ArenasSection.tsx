@@ -47,22 +47,23 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
         {/* Dynamic Center landing space for fanned cards */}
         <div className="flex-1 w-full max-w-7xl mx-auto relative flex items-center justify-center min-h-[360px] overflow-visible">
           
-          {/* Camera Viewfinder Bracket 3 (Left on Desktop, Top on Mobile) */}
-          <div className="absolute left-1/2 top-1/2 w-[min(480px,88vw)] h-[290px] pointer-events-none md:translate-x-[calc(-50%-500px)] md:translate-y-[-50%] translate-x-[-50%] translate-y-[calc(-50%-24vh)] md:scale-90 scale-[0.82] transition-colors duration-300">
+          {/* Camera Viewfinder Bracket 3 (Left on Desktop, Top on Mobile) 
+              Sized slightly larger than cards (width + 32px, height + 32px) to guarantee a visible outer frame gap */}
+          <div className="absolute left-1/2 top-1/2 w-[calc(min(480px,88vw)+32px)] h-[322px] pointer-events-none md:translate-x-[calc(-50%-500px)] md:translate-y-[-50%] translate-x-[-50%] translate-y-[calc(-50%-24vh)] md:scale-90 scale-[0.82] transition-colors duration-300">
             <div className="absolute inset-0 border border-dashed border-current/5" />
             <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-current" />
             <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-current" />
           </div>
 
           {/* Camera Viewfinder Bracket 2 (Middle on Desktop, Middle on Mobile) */}
-          <div className="absolute left-1/2 top-1/2 w-[min(480px,88vw)] h-[290px] pointer-events-none md:translate-x-[-50%] md:translate-y-[-50%] translate-x-[-50%] translate-y-[-50%] md:scale-90 scale-[0.82] transition-colors duration-300">
+          <div className="absolute left-1/2 top-1/2 w-[calc(min(480px,88vw)+32px)] h-[322px] pointer-events-none md:translate-x-[-50%] md:translate-y-[-50%] translate-x-[-50%] translate-y-[-50%] md:scale-90 scale-[0.82] transition-colors duration-300">
             <div className="absolute inset-0 border border-dashed border-current/5" />
             <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-current" />
             <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-current" />
           </div>
 
           {/* Camera Viewfinder Bracket 1 (Right on Desktop, Bottom on Mobile) */}
-          <div className="absolute left-1/2 top-1/2 w-[min(480px,88vw)] h-[290px] pointer-events-none md:translate-x-[calc(-50%+500px)] md:translate-y-[-50%] translate-x-[-50%] translate-y-[calc(-50%+24vh)] md:scale-90 scale-[0.82] transition-colors duration-300">
+          <div className="absolute left-1/2 top-1/2 w-[calc(min(480px,88vw)+32px)] h-[322px] pointer-events-none md:translate-x-[calc(-50%+500px)] md:translate-y-[-50%] translate-x-[-50%] translate-y-[calc(-50%+24vh)] md:scale-90 scale-[0.82] transition-colors duration-300">
             <div className="absolute inset-0 border border-dashed border-current/5" />
             <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-current" />
             <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-current" />
