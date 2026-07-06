@@ -17,7 +17,7 @@ export function HeroAndArenas() {
       <ArenasSection ref={arenasRef} containerRef={containerRef} />
 
       {/* Third Section - Starts dark (matching Section 2) and morphs to light cream (matching Section 1) */}
-      <div className="pink-section-container h-screen min-h-screen bg-[#0E0E0D] text-[#F1EFE9] w-full border-t border-[#0E0E0D]/10 relative flex items-center justify-between px-6 md:px-12 z-10 transition-colors duration-300 overflow-visible">
+      <div className="pink-section-container h-screen min-h-screen bg-[#0E0E0D] text-[#F1EFE9] w-full border-t border-[#0E0E0D]/10 relative flex items-center z-10 transition-colors duration-300 overflow-visible">
         {/* Editorial Blueprint Grid Backdrop Overlay */}
         <div className="absolute inset-0 opacity-[0.18] pointer-events-none z-0">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -28,6 +28,75 @@ export function HeroAndArenas() {
             </defs>
             <rect width="100%" height="100%" fill="url(#section3-grid)" />
           </svg>
+        </div>
+
+        {/* Column Layout Container */}
+        <div className="max-w-7xl mx-auto w-full h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-12 relative z-10 pointer-events-none">
+          
+          {/* Left Column: Asymmetrical Editorial Arena Rules (Static, rendered without animations) */}
+          <div className="arena-rules-block w-full md:w-1/2 flex flex-col justify-center text-left pointer-events-auto pr-0 md:pr-16 max-w-xl">
+            {/* Header issue text */}
+            <div className="font-mono text-[0.52rem] uppercase tracking-[0.2em] text-orange mb-2 font-bold">
+              Issue 001 · Rules · شرح
+            </div>
+
+            {/* Giant Display Title */}
+            <h3 className="font-display italic text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.9] uppercase font-normal mb-2">
+              Rules
+            </h3>
+            
+            <p className="font-display italic text-[clamp(0.9rem,1.4vw,1.3rem)] leading-snug mb-8 opacity-80">
+              System requirements &amp; code integrity.
+            </p>
+
+            {/* Brutalist Grid Cells Stack */}
+            <div className="space-y-0 border-b border-current/15">
+              
+              {/* Rule Cell 1 */}
+              <div className="border-t border-current/15 py-4 space-y-1">
+                <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
+                  [01 / REGISTRY]
+                </span>
+                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.6rem)] font-bold uppercase tracking-tight leading-none">
+                  GITHUB VERIFICATION
+                </div>
+                <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                  Active EGP salaries feed requires a verified developer account.
+                </p>
+              </div>
+
+              {/* Rule Cell 2 */}
+              <div className="border-t border-current/15 py-4 space-y-1">
+                <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
+                  [02 / TIMEFRAME]
+                </span>
+                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.6rem)] font-bold uppercase tracking-tight leading-none">
+                  6-HOUR CODE SPRINT
+                </div>
+                <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                  Solutions must be submitted before the countdown lobby ticks to zero.
+                </p>
+              </div>
+
+              {/* Rule Cell 3 */}
+              <div className="border-t border-current/15 py-4 space-y-1">
+                <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
+                  [03 / INTEGRITY]
+                </span>
+                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.6rem)] font-bold uppercase tracking-tight leading-none">
+                  OPEN-SOURCE PROOFS
+                </div>
+                <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                  All submissions require a repository link and a functional live demo.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Right Column Spacer (Provides layout alignment for the absolute stacked cards) */}
+          <div className="w-full md:w-1/2 h-[350px] relative pointer-events-none" />
+
         </div>
       </div>
 
