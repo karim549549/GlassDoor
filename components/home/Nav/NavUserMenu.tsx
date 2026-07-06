@@ -143,13 +143,11 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
               <DropdownMenuSeparator className="bg-[#0E0E0D] my-0" />
 
               <DropdownMenuItem
-                asChild
+                onClick={() => router.push("/profile")}
                 className="flex items-center gap-2.5 p-3 cursor-pointer text-[#0E0E0D] hover:bg-[#0E0E0D] hover:text-[#F1EFE9] transition-colors rounded-none focus:bg-[#0E0E0D] focus:text-[#F1EFE9]"
               >
-                <Link href="/profile" className="flex items-center gap-2.5 w-full h-full">
-                  <User className="h-3.5 w-3.5" />
-                  <span>View Profile</span>
-                </Link>
+                <User className="h-3.5 w-3.5" />
+                <span>View Profile</span>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator className="bg-[#0E0E0D] my-0" />
