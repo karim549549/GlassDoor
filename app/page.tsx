@@ -6,6 +6,7 @@ import { StatsStrip } from "@/components/home/StatsStrip";
 import { CtaSection } from "@/components/home/CtaSection";
 import { Footer } from "@/components/home/Footer";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { Suspense } from "react";
 
 export default async function Home() {
   const initialCompanies = getDefaultCompanies();
@@ -18,7 +19,9 @@ export default async function Home() {
       <StatsStrip />
       <CtaSection />
       <Footer />
-      <AuthModal />
+      <Suspense fallback={null}>
+        <AuthModal />
+      </Suspense>
     </div>
   );
 }

@@ -117,6 +117,20 @@ export default function SignupForm() {
         setServerError(result.error || "Registration failed.");
         setIsLoading(false);
       } else if (result.success) {
+        try {
+          const stored = localStorage.getItem("sherh_saved_users");
+          const accounts = stored ? JSON.parse(stored) : [];
+          if (!accounts.some((acc: any) => acc.email.toLowerCase() === data.email.toLowerCase())) {
+            accounts.push({
+              email: data.email,
+              name: data.fullName || data.email.split("@")[0],
+            });
+            localStorage.setItem("sherh_saved_users", JSON.stringify(accounts));
+          }
+        } catch (e) {
+          console.error("Failed to save local account", e);
+        }
+
         setIsSuccess(true);
         setIsLoading(false);
       }
@@ -130,7 +144,7 @@ export default function SignupForm() {
     return (
       <div
         ref={successRef}
-        className="w-full max-w-md bg-card border border-border p-8 md:p-10 text-center shadow-sm"
+        className="w-full text-center"
       >
         <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-orange">
           <svg
@@ -161,7 +175,7 @@ export default function SignupForm() {
   return (
     <div
       ref={containerRef}
-      className="w-full max-w-md bg-card border border-border p-8 md:p-10 shadow-sm"
+      className="w-full"
     >
       <div className="mb-8">
         <h1 ref={titleRef} className="font-display text-4xl italic text-foreground tracking-tight">

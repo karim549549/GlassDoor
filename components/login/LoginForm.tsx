@@ -17,7 +17,12 @@ const loginSchema = z.object({
 
 type LoginSchemaType = z.infer<typeof loginSchema>;
 
-export default function LoginForm() {
+interface LoginFormProps {
+  prefilledEmail?: string;
+  onBackToSwitcher?: () => void;
+}
+
+export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFormProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const redirectTo = searchParams.get("redirectTo") || "/";
@@ -35,6 +40,7 @@ export default function LoginForm() {
     formState: { errors },
   } = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
+    defaultValues: prefilledEmail ? { email: prefilledEmail } : undefined,
   });
 
   useEffect(() => {
@@ -98,6 +104,20 @@ export default function LoginForm() {
         setServerError(result.error || "Login failed.");
         setIsLoading(false);
       } else {
+        try {
+          const stored = localStorage.getItem("sherh_saved_users");
+          const accounts = stored ? JSON.parse(stored) : [];
+          if (!accounts.some((acc: any) => acc.email.toLowerCase() === data.email.toLowerCase())) {
+            accounts.push({
+              email: data.email,
+              name: data.email.split("@")[0],
+            });
+            localStorage.setItem("sherh_saved_users", JSON.stringify(accounts));
+          }
+        } catch (e) {
+          console.error("Failed to save local account", e);
+        }
+
         router.push(redirectTo);
         router.refresh();
       }
@@ -110,8 +130,16 @@ export default function LoginForm() {
   return (
     <div
       ref={containerRef}
-      className="w-full max-w-md bg-card border border-border p-8 md:p-10 shadow-sm"
+      className="w-full"
     >
+      {onBackToSwitcher && (
+        <button
+          onClick={onBackToSwitcher}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground font-mono text-[0.65rem] uppercase tracking-wider mb-6 bg-transparent border-none cursor-pointer p-0"
+        >
+          ← Back to accounts
+        </button>
+      )}
       <div className="mb-8">
         <h1 ref={titleRef} className="font-display text-4xl italic text-foreground tracking-tight">
           Welcome back
