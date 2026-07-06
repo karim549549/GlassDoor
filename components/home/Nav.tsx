@@ -44,7 +44,7 @@ export function Nav() {
         ? "bg-[#0E0E0D] text-[#F1EFE9] border-b border-[#F1EFE9]/10 shadow-sm" 
         : "bg-transparent text-[#0E0E0D]"
     }`}>
-      <div className={`px-6 flex items-center justify-between transition-all duration-300 ${isScrolled ? "h-6" : "h-11"}`}>
+      <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? "h-6 px-20" : "h-11 px-6"}`}>
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-3">
             <span className="font-display text-[1.1rem]">Devs Arena</span>
