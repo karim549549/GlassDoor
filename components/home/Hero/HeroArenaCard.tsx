@@ -173,7 +173,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       // Trigger 3: Lock/Pin scrolling exactly when ArenasSection hits the top of the viewport,
       // and separate the cards gradually while pinned.
       mm.add("(min-width: 768px)", () => {
-        gsap.timeline({
+        const pinTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: arenasRef.current,
             start: "top top",    // Pin exactly when top of ArenasSection hits top of screen
@@ -181,16 +181,21 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             scrub: 1,
             pin: true,           // Native GSAP scroll lock
           }
-        })
-        // Increase horizontal translation to x: -500 / 500 and scale to 0.9 to resolve overlapping
-        .to(cards[0], { x: -500, scale: 0.9, rotate: 0, ease: "power1.inOut" }, 0)
-        .to(cards[1], { x: 0, scale: 0.9, rotate: 0, ease: "power1.inOut" }, 0)
-        .to(cards[2], { x: 500, scale: 0.9, rotate: 0, ease: "power1.inOut" }, 0);
+        });
+
+        // Cards separate from 0 to 0.75 relative duration
+        pinTimeline.to(cards[0], { x: -500, scale: 0.9, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0)
+                   .to(cards[1], { x: 0, scale: 0.9, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0)
+                   .to(cards[2], { x: 500, scale: 0.9, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0);
+
+        // Organizers and button reveal from 0.75 to 1.0 (settled phase)
+        pinTimeline.to(".arena-organizer-block", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75)
+                   .to(".arena-enter-button", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75);
       });
 
       // Mobile Pinned separation
       mm.add("(max-width: 767px)", () => {
-        gsap.timeline({
+        const pinTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: arenasRef.current,
             start: "top top",
@@ -198,10 +203,14 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             scrub: 1,
             pin: true,
           }
-        })
-        .to(cards[0], { y: "-24vh", scale: 0.82, rotate: 0, ease: "power1.inOut" }, 0)
-        .to(cards[1], { y: "0vh", scale: 0.82, rotate: 0, ease: "power1.inOut" }, 0)
-        .to(cards[2], { y: "24vh", scale: 0.82, rotate: 0, ease: "power1.inOut" }, 0);
+        });
+
+        pinTimeline.to(cards[0], { y: "-24vh", scale: 0.82, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0)
+                   .to(cards[1], { y: "0vh", scale: 0.82, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0)
+                   .to(cards[2], { y: "24vh", scale: 0.82, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0);
+
+        pinTimeline.to(".arena-organizer-block", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75)
+                   .to(".arena-enter-button", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75);
       });
 
     }, containerRef);
