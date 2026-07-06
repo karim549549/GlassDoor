@@ -114,9 +114,6 @@ export function HeroAndArenas() {
 
         </div>
       </div>
-
-      {/* Extra Scroll Height Buffer (Light spacer to allow natural scrolling to complete at the end of Section 3) */}
-      <div className="h-[80vh] bg-[#F1EFE9] w-full" />
     </div>
   );
 }
