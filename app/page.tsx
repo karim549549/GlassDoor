@@ -1,8 +1,6 @@
 import { Nav } from "@/components/home/Nav";
 import { Billboard } from "@/components/home/Billboard";
 import { HeroAndArenas } from "@/components/home/HeroAndArenas";
-import { StatsStrip } from "@/components/home/StatsStrip";
-import { CtaSection } from "@/components/home/CtaSection";
 import { Footer } from "@/components/home/Footer";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Suspense } from "react";
@@ -26,8 +24,6 @@ export default async function Home() {
         <Nav />
         <Billboard />
         <HeroAndArenas />
-        <StatsStrip />
-        <CtaSection />
         <Footer />
       </div>
 

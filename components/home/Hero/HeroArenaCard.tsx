@@ -85,40 +85,49 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     const cards = cardRefs.current;
     if (!cards) return;
 
-    // 1. GSAP Card Gathering Entrance Animation (Lands at size scale: 1.5)
+    const mm = gsap.matchMedia();
+
+    // 1. GSAP Card Gathering Entrance Animations with Responsive Scales
     const ctx = gsap.context(() => {
       // Set initial scattered positions completely OUTSIDE the screen frame/viewport
       gsap.set(cards[0], { opacity: 0, x: -1400, y: 1000, rotate: -75, scale: 0.8 });
       gsap.set(cards[1], { opacity: 0, x: 1400, y: -1000, rotate: 65, scale: 0.9 });
       gsap.set(cards[2], { opacity: 0, x: -1200, y: -1200, rotate: -90, scale: 1.0 });
 
-      // Coordinated timeline to gather them into a neat stack
       const tl = gsap.timeline({ delay: 0.4 });
-      
-      tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1.5, duration: 1.15, ease: "power3.out" })
-        .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1.5, duration: 1.15, ease: "power3.out" }, "-=0.85")
-        .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1.5, duration: 1.3, ease: "back.out(1.1)" }, "-=0.85");
+
+      mm.add("(min-width: 768px)", () => {
+        // Desktop lands at double-scale 1.5
+        tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1.5, duration: 1.15, ease: "power3.out" })
+          .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1.5, duration: 1.15, ease: "power3.out" }, "-=0.85")
+          .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1.5, duration: 1.3, ease: "back.out(1.1)" }, "-=0.85");
+      });
+
+      mm.add("(max-width: 767px)", () => {
+        // Mobile lands at scale 1.0 (no scaling overflow)
+        tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1.0, duration: 1.15, ease: "power3.out" })
+          .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1.0, duration: 1.15, ease: "power3.out" }, "-=0.85")
+          .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1.0, duration: 1.3, ease: "back.out(1.1)" }, "-=0.85");
+      });
     }, stackRef);
 
-    // 2. GSAP ScrollTrigger Pinned Separation, Scaling, & Theme Morphing Animation
+    // 2. GSAP ScrollTrigger Pinned Separation & Theme Morphing Animations (Concurrently from moment of scroll)
     const scrollCtx = gsap.context(() => {
       if (!containerRef.current || !arenasRef.current) return;
 
-      const mm = gsap.matchMedia();
-
-      // Desktop: Pin layout, slide sections, separate cards horizontally, reset scale (1.5 -> 1.0)
+      // Desktop: Pin layout, separate cards horizontally + scale down gradually over entire scroll
       mm.add("(min-width: 768px)", () => {
         const scrollTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: containerRef.current,
             start: "top top",
-            end: "+=1600", // Pinned scroll track length
-            scrub: 1,      // Smooth momentum follow
-            pin: true,     // Lock scroll during animation phases
+            end: "+=1600",
+            scrub: 1,
+            pin: true,
           }
         });
 
-        // Phase 1 (First 50% of scroll timeline): Slide sections up & morph background
+        // Slide sections up & morph background
         scrollTimeline.to(".hero-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
         scrollTimeline.to(".arenas-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
         scrollTimeline.to(arenasRef.current, {
@@ -129,13 +138,13 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           ease: "none"
         }, 0);
 
-        // Phase 2 (Last 50% of scroll timeline): Separate cards horizontally & scale down to 1.0
-        scrollTimeline.to(cards[0], { x: -380, scale: 1, rotate: 0, duration: 1, ease: "power2.out" }, 1);
-        scrollTimeline.to(cards[1], { x: 0, scale: 1, rotate: 0, duration: 1, ease: "power2.out" }, 1);
-        scrollTimeline.to(cards[2], { x: 380, scale: 1, rotate: 0, duration: 1, ease: "power2.out" }, 1);
+        // Concurrently separate horizontally, scale (1.5 -> 1.0), and straighten rotations over entire scrub
+        scrollTimeline.to(cards[0], { x: -380, scale: 1, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
+        scrollTimeline.to(cards[1], { x: 0, scale: 1, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
+        scrollTimeline.to(cards[2], { x: 380, scale: 1, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
       });
 
-      // Mobile: Pin layout, vertical stack separation
+      // Mobile: Pin layout, separate vertically + scale down gradually over entire scroll
       mm.add("(max-width: 767px)", () => {
         const scrollTimeline = gsap.timeline({
           scrollTrigger: {
@@ -147,7 +156,6 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           }
         });
 
-        // Phase 1: Slide sections up & morph background
         scrollTimeline.to(".hero-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
         scrollTimeline.to(".arenas-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
         scrollTimeline.to(arenasRef.current, {
@@ -158,10 +166,10 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           ease: "none"
         }, 0);
 
-        // Phase 2: Separate vertically and scale down to 1.0
-        scrollTimeline.to(cards[0], { y: "-30vh", x: 0, rotate: 0, scale: 1, duration: 1, ease: "power2.out" }, 1);
-        scrollTimeline.to(cards[1], { y: "0vh", x: 0, rotate: 0, scale: 1, duration: 1, ease: "power2.out" }, 1);
-        scrollTimeline.to(cards[2], { y: "30vh", x: 0, rotate: 0, scale: 1, duration: 1, ease: "power2.out" }, 1);
+        // Concurrently separate vertically, scale (1.0 -> 0.82) over entire scrub
+        scrollTimeline.to(cards[0], { y: "-24vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
+        scrollTimeline.to(cards[1], { y: "0vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
+        scrollTimeline.to(cards[2], { y: "24vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
       });
 
     }, containerRef);
@@ -169,26 +177,31 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     return () => {
       ctx.revert();
       scrollCtx.revert();
+      mm.revert();
       clearInterval(interval);
     };
   }, [containerRef, arenasRef]);
 
-  // Hover animations: logic changes dynamically depending on whether scroll is active (pinned/docked)
+  // Hover animations: logic checks scale factors based on viewport width dynamically
   const handleMouseEnterCard = (idx: number) => {
     const cards = cardRefs.current;
     if (!cards) return;
 
+    const isDesktop = window.innerWidth >= 768;
+
     if (window.scrollY < 100) {
-      // Stack Hover: Fan out whole deck (at size scale: 1.5)
-      gsap.to(cards[0], { rotate: -7, x: -28, y: 15, scale: 1.5 * 0.99, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.7)", duration: 0.4, ease: "power2.out" });
-      gsap.to(cards[1], { rotate: 5, x: 28, y: -15, scale: 1.5 * 1.01, boxShadow: "5px 5px 0px 0px rgba(14,14,13,0.8)", duration: 0.4, ease: "power2.out" });
-      gsap.to(cards[2], { rotate: -1, x: 0, y: -8, scale: 1.5 * 1.025, boxShadow: "10px 10px 0px 0px rgba(14,14,13,1)", duration: 0.4, ease: "power2.out" });
+      // Stack Hover: Fan out whole deck (Desktop scale 1.5, Mobile scale 1.0)
+      const scaleBase = isDesktop ? 1.5 : 1.0;
+      gsap.to(cards[0], { rotate: -7, x: isDesktop ? -28 : -15, y: isDesktop ? 15 : 8, scale: scaleBase * 0.99, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.7)", duration: 0.4, ease: "power2.out" });
+      gsap.to(cards[1], { rotate: 5, x: isDesktop ? 28 : 15, y: isDesktop ? -15 : -8, scale: scaleBase * 1.01, boxShadow: "5px 5px 0px 0px rgba(14,14,13,0.8)", duration: 0.4, ease: "power2.out" });
+      gsap.to(cards[2], { rotate: -1, x: 0, y: isDesktop ? -8 : -4, scale: scaleBase * 1.025, boxShadow: "10px 10px 0px 0px rgba(14,14,13,1)", duration: 0.4, ease: "power2.out" });
     } else {
-      // Docked Hover: Lift individual card (at normal scale: 1.0)
-      const targetY = window.innerWidth >= 768 ? "-6px" : idx === 0 ? "-32vh" : idx === 1 ? "-2vh" : "28vh";
+      // Docked Hover: Lift individual card (Desktop scale 1.0, Mobile scale 0.82)
+      const scaleBase = isDesktop ? 1.0 : 0.82;
+      const targetY = isDesktop ? "-6px" : idx === 0 ? "-26vh" : idx === 1 ? "-2vh" : "22vh";
       gsap.to(cards[idx], {
         y: targetY,
-        scale: 1.02,
+        scale: scaleBase * 1.02,
         boxShadow: "8px 8px 0px 0px rgba(14,14,13,1)",
         duration: 0.3,
         ease: "power2.out"
@@ -200,17 +213,21 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     const cards = cardRefs.current;
     if (!cards) return;
 
+    const isDesktop = window.innerWidth >= 768;
+
     if (window.scrollY < 100) {
-      // Stack MouseLeave: Reset back to tight stack (at size scale: 1.5)
-      gsap.to(cards[0], { rotate: -4, x: 0, y: 0, scale: 1.5, boxShadow: "2px 2px 0px 0px rgba(14,14,13,0.75)", duration: 0.45, ease: "power2.out" });
-      gsap.to(cards[1], { rotate: 3, x: 0, y: 0, scale: 1.5, boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.85)", duration: 0.45, ease: "power2.out" });
-      gsap.to(cards[2], { rotate: -1.5, x: 0, y: 0, scale: 1.5, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)", duration: 0.45, ease: "power2.out" });
+      // Stack MouseLeave: Reset back to tight stack (Desktop scale 1.5, Mobile scale 1.0)
+      const scaleBase = isDesktop ? 1.5 : 1.0;
+      gsap.to(cards[0], { rotate: -4, x: 0, y: 0, scale: scaleBase, boxShadow: "2px 2px 0px 0px rgba(14,14,13,0.75)", duration: 0.45, ease: "power2.out" });
+      gsap.to(cards[1], { rotate: 3, x: 0, y: 0, scale: scaleBase, boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.85)", duration: 0.45, ease: "power2.out" });
+      gsap.to(cards[2], { rotate: -1.5, x: 0, y: 0, scale: scaleBase, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)", duration: 0.45, ease: "power2.out" });
     } else {
-      // Docked MouseLeave: Reset individual card to resting scroll position (at normal scale: 1.0)
-      const targetY = window.innerWidth >= 768 ? "0px" : idx === 0 ? "-30vh" : idx === 1 ? "0vh" : "30vh";
+      // Docked MouseLeave: Reset individual card (Desktop scale 1.0, Mobile scale 0.82)
+      const scaleBase = isDesktop ? 1.0 : 0.82;
+      const targetY = isDesktop ? "0px" : idx === 0 ? "-24vh" : idx === 1 ? "0vh" : "24vh";
       gsap.to(cards[idx], {
         y: targetY,
-        scale: 1,
+        scale: scaleBase,
         boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
         duration: 0.4,
         ease: "power2.out"
@@ -221,7 +238,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
   return (
     <div
       ref={stackRef}
-      className="absolute left-1/2 z-25 w-[min(540px,94%)] min-h-[310px] pointer-events-none"
+      className="absolute left-1/2 z-25 w-[min(480px,88vw)] min-h-[290px] pointer-events-none"
       style={{
         top: "calc(50vh - 44px)", // Starts exactly in the vertical center of the Hero screen
         transform: "translate(-50%, -50%)",
@@ -243,7 +260,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             }}
             onMouseEnter={() => handleMouseEnterCard(idx)}
             onMouseLeave={() => handleMouseLeaveCard(idx)}
-            className={`absolute inset-0 bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-7 md:p-9 cursor-pointer select-none flex flex-col justify-between pointer-events-auto ${zIndexClass}`}
+            className={`absolute inset-0 bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-5 md:p-7 cursor-pointer select-none flex flex-col justify-between pointer-events-auto ${zIndexClass}`}
             style={{
               boxShadow: shadowStyle,
             }}
@@ -253,28 +270,28 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             <div className="absolute inset-1.5 border border-dashed border-[#0E0E0D]/5 pointer-events-none" />
 
             {/* Poster Header / Title Lockup */}
-            <div className="space-y-4 text-left">
-              <div className="font-display italic text-[clamp(1.4rem,3.2vw,2.3rem)] leading-[1.08] text-[#0E0E0D] tracking-tight">
-                <span className="text-orange font-bold not-italic font-mono text-[0.65rem] tracking-[0.25em] border border-orange px-2 py-0.5 inline-block mr-3.5 align-middle -translate-y-0.5">
+            <div className="space-y-3.5 text-left">
+              <div className="font-display italic text-[clamp(1.15rem,2.8vw,1.85rem)] leading-[1.1] text-[#0E0E0D] tracking-tight">
+                <span className="text-orange font-bold not-italic font-mono text-[0.6rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2.5 align-middle -translate-y-0.5">
                   [{card.tag}]
                 </span>
                 {card.title}
               </div>
               
-              <p className="font-mono text-[0.55rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-w-md">
+              <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-w-sm">
                 {card.description}
               </p>
             </div>
 
             {/* Bottom Content Row */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pt-6 border-t border-dashed border-[#0E0E0D]/20 mt-6 text-left">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-4 border-t border-dashed border-[#0E0E0D]/20 mt-4 text-left">
               
               {/* Bottom Left: Countdown */}
               <div className="flex flex-col">
-                <span className="font-mono text-[0.45rem] uppercase tracking-[0.25em] text-muted-foreground mb-1 block font-bold">
+                <span className="font-mono text-[0.42rem] uppercase tracking-[0.25em] text-muted-foreground mb-1 block font-bold">
                   [{card.timeLabel}]
                 </span>
-                <div className={`font-mono text-[1.25rem] font-bold leading-none tracking-widest ${card.isLive ? "text-[#0E0E0D]" : "text-muted-foreground"}`}>
+                <div className={`font-mono text-[1.1rem] font-bold leading-none tracking-widest ${card.isLive ? "text-[#0E0E0D]" : "text-muted-foreground"}`}>
                   {card.isLive ? (
                     <>
                       {activeTimer.split(":")[0]}
@@ -290,11 +307,11 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
               </div>
 
               {/* Bottom Right: Tech Badges */}
-              <div className="flex flex-wrap gap-2 sm:justify-end">
+              <div className="flex flex-wrap gap-1.5 sm:justify-end">
                 {card.tech.map((tech) => (
                   <span
                     key={tech}
-                    className="font-mono text-[0.52rem] uppercase tracking-wider text-[#0E0E0D] font-bold"
+                    className="font-mono text-[0.48rem] uppercase tracking-wider text-[#0E0E0D] font-bold"
                   >
                     [{tech}]
                   </span>
