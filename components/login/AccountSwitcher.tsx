@@ -96,7 +96,8 @@ export function AccountSwitcher({
           setAuth(result.user, ["USER"]);
         }
 
-        router.push(redirectTo);
+        const targetUrl = redirectTo || `/user/${meData.user?.id || result.user?.id}`;
+        router.push(targetUrl);
         router.refresh();
       } else {
         // Token expired/invalid -> fallback to credentials form
