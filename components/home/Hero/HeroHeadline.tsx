@@ -1,7 +1,7 @@
 export function HeroHeadline() {
   return (
     <div
-      className="absolute z-20 text-left"
+      className="absolute z-20 text-left text-[#0E0E0D]"
       style={{
         bottom: "clamp(45px, 9vh, 75px)",
         left: "clamp(1rem, 3vw, 2.5rem)",
@@ -9,7 +9,7 @@ export function HeroHeadline() {
       }}
     >
       <div className="font-display font-medium uppercase tracking-tight" style={{ fontSize: "clamp(1.5rem, 3.8vw, 3.25rem)", lineHeight: 0.95 }}>
-        Egypt&apos;s developer<br />
+        Developer<br />
         <span className="text-orange">network.</span>
       </div>
 
