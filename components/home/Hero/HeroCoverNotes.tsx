@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import Link from "next/link";
 
