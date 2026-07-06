@@ -67,6 +67,9 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
   // Countdown state for the top active card
   const [activeTimer, setActiveTimer] = useState("05:12:43");
 
+  // Track when the entrance animation finishes to safely initialize ScrollTrigger
+  const [entranceFinished, setEntranceFinished] = useState(false);
+
   useEffect(() => {
     // Dynamic countdown timer loop for the active card
     let totalSeconds = 5 * 3600 + 12 * 60 + 43;
@@ -85,9 +88,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     const cards = cardRefs.current;
     if (!cards) return;
 
-    const mm = gsap.matchMedia();
-
-    // 1. GSAP Card Gathering Entrance Animations with Responsive Scales
+    // 1. GSAP Card Gathering Entrance Animation
     const ctx = gsap.context(() => {
       // Set initial scattered positions completely OUTSIDE the screen frame/viewport
       gsap.set(cards[0], { opacity: 0, x: -1400, y: 1000, rotate: -75, scale: 0.8 });
@@ -96,26 +97,42 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
       const tl = gsap.timeline({ delay: 0.4 });
 
-      mm.add("(min-width: 768px)", () => {
-        // Desktop lands at double-scale 1.5
-        tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1.5, duration: 1.15, ease: "power3.out" })
-          .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1.5, duration: 1.15, ease: "power3.out" }, "-=0.85")
-          .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1.5, duration: 1.3, ease: "back.out(1.1)" }, "-=0.85");
-      });
+      // Determine size scale based on viewport width
+      const isDesktop = window.innerWidth >= 768;
+      const scaleBase = isDesktop ? 1.5 : 1.0;
 
-      mm.add("(max-width: 767px)", () => {
-        // Mobile lands at scale 1.0 (no scaling overflow)
-        tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1.0, duration: 1.15, ease: "power3.out" })
-          .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1.0, duration: 1.15, ease: "power3.out" }, "-=0.85")
-          .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1.0, duration: 1.3, ease: "back.out(1.1)" }, "-=0.85");
-      });
+      tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: scaleBase, duration: 1.15, ease: "power3.out" })
+        .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: scaleBase, duration: 1.15, ease: "power3.out" }, "-=0.85")
+        .to(cards[2], { 
+          opacity: 1, 
+          x: 0, 
+          y: 0, 
+          rotate: -1.5, 
+          scale: scaleBase, 
+          duration: 1.3, 
+          ease: "back.out(1.1)",
+          onComplete: () => setEntranceFinished(true) // Safely flag entrance animation complete
+        }, "-=0.85");
     }, stackRef);
 
-    // 2. GSAP ScrollTrigger Pinned Separation & Theme Morphing Animations (Concurrently from moment of scroll)
-    const scrollCtx = gsap.context(() => {
-      if (!containerRef.current || !arenasRef.current) return;
+    return () => {
+      ctx.revert();
+      clearInterval(interval);
+    };
+  }, []);
 
-      // Desktop: Pin layout, separate cards horizontally + scale down gradually over entire scroll
+  // 2. GSAP ScrollTrigger Pinned Separation & Theme Morphing Animation
+  // Only runs AFTER entrance finished, avoiding property conflicts during load
+  useEffect(() => {
+    if (!entranceFinished || !containerRef.current || !arenasRef.current) return;
+
+    const cards = cardRefs.current;
+    if (!cards) return;
+
+    const scrollCtx = gsap.context(() => {
+      const mm = gsap.matchMedia();
+
+      // Desktop: Pin layout, slide sections, separate cards horizontally, scale (1.5 -> 1.0)
       mm.add("(min-width: 768px)", () => {
         const scrollTimeline = gsap.timeline({
           scrollTrigger: {
@@ -127,9 +144,13 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           }
         });
 
-        // Slide sections up & morph background
+        // Slide sections up & morph background color to dark
         scrollTimeline.to(".hero-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
         scrollTimeline.to(".arenas-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
+        
+        // Fade out Hero typography to prevent overlap clutter
+        scrollTimeline.to(".hero-section-container", { opacity: 0, duration: 0.45, ease: "power1.out" }, 0);
+
         scrollTimeline.to(arenasRef.current, {
           backgroundColor: "#0E0E0D",
           color: "#F1EFE9",
@@ -138,13 +159,13 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           ease: "none"
         }, 0);
 
-        // Concurrently separate horizontally, scale (1.5 -> 1.0), and straighten rotations over entire scrub
+        // Concurrently separate horizontally, scale down to 1.0, and straighten rotations
         scrollTimeline.to(cards[0], { x: -380, scale: 1, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
         scrollTimeline.to(cards[1], { x: 0, scale: 1, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
         scrollTimeline.to(cards[2], { x: 380, scale: 1, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
       });
 
-      // Mobile: Pin layout, separate vertically + scale down gradually over entire scroll
+      // Mobile: Pin layout, separate vertically, scale down (1.0 -> 0.82)
       mm.add("(max-width: 767px)", () => {
         const scrollTimeline = gsap.timeline({
           scrollTrigger: {
@@ -158,6 +179,10 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
         scrollTimeline.to(".hero-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
         scrollTimeline.to(".arenas-section-container", { y: "-100vh", duration: 1, ease: "none" }, 0);
+        
+        // Fade out Hero typography on mobile
+        scrollTimeline.to(".hero-section-container", { opacity: 0, duration: 0.45, ease: "power1.out" }, 0);
+
         scrollTimeline.to(arenasRef.current, {
           backgroundColor: "#0E0E0D",
           color: "#F1EFE9",
@@ -166,7 +191,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           ease: "none"
         }, 0);
 
-        // Concurrently separate vertically, scale (1.0 -> 0.82) over entire scrub
+        // Concurrently separate vertically, scale down to 0.82
         scrollTimeline.to(cards[0], { y: "-24vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
         scrollTimeline.to(cards[1], { y: "0vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
         scrollTimeline.to(cards[2], { y: "24vh", x: 0, rotate: 0, scale: 0.82, duration: 1, ease: "power1.inOut" }, 0);
@@ -175,12 +200,9 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     }, containerRef);
 
     return () => {
-      ctx.revert();
       scrollCtx.revert();
-      mm.revert();
-      clearInterval(interval);
     };
-  }, [containerRef, arenasRef]);
+  }, [entranceFinished, containerRef, arenasRef]);
 
   // Hover animations: logic checks scale factors based on viewport width dynamically
   const handleMouseEnterCard = (idx: number) => {
