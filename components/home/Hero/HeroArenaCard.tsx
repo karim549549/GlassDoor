@@ -88,6 +88,9 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     const cards = cardRefs.current;
     if (!cards) return;
 
+    // Lock page scroll on initial load to prevent user from scrolling during card entrance
+    document.body.style.overflow = "hidden";
+
     // 1. GSAP Card Gathering Entrance Animation (Lands centered relative to Hero)
     const ctx = gsap.context(() => {
       // Set initial scattered positions completely OUTSIDE the screen frame/viewport
@@ -111,12 +114,17 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           scale: scaleBase, 
           duration: 1.3, 
           ease: "back.out(1.1)",
-          onComplete: () => setEntranceFinished(true)
+          onComplete: () => {
+            // Re-enable scrolling only after flight completes, then flag entranceFinished
+            document.body.style.overflow = "";
+            setEntranceFinished(true);
+          }
         }, "-=0.85");
     }, stackRef);
 
     return () => {
       ctx.revert();
+      document.body.style.overflow = ""; // Ensure scroll is restored on unmount
       clearInterval(interval);
     };
   }, []);
