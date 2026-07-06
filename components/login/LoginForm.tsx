@@ -132,7 +132,8 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
         // Instantly update active auth state so header updates and modal closes
         setAuth(result.user, ["USER"]);
 
-        router.push(redirectTo);
+        const finalTarget = redirectTo === "/profile" ? `/user/${result.user.id}` : redirectTo;
+        router.push(finalTarget);
         router.refresh();
       }
     } catch {

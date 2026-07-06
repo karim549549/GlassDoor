@@ -31,5 +31,6 @@ export async function GET(request: NextRequest) {
     emailVerified: true,
   });
 
-  return NextResponse.redirect(new URL(redirectTo, request.url));
+  const finalRedirect = redirectTo === "/profile" ? `/user/${user.id}` : redirectTo;
+  return NextResponse.redirect(new URL(finalRedirect, request.url));
 }
