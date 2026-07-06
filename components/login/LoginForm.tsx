@@ -27,7 +27,7 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
   const { setAuth } = useAuthStore();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const redirectTo = searchParams.get("redirectTo") || "/";
+  const redirectTo = searchParams.get("redirectTo") || "/profile";
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
