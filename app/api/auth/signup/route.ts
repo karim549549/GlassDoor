@@ -33,16 +33,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Synchronize user and role to Prisma public DB
-    try {
-      await syncUser({
-        id: user.id,
-        email: user.email || email,
-        fullName,
-        roleName,
-      });
-    } catch (dbError) {
-      console.error("Database sync failed on registration route:", dbError);
-    }
+    await syncUser({
+      id: user.id,
+      email: user.email || email,
+      fullName,
+      roleName,
+    });
 
     return NextResponse.json({ success: true });
   } catch {

@@ -19,29 +19,16 @@ export async function GET() {
       });
     }
 
-    try {
-      const roles = await getUserRoles(user.id);
-      return NextResponse.json({
-        authenticated: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          fullName: user.user_metadata.full_name || null,
-        },
-        roles: roles.length > 0 ? roles : ["USER"],
-      });
-    } catch (dbError) {
-      console.error("Failed to fetch user roles from database:", dbError);
-      return NextResponse.json({
-        authenticated: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          fullName: user.user_metadata.full_name || null,
-        },
-        roles: ["USER"],
-      });
-    }
+    const roles = await getUserRoles(user.id);
+    return NextResponse.json({
+      authenticated: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.user_metadata.full_name || null,
+      },
+      roles: roles.length > 0 ? roles : ["USER"],
+    });
   } catch (error) {
     console.error("Auth status query failed (Supabase or database unconfigured/down):", error);
     return NextResponse.json({

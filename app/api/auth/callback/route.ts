@@ -23,17 +23,12 @@ export async function GET(request: NextRequest) {
   }
 
   // Synchronize user profile and default role in public DB
-  try {
-    await syncUser({
-      id: user.id,
-      email: user.email ?? "",
-      fullName: user.user_metadata.full_name || null,
-      roleName: "USER",
-    });
-  } catch (dbError) {
-    console.error("Failed to sync OAuth user to database:", dbError);
-    // Continue session even if database sync fails (user will have 'USER' access as fallback)
-  }
+  await syncUser({
+    id: user.id,
+    email: user.email ?? "",
+    fullName: user.user_metadata.full_name || null,
+    roleName: "USER",
+  });
 
   return NextResponse.redirect(new URL(redirectTo, request.url));
 }
