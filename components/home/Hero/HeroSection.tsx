@@ -11,7 +11,7 @@ interface HeroSectionProps {
 export function HeroSection({ initialCompanies }: HeroSectionProps) {
   return (
     <section
-      className="relative overflow-hidden border-b border-border bg-background"
+      className="relative overflow-hidden border-b border-border"
       style={{ height: "calc(100svh - 88px)", minHeight: 680, maxHeight: 960 }}
     >
       <HeroMasthead />

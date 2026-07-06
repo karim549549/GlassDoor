@@ -1,3 +1,5 @@
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+
 export function HeroCoverNotes() {
   return (
     <>
@@ -18,7 +20,7 @@ export function HeroCoverNotes() {
         style={{ top: "clamp(116px, 21%, 200px)", right: "clamp(1rem, 3vw, 2.5rem)" }}
       >
         <div className="font-mono" style={{ fontSize: "clamp(2rem, 3.8vw, 3.5rem)", fontWeight: 500, lineHeight: 1 }}>
-          312
+          <AnimatedCounter value="312" />
         </div>
         <div
           className="font-mono uppercase tracking-[0.18em] text-muted-foreground mt-1"
@@ -48,7 +50,7 @@ export function HeroCoverNotes() {
           Verified by
         </div>
         <div className="font-mono text-orange" style={{ fontSize: "clamp(1.5rem, 2.2vw, 2rem)", fontWeight: 500, lineHeight: 1.1 }}>
-          4,200+
+          <AnimatedCounter value="4,200+" />
         </div>
         <div className="font-mono text-[0.48rem] uppercase tracking-[0.18em] text-muted-foreground">
           Egyptian<br />engineers
