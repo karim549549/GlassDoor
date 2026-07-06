@@ -21,13 +21,26 @@ export async function syncUser(params: {
     create: { id, email, fullName, emailVerified },
   });
 
-  // 2. Fetch the corresponding Role ID
-  const role = await prisma.role.findUnique({
+  // 2. Fetch or dynamically create the corresponding Role if missing
+  let role = await prisma.role.findUnique({
     where: { name: roleName },
   });
 
   if (!role) {
-    throw new Error(`Role ${roleName} does not exist in the database. Run db seed first.`);
+    try {
+      role = await prisma.role.create({
+        data: { name: roleName },
+      });
+    } catch {
+      // Fallback in case of concurrent insert race conditions
+      role = await prisma.role.findUnique({
+        where: { name: roleName },
+      });
+    }
+  }
+
+  if (!role) {
+    throw new Error(`Role ${roleName} could not be resolved.`);
   }
 
   // 3. Upsert UserRole link

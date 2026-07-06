@@ -20,14 +20,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error?.message || "Login failed." }, { status: 401 });
     }
 
-    // Synchronize user profile into public DB on login to ensure it exists
-    await syncUser({
-      id: data.user.id,
-      email: data.user.email ?? "",
-      fullName: data.user.user_metadata?.full_name || null,
-      roleName: "USER",
-      emailVerified: true,
-    });
+    // Synchronize user profile into public DB on login to ensure it exists.
+    // Wrap in try/catch to ensure that DB connection delays or timeouts do not crash the login flow.
+    try {
+      await syncUser({
+        id: data.user.id,
+        email: data.user.email ?? "",
+        fullName: data.user.user_metadata?.full_name || null,
+        roleName: "USER",
+        emailVerified: true,
+      });
+    } catch (syncError) {
+      console.error("Non-blocking user sync failed on login:", syncError);
+    }
 
     return NextResponse.json({
       success: true,
