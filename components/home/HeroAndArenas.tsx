@@ -33,31 +33,31 @@ export function HeroAndArenas() {
         {/* Column Layout Container */}
         <div className="max-w-7xl mx-auto w-full h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-12 relative z-10 pointer-events-none">
           
-          {/* Left Column: Asymmetrical Editorial Arena Rules (Static, rendered without animations) */}
-          <div className="arena-rules-block w-full md:w-1/2 flex flex-col justify-center text-left pointer-events-auto pr-0 md:pr-16 max-w-xl">
-            {/* Header issue text */}
-            <div className="font-mono text-[0.52rem] uppercase tracking-[0.2em] text-orange mb-2 font-bold">
-              Issue 001 · Rules · شرح
-            </div>
-
-            {/* Giant Display Title */}
-            <h3 className="font-display italic text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.9] uppercase font-normal mb-2">
-              Rules
-            </h3>
+          {/* Left Column: Asymmetrical Editorial Arena Rules Box (Single unified brutalist box styled like a 4-floor building) */}
+          <div className="w-full md:w-1/2 flex flex-col justify-center text-left pointer-events-auto pr-0 md:pr-16 max-w-xl">
             
-            <p className="font-display italic text-[clamp(0.9rem,1.4vw,1.3rem)] leading-snug mb-8 opacity-80">
-              System requirements &amp; code integrity.
-            </p>
-
-            {/* Brutalist Grid Cells Stack */}
-            <div className="space-y-0 border-b border-current/15">
+            {/* The 4-Floor Unified Brutalist Grid Box */}
+            <div className="w-full border-4 border-double border-current bg-[#FAF8F5]/5 flex flex-col h-[520px] shadow-[4px_4px_0px_0px_currentColor] relative">
               
-              {/* Rule Cell 1 */}
-              <div className="border-t border-current/15 py-4 space-y-1">
-                <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
-                  [01 / REGISTRY]
+              {/* Floor 1 (Top Row): Identifier & Section Header */}
+              <div className="flex-1 flex flex-col justify-between p-5 border-b border-current/15">
+                <span className="font-mono text-[0.45rem] text-orange uppercase tracking-[0.25em] font-bold block">
+                  [01 / IDENTIFIER]
                 </span>
-                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.6rem)] font-bold uppercase tracking-tight leading-none">
+                <div className="font-display italic text-[clamp(1.5rem,2.2vw,2rem)] font-normal uppercase tracking-tight leading-none">
+                  ARENA RULES
+                </div>
+                <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                  Cairo issue 001 · System specifications &amp; integrity.
+                </p>
+              </div>
+
+              {/* Floor 2: Registry Rules */}
+              <div className="flex-1 flex flex-col justify-between p-5 border-b border-current/15">
+                <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
+                  [02 / REGISTRY]
+                </span>
+                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.45rem)] font-bold uppercase tracking-tight leading-none">
                   GITHUB VERIFICATION
                 </div>
                 <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
@@ -65,12 +65,12 @@ export function HeroAndArenas() {
                 </p>
               </div>
 
-              {/* Rule Cell 2 */}
-              <div className="border-t border-current/15 py-4 space-y-1">
+              {/* Floor 3: Timeframe Rules */}
+              <div className="flex-1 flex flex-col justify-between p-5 border-b border-current/15">
                 <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
-                  [02 / TIMEFRAME]
+                  [03 / TIMEFRAME]
                 </span>
-                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.6rem)] font-bold uppercase tracking-tight leading-none">
+                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.45rem)] font-bold uppercase tracking-tight leading-none">
                   6-HOUR CODE SPRINT
                 </div>
                 <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
@@ -78,12 +78,12 @@ export function HeroAndArenas() {
                 </p>
               </div>
 
-              {/* Rule Cell 3 */}
-              <div className="border-t border-current/15 py-4 space-y-1">
+              {/* Floor 4 (Bottom Row): Integrity Rules */}
+              <div className="flex-1 flex flex-col justify-between p-5">
                 <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
-                  [03 / INTEGRITY]
+                  [04 / INTEGRITY]
                 </span>
-                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.6rem)] font-bold uppercase tracking-tight leading-none">
+                <div className="font-mono text-[clamp(1.1rem,1.8vw,1.45rem)] font-bold uppercase tracking-tight leading-none">
                   OPEN-SOURCE PROOFS
                 </div>
                 <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
