@@ -17,13 +17,6 @@ export function Nav() {
   const { user, clearAuth, notifications, markNotificationAsRead } = useAuthStore();
   const router = useRouter();
 
-  const handleSubmitSalary = () => {
-    if (!user) {
-      router.push("/login?redirectTo=/submit-salary");
-    } else {
-      router.push("/submit-salary");
-    }
-  };
 
   const handleSignOut = async () => {
     try {
@@ -63,6 +56,12 @@ export function Nav() {
           >
             Reviews
           </a>
+          <Link
+            href="/context"
+            className="font-mono text-[0.6rem] opacity-55 hover:opacity-100 transition-opacity hidden sm:block uppercase tracking-wider"
+          >
+            Context
+          </Link>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="relative flex h-7 w-7 items-center justify-center bg-primary-foreground text-foreground font-mono text-[0.7rem] font-bold border border-primary-foreground/20 hover:border-primary-foreground cursor-pointer focus:outline-none transition-all duration-150 rounded-none">
@@ -164,20 +163,7 @@ export function Nav() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
-            <Link
-              href="/login"
-              className="font-mono text-[0.6rem] opacity-55 hover:opacity-100 transition-opacity uppercase tracking-wider"
-            >
-              Sign in
-            </Link>
-          )}
-          <button
-            onClick={handleSubmitSalary}
-            className="font-mono text-[0.6rem] border border-primary-foreground/25 px-3 py-1.5 hover:bg-primary-foreground hover:text-foreground transition-colors uppercase tracking-wider cursor-pointer"
-          >
-            Submit salary
-          </button>
+          ) : null}
         </div>
       </div>
     </nav>
