@@ -2,13 +2,18 @@
 
 import React, { forwardRef } from "react";
 import { Shield, Users, Trophy } from "lucide-react";
+import { HeroArenaCard } from "./Hero/HeroArenaCard";
 
-export const ArenasSection = forwardRef<HTMLDivElement, React.ComponentProps<"section">>(
-  (props, ref) => {
+interface ArenasSectionProps extends React.ComponentProps<"section"> {
+  containerRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
+  ({ containerRef, ...props }, ref) => {
     return (
       <section
         ref={ref}
-        className="arenas-section-container relative min-h-screen h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-10 border-b border-border"
+        className="arenas-section-container relative min-h-screen h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-10 border-b border-[#0E0E0D]"
         {...props}
       >
         {/* Technical Section Header */}
@@ -40,13 +45,19 @@ export const ArenasSection = forwardRef<HTMLDivElement, React.ComponentProps<"se
         </div>
 
         {/* Dynamic Center landing space for fanned cards */}
-        <div className="flex-1 w-full max-w-7xl mx-auto relative flex items-center justify-center min-h-[360px]">
+        <div className="flex-1 w-full max-w-7xl mx-auto relative flex items-center justify-center min-h-[360px] overflow-visible">
           {/* Fanned cards from hero will dock dynamically here via GSAP scroll trigger */}
           <div className="absolute inset-0 border border-dashed border-[#0E0E0D]/10 pointer-events-none flex items-center justify-center">
             <span className="font-mono text-[0.45rem] uppercase tracking-[0.3em] text-muted-foreground/30 font-bold select-none">
               [Lobby Docking Area]
             </span>
           </div>
+
+          {/* Mount the card stack inside this viewport-centered docking context */}
+          <HeroArenaCard
+            containerRef={containerRef || { current: null }}
+            arenasRef={ref as React.RefObject<HTMLDivElement | null>}
+          />
         </div>
 
         {/* Section Footer / Tech Ticker */}
