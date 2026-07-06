@@ -1,17 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 import type { Company } from "@/lib/companies/types";
-import { ratingColorClass } from "@/lib/companies/format";
-import { Star, Building2, Landmark, MapPin, Users, Coins } from "lucide-react";
-import { CommentSection } from "./CommentSection";
+import { Star, Building2, MapPin, Users, Coins, Plus, Calendar } from "lucide-react";
+import { CommentSection, Comment, INITIAL_MOCK_COMMENTS } from "./CommentSection";
+import { SubmitSalaryModal } from "./SubmitSalaryModal";
 
 interface CompanyDetailViewProps {
   company: Company;
 }
 
 export function CompanyDetailView({ company }: CompanyDetailViewProps) {
-  // Select first role as default active position
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [comments, setComments] = useState<Comment[]>(INITIAL_MOCK_COMMENTS);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+
+  // Active position index for salaries graph
   const [activeRoleIndex, setActiveRoleIndex] = useState(0);
   const activeRole = company.roles?.[activeRoleIndex] || {
     title: "General Staff",
@@ -22,12 +31,94 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
     submissions: 10,
   };
 
+  const handleAddRootComment = (content: string) => {
+    if (!user) return;
+    const author = user.fullName || user.email.split("@")[0];
+    const newComment: Comment = {
+      id: `rc-${Date.now()}`,
+      author,
+      content,
+      date: "Just now",
+      replies: [],
+    };
+    setComments([newComment, ...comments]);
+  };
+
+  const handleAddReply = (targetCommentId: string, replyText: string) => {
+    if (!user) return;
+    const author = user.fullName || user.email.split("@")[0];
+    const newReply: Comment = {
+      id: `rep-${Date.now()}`,
+      author,
+      content: replyText,
+      date: "Just now",
+      replies: [],
+    };
+
+    const addReplyRecursive = (list: Comment[]): Comment[] => {
+      return list.map((c) => {
+        if (c.id === targetCommentId) {
+          return {
+            ...c,
+            replies: [...c.replies, newReply],
+          };
+        } else if (c.replies.length > 0) {
+          return {
+            ...c,
+            replies: addReplyRecursive(c.replies),
+          };
+        }
+        return c;
+      });
+    };
+
+    setComments(addReplyRecursive(comments));
+  };
+
+  const handleOpenSubmitSalaryModal = () => {
+    if (!user) {
+      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    setIsSubmitModalOpen(true);
+  };
+
+  const handleSubmitSalaryFeedback = (data: {
+    position: string;
+    seniority: string;
+    salary: number;
+    startDate: string;
+    endDate: string;
+    isCurrent: boolean;
+    ratings: { salary: number; learning: number; vibes: number };
+    comment: string;
+  }) => {
+    if (!user) return;
+    const author = user.fullName || user.email.split("@")[0];
+
+    const commentText = data.comment
+      ? data.comment
+      : `Verified my salary details: ${data.salary.toLocaleString()} EGP/month base net. Worked from ${data.startDate} to ${data.endDate}.`;
+
+    const newComment: Comment = {
+      id: `fb-${Date.now()}`,
+      author,
+      content: commentText,
+      date: "Just now",
+      role: data.position,
+      seniority: data.seniority,
+      ratings: data.ratings,
+      replies: [],
+    };
+
+    setComments([newComment, ...comments]);
+  };
+
   // Generate dynamic graph coordinates based on active role metrics
   const minSal = activeRole.min;
   const maxSal = activeRole.max;
   const medianSal = activeRole.median;
 
-  // Let's create 4 points representing timeline quarters of salary submissions
   const dataPoints = [
     { label: "2024 Q1", value: minSal + (medianSal - minSal) * 0.3 },
     { label: "2024 Q2", value: medianSal - (medianSal - minSal) * 0.1 },
@@ -35,12 +126,10 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
     { label: "2024 Q4", value: maxSal },
   ];
 
-  // SVG dimensions
   const width = 600;
   const height = 280;
   const padding = 40;
 
-  // Calculate SVG scale coordinates
   const minVal = minSal * 0.8;
   const maxVal = maxSal * 1.1;
 
@@ -53,7 +142,6 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
     return height - padding - (val - minVal) * scale;
   };
 
-  // Build SVG path
   const pathD = dataPoints.reduce((acc, pt, idx) => {
     const x = getX(idx);
     const y = getY(pt.value);
@@ -106,17 +194,29 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
             </div>
           </div>
 
-          {/* Rating Circle Badge */}
-          <div className="flex items-center gap-3 bg-[#F1EFE9]/5 border border-[#F1EFE9]/25 p-3 shrink-0">
-            <Star className="h-5 w-5 text-orange fill-orange" />
-            <div className="flex flex-col text-left">
-              <span className="font-mono text-[1.25rem] font-bold leading-none">
-                {company.rating}
-              </span>
-              <span className="font-mono text-[0.55rem] text-muted-foreground uppercase tracking-widest mt-1">
-                Rating score
-              </span>
+          {/* Action Row: Rating Circle & Submit Button */}
+          <div className="flex items-center gap-4 shrink-0 self-start md:self-end">
+            {/* Rating Circle Badge */}
+            <div className="flex items-center gap-3 bg-[#F1EFE9]/5 border border-[#F1EFE9]/25 p-3">
+              <Star className="h-5 w-5 text-orange fill-orange" />
+              <div className="flex flex-col text-left">
+                <span className="font-mono text-[1.25rem] font-bold leading-none">
+                  {company.rating}
+                </span>
+                <span className="font-mono text-[0.55rem] text-muted-foreground uppercase tracking-widest mt-1">
+                  Rating score
+                </span>
+              </div>
             </div>
+
+            {/* Submit Salary Button */}
+            <button
+              onClick={handleOpenSubmitSalaryModal}
+              className="bg-[#F1EFE9] text-[#0E0E0D] hover:bg-orange hover:text-[#0E0E0D] border-2 border-[#F1EFE9] px-5 py-4 font-mono text-[0.65rem] font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-none flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Submit Salary
+            </button>
           </div>
         </div>
       </div>
@@ -253,9 +353,20 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
       {/* 3. Community Feed & Infinite Nested Replies */}
       <div className="max-w-7xl mx-auto px-6 pb-24">
         <div className="border-t-2 border-foreground pt-12">
-          <CommentSection companyId={company.id} />
+          <CommentSection
+            comments={comments}
+            onAddRootComment={handleAddRootComment}
+            onAddReply={handleAddReply}
+          />
         </div>
       </div>
+
+      {/* Submit Salary Dialogue Modal */}
+      <SubmitSalaryModal
+        isOpen={isSubmitModalOpen}
+        onClose={() => setIsSubmitModalOpen(false)}
+        onSubmit={handleSubmitSalaryFeedback}
+      />
     </div>
   );
 }

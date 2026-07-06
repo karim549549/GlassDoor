@@ -3,23 +3,29 @@
 import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/lib/store/useAuthStore";
-import { MessageSquare, CornerDownRight, Send, Lock } from "lucide-react";
+import { MessageSquare, CornerDownRight, Send, Lock, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
-interface Comment {
+export interface Comment {
   id: string;
   author: string;
   content: string;
   date: string;
+  role?: string;
+  seniority?: string;
+  ratings?: { salary: number; learning: number; vibes: number };
   replies: Comment[];
 }
 
-const INITIAL_MOCK_COMMENTS: Comment[] = [
+export const INITIAL_MOCK_COMMENTS: Comment[] = [
   {
     id: "c1",
     author: "Ahmed Aly",
     content: "Vodafone Egypt has been standardizing ranges for Mid-level developers. Good benefits overall but core salary increases don't match inflation.",
     date: "18 hours ago",
+    role: "Backend Engineer",
+    seniority: "Mid",
+    ratings: { salary: 3, learning: 4, vibes: 4 },
     replies: [
       {
         id: "c1-r1",
@@ -43,16 +49,24 @@ const INITIAL_MOCK_COMMENTS: Comment[] = [
     author: "Tarek Fahmy",
     content: "Had a senior backend engineer interview recently. The technical assessment process was smooth but they couldn't match market rates for freelancers.",
     date: "2 days ago",
+    role: "Backend Engineer",
+    seniority: "Senior",
+    ratings: { salary: 2, learning: 3, vibes: 5 },
     replies: [],
   },
 ];
 
-export function CommentSection({ companyId }: { companyId: number }) {
+interface CommentSectionProps {
+  comments: Comment[];
+  onAddRootComment: (content: string) => void;
+  onAddReply: (targetCommentId: string, content: string) => void;
+}
+
+export function CommentSection({ comments, onAddRootComment, onAddReply }: CommentSectionProps) {
   const { user } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
-  const [comments, setComments] = useState<Comment[]>(INITIAL_MOCK_COMMENTS);
   const [newCommentText, setNewCommentText] = useState("");
 
   const handleFocus = () => {
@@ -69,50 +83,8 @@ export function CommentSection({ companyId }: { companyId: number }) {
     }
 
     if (!newCommentText.trim()) return;
-
-    const author = user.fullName || user.email.split("@")[0];
-    const newComment: Comment = {
-      id: `rc-${Date.now()}`,
-      author,
-      content: newCommentText,
-      date: "Just now",
-      replies: [],
-    };
-
-    setComments([newComment, ...comments]);
+    onAddRootComment(newCommentText);
     setNewCommentText("");
-  };
-
-  const handleAddReply = (targetCommentId: string, replyText: string) => {
-    if (!user) return; // Guarded by UI
-
-    const author = user.fullName || user.email.split("@")[0];
-    const newReply: Comment = {
-      id: `rep-${Date.now()}`,
-      author,
-      content: replyText,
-      date: "Just now",
-      replies: [],
-    };
-
-    const addReplyRecursive = (list: Comment[]): Comment[] => {
-      return list.map((c) => {
-        if (c.id === targetCommentId) {
-          return {
-            ...c,
-            replies: [...c.replies, newReply],
-          };
-        } else if (c.replies.length > 0) {
-          return {
-            ...c,
-            replies: addReplyRecursive(c.replies),
-          };
-        }
-        return c;
-      });
-    };
-
-    setComments(addReplyRecursive(comments));
   };
 
   return (
@@ -170,7 +142,7 @@ export function CommentSection({ companyId }: { companyId: number }) {
           <CommentNode
             key={comment.id}
             comment={comment}
-            onAddReply={handleAddReply}
+            onAddReply={onAddReply}
           />
         ))}
       </div>
@@ -220,16 +192,23 @@ function CommentNode({ comment, onAddReply, depth = 0 }: CommentNodeProps) {
       <div className="border border-border/70 hover:border-foreground bg-card/45 p-4 transition-all duration-150">
         <div className="flex items-center justify-between gap-4 mb-2 pb-2 border-b border-border/30">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[0.65rem] font-bold text-foreground uppercase">
-              {comment.author}
-            </span>
+            <div className="flex flex-col text-left">
+              <span className="font-mono text-[0.65rem] font-bold text-foreground uppercase">
+                {comment.author}
+              </span>
+              {(comment.seniority || comment.role) && (
+                <span className="font-mono text-[0.52rem] text-orange uppercase tracking-wider mt-0.5">
+                  {comment.seniority} {comment.role}
+                </span>
+              )}
+            </div>
             {depth > 0 && (
-              <span className="font-mono text-[0.52rem] text-muted-foreground uppercase flex items-center gap-1">
+              <span className="font-mono text-[0.52rem] text-muted-foreground uppercase flex items-center gap-1 self-start mt-0.5">
                 <CornerDownRight className="h-2.5 w-2.5" /> reply
               </span>
             )}
           </div>
-          <span className="font-mono text-[0.55rem] text-muted-foreground">
+          <span className="font-mono text-[0.55rem] text-muted-foreground self-start mt-0.5">
             {comment.date}
           </span>
         </div>
@@ -237,6 +216,15 @@ function CommentNode({ comment, onAddReply, depth = 0 }: CommentNodeProps) {
         <p className="font-sans text-[0.75rem] text-foreground leading-relaxed">
           {comment.content}
         </p>
+
+        {/* 3-Factor Ratings display */}
+        {comment.ratings && (
+          <div className="mt-3 pt-2.5 border-t border-border/20 flex flex-wrap gap-4 font-mono text-[0.55rem] uppercase text-muted-foreground">
+            <span className="flex items-center gap-1">Salary: <strong className="text-foreground">{comment.ratings.salary}/5</strong></span>
+            <span className="flex items-center gap-1">Learning: <strong className="text-foreground">{comment.ratings.learning}/5</strong></span>
+            <span className="flex items-center gap-1">Vibes: <strong className="text-foreground">{comment.ratings.vibes}/5</strong></span>
+          </div>
+        )}
 
         {/* Reply Action Trigger */}
         <div className="mt-3 flex justify-end">
