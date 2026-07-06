@@ -5,6 +5,7 @@ import { HeroSection } from "@/components/home/Hero/HeroSection";
 import { StatsStrip } from "@/components/home/StatsStrip";
 import { CtaSection } from "@/components/home/CtaSection";
 import { Footer } from "@/components/home/Footer";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 export default async function Home() {
   const initialCompanies = getDefaultCompanies();
@@ -17,6 +18,7 @@ export default async function Home() {
       <StatsStrip />
       <CtaSection />
       <Footer />
+      <AuthModal />
     </div>
   );
 }
