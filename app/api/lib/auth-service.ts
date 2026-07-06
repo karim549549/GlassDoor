@@ -14,40 +14,38 @@ export async function syncUser(params: {
 }) {
   const { id, email, fullName, roleName = "USER", emailVerified = false } = params;
 
-  return await prisma.$transaction(async (tx: TransactionClient) => {
-    // 1. Upsert the User profile
-    const user = await tx.user.upsert({
-      where: { id },
-      update: { email, fullName, emailVerified },
-      create: { id, email, fullName, emailVerified },
-    });
+  // 1. Upsert the User profile
+  const user = await prisma.user.upsert({
+    where: { id },
+    update: { email, fullName, emailVerified },
+    create: { id, email, fullName, emailVerified },
+  });
 
-    // 2. Fetch the corresponding Role ID
-    const role = await tx.role.findUnique({
-      where: { name: roleName },
-    });
+  // 2. Fetch the corresponding Role ID
+  const role = await prisma.role.findUnique({
+    where: { name: roleName },
+  });
 
-    if (!role) {
-      throw new Error(`Role ${roleName} does not exist in the database. Run db seed first.`);
-    }
+  if (!role) {
+    throw new Error(`Role ${roleName} does not exist in the database. Run db seed first.`);
+  }
 
-    // 3. Upsert UserRole link
-    await tx.userRole.upsert({
-      where: {
-        userId_roleId: {
-          userId: user.id,
-          roleId: role.id,
-        },
-      },
-      update: {},
-      create: {
+  // 3. Upsert UserRole link
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
         userId: user.id,
         roleId: role.id,
       },
-    });
-
-    return user;
+    },
+    update: {},
+    create: {
+      userId: user.id,
+      roleId: role.id,
+    },
   });
+
+  return user;
 }
 
 /**
