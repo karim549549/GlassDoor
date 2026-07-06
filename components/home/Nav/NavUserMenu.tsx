@@ -43,7 +43,7 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
         Context
       </Link>
 
-      {user && (
+      {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger className={`relative flex h-7 w-7 items-center justify-center font-mono text-[0.7rem] font-bold border focus:outline-none transition-all duration-150 rounded-none cursor-pointer ${
             isScrolled
@@ -140,6 +140,13 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      ) : (
+        <Link
+          href="/signup"
+          className="px-3.5 py-1.5 bg-orange text-[#FAF8F5] border border-orange font-mono text-[0.6rem] font-bold tracking-wider uppercase hover:bg-transparent hover:text-current transition-colors shadow-[2px_2px_0px_0px_currentColor] hover:shadow-[3px_3px_0px_0px_currentColor] active:translate-y-0.5"
+        >
+          Join Us
+        </Link>
       )}
     </div>
   );
