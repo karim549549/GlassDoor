@@ -11,12 +11,14 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient();
+    const origin = new URL(request.url).origin;
 
     // 1. Sign up user via Supabase
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: `${origin}/api/auth/callback`,
         data: {
           full_name: fullName,
         },
