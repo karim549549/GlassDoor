@@ -16,8 +16,11 @@ export function HeroAndArenas() {
       {/* Arenas Section */}
       <ArenasSection ref={arenasRef} containerRef={containerRef} />
 
-      {/* Pinned release buffer section (colored pink as requested after the scroll lock unpins) */}
-      <div className="h-[80vh] bg-[#FF8DA1] w-full border-t border-[#FF8DA1]" />
+      {/* Pink Section - Sized as full screen height (100vh) where cards re-stack on the right */}
+      <div className="pink-section-container h-screen min-h-screen bg-[#FF8DA1] w-full border-t border-[#FF8DA1] relative flex items-center justify-between px-6 md:px-12 z-10" />
+
+      {/* Extra Scroll Height Buffer (Dark spacer to allow ScrollTrigger to complete fully on short pages) */}
+      <div className="h-[80vh] bg-[#0E0E0D] w-full" />
     </div>
   );
 }

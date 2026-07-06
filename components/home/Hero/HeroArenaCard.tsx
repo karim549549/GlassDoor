@@ -171,13 +171,13 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       slideTimeline.to(cards[2], { y: 0, ease: "none" }, 0);
 
       // Trigger 3: Lock/Pin scrolling exactly when ArenasSection hits the top of the viewport,
-      // and separate the cards gradually while pinned.
+      // and separate the cards gradually while pinned. Increased end duration to +=1800 to fully lock.
       mm.add("(min-width: 768px)", () => {
         const pinTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: arenasRef.current,
             start: "top top",    // Pin exactly when top of ArenasSection hits top of screen
-            end: "+=1200",       // Lock/Pin duration scroll length
+            end: "+=1800",       // Lock/Pin duration scroll length (longer scroll track)
             scrub: 1,
             pin: true,           // Native GSAP scroll lock
           }
@@ -199,7 +199,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           scrollTrigger: {
             trigger: arenasRef.current,
             start: "top top",
-            end: "+=1200",
+            end: "+=1800",
             scrub: 1,
             pin: true,
           }
@@ -211,6 +211,41 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
         pinTimeline.to(".arena-organizer-block", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75)
                    .to(".arena-enter-button", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75);
+      });
+
+      // Trigger 4: Transition cards as user scrolls from ArenasSection down into the PinkSection.
+      // The cards stack back up and align on the right column (desktop) or center (mobile) at y: 100vh.
+      mm.add("(min-width: 768px)", () => {
+        const pinkTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: ".pink-section-container",
+            start: "top bottom", // Starts as soon as pink section enters from bottom
+            end: "top top",      // Ends when pink section fills the viewport
+            scrub: true,
+          }
+        });
+
+        // Translate cards' y from 0 to 100vh relative to ArenasSection container to lock them vertically,
+        // while simultaneously re-stacking them and sliding them to the right column (x: 420px)
+        pinkTimeline.to(cards[0], { y: "100vh", x: 420, rotate: -4, scale: 0.9, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[1], { y: "100vh", x: 420, rotate: 3, scale: 0.9, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[2], { y: "100vh", x: 420, rotate: -1.5, scale: 0.9, ease: "power1.inOut" }, 0);
+      });
+
+      // Mobile Pink transition: stack cards back up at center (x: 0, y: 100vh)
+      mm.add("(max-width: 767px)", () => {
+        const pinkTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: ".pink-section-container",
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+          }
+        });
+
+        pinkTimeline.to(cards[0], { y: "100vh", x: 0, rotate: -4, scale: 0.82, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[1], { y: "100vh", x: 0, rotate: 3, scale: 0.82, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[2], { y: "100vh", x: 0, rotate: -1.5, scale: 0.82, ease: "power1.inOut" }, 0);
       });
 
     }, containerRef);
