@@ -1,6 +1,7 @@
 import { HeroMasthead } from "./HeroMasthead";
 import { HeroCoverNotes } from "./HeroCoverNotes";
 import { HeroHeadline } from "./HeroHeadline";
+import { HeroArenaCard } from "./HeroArenaCard";
 
 export function HeroSection() {
   return (
@@ -29,6 +30,10 @@ export function HeroSection() {
       {/* Scattered Magazine Typographic Layers */}
       <HeroMasthead />
       <HeroCoverNotes />
+      
+      {/* Center-Aligned Hero Arena Card (Paper/Poster Brief) */}
+      <HeroArenaCard />
+
       <HeroHeadline />
     </section>
   );
