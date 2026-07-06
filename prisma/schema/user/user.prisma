@@ -3,6 +3,8 @@ model User {
   email     String     @unique
   fullName      String?
   emailVerified Boolean    @default(false)
+  avatarUrl     String?
+  coverUrl      String?
   roles         UserRole[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
