@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import type { Company } from "@/lib/companies/types";
 import { ratingColorClass } from "@/lib/companies/format";
 import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
-import { SelectedCompanyCard } from "./SelectedCompanyCard";
 
 interface SearchBoxProps {
   initialCompanies: Company[];
 }
 
 export function SearchBox({ initialCompanies }: SearchBoxProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [dropdownOpen, setDropdown] = useState(false);
   const [company, setCompany] = useState<Company | null>(null);
@@ -38,9 +39,8 @@ export function SearchBox({ initialCompanies }: SearchBoxProps) {
   }, [debouncedQuery]);
 
   function selectCompany(c: Company) {
-    setCompany(c);
-    setQuery(c.name);
     setDropdown(false);
+    router.push(`/companies/${c.id}`);
   }
 
   function clearSearch() {
@@ -103,9 +103,7 @@ export function SearchBox({ initialCompanies }: SearchBoxProps) {
         )}
       </div>
 
-      {company && !dropdownOpen && (
-        <SelectedCompanyCard key={company.id} company={company} />
-      )}
+
     </>
   );
 }

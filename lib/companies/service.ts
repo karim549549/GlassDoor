@@ -11,3 +11,7 @@ export function searchCompanies(query: string): Company[] {
     (c) => c.name.toLowerCase().includes(q) || c.sector.toLowerCase().includes(q)
   );
 }
+
+export function getCompanyById(id: number): Company | undefined {
+  return COMPANIES.find((c) => c.id === id);
+}
