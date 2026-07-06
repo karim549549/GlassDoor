@@ -82,13 +82,11 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
       const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
       const secs = (totalSeconds % 60).toString().padStart(2, "0");
-      setActiveTimer(`${hrs}:${mins}:${secs}`);
+      setActiveTimer(`${hrs}:${secs}`);
     }, 1000);
 
     const cards = cardRefs.current;
     if (!cards) return;
-
-    const mm = gsap.matchMedia();
 
     // 1. GSAP Card Gathering Entrance Animation (Lands centered relative to Hero)
     const ctx = gsap.context(() => {
@@ -123,7 +121,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     };
   }, []);
 
-  // 2. GSAP ScrollTrigger Animations (Pure, standard browser pin scrolling)
+  // 2. GSAP ScrollTrigger Animations
   useEffect(() => {
     if (!entranceFinished || !containerRef.current || !arenasRef.current) return;
 
@@ -173,12 +171,13 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             start: "top top",    // Pin exactly when top of ArenasSection hits top of screen
             end: "+=1200",       // Lock/Pin duration scroll length
             scrub: 1,
-            pin: true,           // Native GSAP scroll lock (never locks forever)
+            pin: true,           // Native GSAP scroll lock
           }
         })
-        .to(cards[0], { x: -380, scale: 1.0, rotate: 0, ease: "power1.inOut" }, 0)
-        .to(cards[1], { x: 0, scale: 1.0, rotate: 0, ease: "power1.inOut" }, 0)
-        .to(cards[2], { x: 380, scale: 1.0, rotate: 0, ease: "power1.inOut" }, 0);
+        // Increase horizontal translation to x: -500 / 500 and scale to 0.9 to resolve overlapping
+        .to(cards[0], { x: -500, scale: 0.9, rotate: 0, ease: "power1.inOut" }, 0)
+        .to(cards[1], { x: 0, scale: 0.9, rotate: 0, ease: "power1.inOut" }, 0)
+        .to(cards[2], { x: 500, scale: 0.9, rotate: 0, ease: "power1.inOut" }, 0);
       });
 
       // Mobile Pinned separation
