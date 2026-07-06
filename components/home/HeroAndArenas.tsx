@@ -13,11 +13,11 @@ export function HeroAndArenas() {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Arenas Section (Now houses the card deck stack inside its layout context) */}
+      {/* Arenas Section */}
       <ArenasSection ref={arenasRef} containerRef={containerRef} />
 
-      {/* Extra Scroll Height Buffer (Dark spacer to allow ScrollTrigger to complete fully on short pages) */}
-      <div className="h-[80vh] bg-[#0E0E0D] w-full" />
+      {/* Pinned release buffer section (colored pink as requested after the scroll lock unpins) */}
+      <div className="h-[80vh] bg-[#FF8DA1] w-full border-t border-[#FF8DA1]" />
     </div>
   );
 }
