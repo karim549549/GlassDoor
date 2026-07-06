@@ -74,26 +74,26 @@ export function HeroArenaCard() {
       setActiveTimer(`${hrs}:${mins}:${secs}`);
     }, 1000);
 
-    // GSAP Magician Card Gathering Entrance Animation
+    // GSAP Card Gathering Entrance Animation
     const ctx = gsap.context(() => {
       const cards = cardRefs.current;
       if (!cards) return;
 
-      // Set initial scattered positions (Magician gathering cards)
-      // Card 3 (Bottom): starts bottom-left, tilted heavily
-      gsap.set(cards[0], { opacity: 0, x: -320, y: 220, rotate: -45, scale: 0.9 });
-      // Card 2 (Middle): starts top-right, tilted right
-      gsap.set(cards[1], { opacity: 0, x: 280, y: -240, rotate: 35, scale: 0.95 });
-      // Card 1 (Top): starts top-left, tilted left
-      gsap.set(cards[2], { opacity: 0, x: -250, y: -200, rotate: -30, scale: 1.1 });
+      // Set starting positions completely OUTSIDE the screen frame/viewport
+      // Card 3 (Bottom): flies in from far bottom-left
+      gsap.set(cards[0], { opacity: 0, x: -1200, y: 800, rotate: -75, scale: 0.8 });
+      // Card 2 (Middle): flies in from far top-right
+      gsap.set(cards[1], { opacity: 0, x: 1200, y: -800, rotate: 65, scale: 0.85 });
+      // Card 1 (Top): flies in from far top-left
+      gsap.set(cards[2], { opacity: 0, x: -1000, y: -1000, rotate: -90, scale: 0.9 });
 
       // Coordinated timeline to gather them into a neat stack
       const tl = gsap.timeline({ delay: 0.4 });
       
-      // Snapping bottom card first, then middle, then top snaps into hand
-      tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1, duration: 0.75, ease: "power3.out" })
-        .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1, duration: 0.75, ease: "power3.out" }, "-=0.55")
-        .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1, duration: 0.85, ease: "back.out(1.2)" }, "-=0.55");
+      // Cards fly in from outside the screen, fading in as they travel, snapping into position
+      tl.to(cards[0], { opacity: 1, x: 0, y: 0, rotate: -4, scale: 1, duration: 1.1, ease: "power3.out" })
+        .to(cards[1], { opacity: 1, x: 0, y: 0, rotate: 3, scale: 1, duration: 1.1, ease: "power3.out" }, "-=0.85")
+        .to(cards[2], { opacity: 1, x: 0, y: 0, rotate: -1.5, scale: 1, duration: 1.25, ease: "back.out(1.1)" }, "-=0.85");
 
     }, containerRef);
 
