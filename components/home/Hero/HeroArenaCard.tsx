@@ -90,7 +90,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
     const mm = gsap.matchMedia();
 
-    // 1. GSAP Card Gathering Entrance Animation (Gathers at scale 1.5, y: -100vh inside ArenasSection)
+    // 1. GSAP Card Gathering Entrance Animation
     const ctx = gsap.context(() => {
       // Set initial scattered positions completely OUTSIDE the screen frame/viewport
       gsap.set(cards[0], { opacity: 0, x: -1400, y: 1000, rotate: -75, scale: 0.8 });
@@ -158,7 +158,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
           ease: "none"
         }, 0);
 
-        // Concurrently separate, translate y to center of ArenasSection, and scale to 1.0
+        // Concurrently separate horizontally, translate y to center of ArenasSection, and scale to 1.0
         scrollTimeline.to(cards[0], { y: 0, x: -380, scale: 1.0, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
         scrollTimeline.to(cards[1], { y: 0, x: 0, scale: 1.0, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
         scrollTimeline.to(cards[2], { y: 0, x: 380, scale: 1.0, rotate: 0, duration: 1, ease: "power1.inOut" }, 0);
@@ -201,59 +201,6 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     };
   }, [entranceFinished, containerRef, arenasRef]);
 
-  // Hover animations: logic checks scroll positions to handle stacked vs docked states
-  const handleMouseEnterCard = (idx: number) => {
-    const cards = cardRefs.current;
-    if (!cards) return;
-
-    const isDesktop = window.innerWidth >= 768;
-
-    if (window.scrollY < 100) {
-      // Stack Hover: Fan out whole deck in the Hero center (y: -100vh)
-      const scaleBase = isDesktop ? 1.5 : 1.0;
-      gsap.to(cards[0], { rotate: -7, x: isDesktop ? -28 : -15, y: isDesktop ? "calc(-100vh + 15px)" : "calc(-100vh + 8px)", scale: scaleBase * 0.99, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.7)", duration: 0.4, ease: "power2.out" });
-      gsap.to(cards[1], { rotate: 5, x: isDesktop ? 28 : 15, y: isDesktop ? "calc(-100vh - 15px)" : "calc(-100vh - 8px)", scale: scaleBase * 1.01, boxShadow: "5px 5px 0px 0px rgba(14,14,13,0.8)", duration: 0.4, ease: "power2.out" });
-      gsap.to(cards[2], { rotate: -1, x: 0, y: isDesktop ? "calc(-100vh - 8px)" : "calc(-100vh - 4px)", scale: scaleBase * 1.025, boxShadow: "10px 10px 0px 0px rgba(14,14,13,1)", duration: 0.4, ease: "power2.out" });
-    } else {
-      // Docked Hover: Lift individual card (y: 0 center relative to ArenasSection)
-      const scaleBase = isDesktop ? 1.0 : 0.82;
-      const targetY = isDesktop ? "-6px" : idx === 0 ? "-26vh" : idx === 1 ? "-2vh" : "22vh";
-      gsap.to(cards[idx], {
-        y: targetY,
-        scale: scaleBase * 1.02,
-        boxShadow: "8px 8px 0px 0px rgba(14,14,13,1)",
-        duration: 0.3,
-        ease: "power2.out"
-      });
-    }
-  };
-
-  const handleMouseLeaveCard = (idx: number) => {
-    const cards = cardRefs.current;
-    if (!cards) return;
-
-    const isDesktop = window.innerWidth >= 768;
-
-    if (window.scrollY < 100) {
-      // Stack MouseLeave: Reset back to tight stack in Hero (y: -100vh)
-      const scaleBase = isDesktop ? 1.5 : 1.0;
-      gsap.to(cards[0], { rotate: -4, x: 0, y: "-100vh", scale: scaleBase, boxShadow: "2px 2px 0px 0px rgba(14,14,13,0.75)", duration: 0.45, ease: "power2.out" });
-      gsap.to(cards[1], { rotate: 3, x: 0, y: "-100vh", scale: scaleBase, boxShadow: "3px 3px 0px 0px rgba(14,14,13,0.85)", duration: 0.45, ease: "power2.out" });
-      gsap.to(cards[2], { rotate: -1.5, x: 0, y: "-100vh", scale: scaleBase, boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)", duration: 0.45, ease: "power2.out" });
-    } else {
-      // Docked MouseLeave: Reset individual card to resting scroll position (y: 0)
-      const scaleBase = isDesktop ? 1.0 : 0.82;
-      const targetY = isDesktop ? "0px" : idx === 0 ? "-24vh" : idx === 1 ? "0vh" : "24vh";
-      gsap.to(cards[idx], {
-        y: targetY,
-        scale: scaleBase,
-        boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
-        duration: 0.4,
-        ease: "power2.out"
-      });
-    }
-  };
-
   return (
     <div
       ref={stackRef}
@@ -277,8 +224,6 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             ref={(el) => {
               cardRefs.current[idx] = el;
             }}
-            onMouseEnter={() => handleMouseEnterCard(idx)}
-            onMouseLeave={() => handleMouseLeaveCard(idx)}
             className={`absolute inset-0 bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-5 md:p-7 cursor-pointer select-none flex flex-col justify-between pointer-events-auto ${zIndexClass}`}
             style={{
               boxShadow: shadowStyle,
