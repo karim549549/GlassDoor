@@ -27,32 +27,11 @@ interface AuthState {
   clearNotifications: () => void;
 }
 
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "1",
-    message: "Sherif replied to your Vodafone salary comment.",
-    read: false,
-    date: "2 hours ago",
-  },
-  {
-    id: "2",
-    message: "Your submission for PwC Egypt has been verified.",
-    read: false,
-    date: "1 day ago",
-  },
-  {
-    id: "3",
-    message: "Welcome to Devs Arena! Your profile sync is complete.",
-    read: true,
-    date: "3 days ago",
-  },
-];
-
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   roles: ["GUEST"],
   isLoading: true,
-  notifications: MOCK_NOTIFICATIONS,
+  notifications: [],
   setAuth: (user, roles) =>
     set({
       user,

@@ -8,6 +8,7 @@ import SignupForm from "@/components/signup/SignupForm";
 import AccountSwitcher from "@/components/login/AccountSwitcher";
 import ForgotPasswordForm from "@/components/login/ForgotPasswordForm";
 import ChangePasswordForm from "@/components/login/ChangePasswordForm";
+import { getSavedAccounts } from "@/lib/client/saved-accounts";
 
 export function AuthModal() {
   const pathname = usePathname();
@@ -31,17 +32,7 @@ export function AuthModal() {
 
   useEffect(() => {
     if (isOpen) {
-      try {
-        const stored = localStorage.getItem("devs_arena_saved_users");
-        if (stored) {
-          const accounts = JSON.parse(stored);
-          setHasAccounts(accounts.length > 0);
-        } else {
-          setHasAccounts(false);
-        }
-      } catch {
-        setHasAccounts(false);
-      }
+      setHasAccounts(getSavedAccounts().length > 0);
     }
   }, [isOpen, pathname]);
 

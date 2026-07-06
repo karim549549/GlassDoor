@@ -1,5 +1,10 @@
 import type { Company } from "./types";
 
+// TEMP: static mock data, no persistence yet. There is no Company/Salary/Comment
+// Prisma model - this array is the entire "database" for the companies feature.
+// Submitting a salary or comment in the UI does not write anywhere. Building real
+// persistence for this feature was explicitly descoped from the auth/architecture
+// refactor this file was touched in - see the refactor plan for context.
 export const COMPANIES: Company[] = [
   { id: 1, name: "Vodafone Egypt", sector: "Telecom", rating: 3.4, reviews: 1240, roles: [
     { title: "Backend Engineer", exp: "2 yrs", min: 18000, max: 28000, median: 23000, submissions: 47 },

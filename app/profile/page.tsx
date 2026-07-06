@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/app/api/lib/supabase/server";
+import { createClient } from "@/lib/server/supabase/server";
 
 export default async function ProfileRedirectPage() {
   const supabase = await createClient();

@@ -1,7 +1,6 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/app/api/lib/supabase/server";
-import { prisma } from "@/app/api/lib/prisma";
-import { syncUser } from "@/app/api/lib/auth-service";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/server/supabase/server";
+import { prisma } from "@/lib/server/prisma";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 
 interface UserPageProps {
@@ -16,32 +15,15 @@ export default async function UserPage({ params }: UserPageProps) {
     data: { user: currentUser },
   } = await supabase.auth.getUser();
 
-  // Fetch target user profile from database
-  let dbUser = await prisma.user.findUnique({
+  // Fetch target user profile from database. A Supabase-authenticated user
+  // without a matching row here means login/signup/OAuth sync failed - see
+  // lib/server/auth/auth-service.ts, which is now the only place that syncs.
+  const dbUser = await prisma.user.findUnique({
     where: { id },
   });
 
-  // Self-healing sync: If user is authenticated but missing from public DB, create it on-the-fly
-  if (!dbUser && currentUser && currentUser.id === id) {
-    try {
-      await syncUser({
-        id: currentUser.id,
-        email: currentUser.email ?? "",
-        fullName: currentUser.user_metadata?.full_name || null,
-        roleName: "USER",
-        emailVerified: true,
-      });
-      // Try fetching again after sync
-      dbUser = await prisma.user.findUnique({
-        where: { id },
-      });
-    } catch (syncError) {
-      console.error("Self-healing profile sync failed:", syncError);
-    }
-  }
-
   if (!dbUser) {
-    redirect("/");
+    notFound();
   }
 
   // Owner check

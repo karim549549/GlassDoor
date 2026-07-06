@@ -9,7 +9,8 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useAuthStore } from "@/lib/client/useAuthStore";
+import { upsertSavedAccount } from "@/lib/client/saved-accounts";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -106,34 +107,26 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
         setServerError(result.error || "Login failed.");
         setIsLoading(false);
       } else {
-        try {
-          const stored = localStorage.getItem("devs_arena_saved_users");
-          let accounts = stored ? JSON.parse(stored) : [];
-          const existingIndex = accounts.findIndex(
-            (acc: any) => acc.email.toLowerCase() === data.email.toLowerCase()
-          );
+        upsertSavedAccount({
+          email: data.email,
+          name: result.user?.fullName || data.email.split("@")[0],
+          refreshToken: result.session?.refreshToken || null,
+        });
 
-          const accountData = {
-            email: data.email,
-            name: result.user?.fullName || data.email.split("@")[0],
-            refreshToken: result.session?.refreshToken || null,
-          };
-
-          if (existingIndex > -1) {
-            accounts[existingIndex] = accountData;
-          } else {
-            accounts.push(accountData);
-          }
-          localStorage.setItem("devs_arena_saved_users", JSON.stringify(accounts));
-        } catch (e) {
-          console.error("Failed to save local account", e);
+        // Re-verify against the server rather than trusting the client-supplied
+        // role, then navigate via the router so the RSC cache picks up the new
+        // session instead of forcing a full page reload.
+        const meRes = await fetch("/api/auth/me");
+        const meData = await meRes.json();
+        if (meData.authenticated && meData.user) {
+          setAuth(meData.user, meData.roles);
+        } else {
+          setAuth(result.user, ["USER"]);
         }
 
-        // Instantly update active auth state so header updates and modal closes
-        setAuth(result.user, ["USER"]);
-
         const finalTarget = redirectTo || `/user/${result.user.id}`;
-        window.location.href = finalTarget;
+        router.push(finalTarget);
+        router.refresh();
       }
     } catch {
       setServerError("An unexpected error occurred. Please try again.");

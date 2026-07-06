@@ -1,4 +1,4 @@
-import { prisma } from "../app/api/lib/prisma";
+import { prisma } from "../lib/server/prisma";
 
 const ROLES = [
   {

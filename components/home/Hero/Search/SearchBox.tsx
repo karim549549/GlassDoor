@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import type { Company } from "@/lib/companies/types";
 import { ratingColorClass } from "@/lib/companies/format";
-import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
+import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
 
 interface SearchBoxProps {
   initialCompanies: Company[];

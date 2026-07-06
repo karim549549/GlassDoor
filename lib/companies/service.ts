@@ -1,3 +1,5 @@
+// TEMP: reads from a static in-memory array (see ./data.ts) - no database-backed
+// companies feature exists yet.
 import { COMPANIES } from "./data";
 import type { Company } from "./types";
 

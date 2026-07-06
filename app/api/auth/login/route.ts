@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/app/api/lib/supabase/server";
-import { syncUser } from "@/app/api/lib/auth-service";
+import { createClient } from "@/lib/server/supabase/server";
+import { syncUser } from "@/lib/server/auth/auth-service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,8 +20,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error?.message || "Login failed." }, { status: 401 });
     }
 
-    // Synchronize user profile into public DB on login to ensure it exists.
-    // Wrap in try/catch to ensure that DB connection delays or timeouts do not crash the login flow.
+    // Synchronize user profile into public DB on login. If this fails, the user is
+    // authenticated with Supabase but has no profile row - surface that as a real
+    // error instead of silently returning success (see auth-service.ts for the sync logic).
     try {
       await syncUser({
         id: data.user.id,
@@ -31,7 +32,11 @@ export async function POST(request: NextRequest) {
         emailVerified: true,
       });
     } catch (syncError) {
-      console.error("Non-blocking user sync failed on login:", syncError);
+      console.error("Profile sync failed on login:", syncError);
+      return NextResponse.json(
+        { error: "PROFILE_SYNC_FAILED" },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

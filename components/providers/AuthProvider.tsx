@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useAuthStore } from "@/lib/client/useAuthStore";
+import { upsertSavedAccount } from "@/lib/client/saved-accounts";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setAuth, clearAuth, setLoading } = useAuthStore();
@@ -13,33 +14,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         if (data.authenticated && data.user) {
           setAuth(data.user, data.roles);
-          // Sync session details to local storage saved accounts
-          try {
-            const stored = localStorage.getItem("devs_arena_saved_users");
-            let accounts = stored ? JSON.parse(stored) : [];
-            const email = data.user.email;
-            const index = accounts.findIndex(
-              (acc: any) => acc.email.toLowerCase() === email.toLowerCase()
-            );
-
-            const accountData = {
-              email: email,
-              name: data.user.fullName || email.split("@")[0],
-              refreshToken: data.session?.refreshToken || null,
-            };
-
-            if (index > -1) {
-              if (accounts[index].refreshToken !== accountData.refreshToken) {
-                accounts[index] = { ...accounts[index], ...accountData };
-                localStorage.setItem("devs_arena_saved_users", JSON.stringify(accounts));
-              }
-            } else {
-              accounts.push(accountData);
-              localStorage.setItem("devs_arena_saved_users", JSON.stringify(accounts));
-            }
-          } catch (e) {
-            console.error("Local account session sync failed", e);
-          }
+          upsertSavedAccount({
+            email: data.user.email,
+            name: data.user.fullName || data.user.email.split("@")[0],
+            refreshToken: data.session?.refreshToken || null,
+          });
         } else {
           clearAuth();
         }

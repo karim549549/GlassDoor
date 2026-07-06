@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { Camera, Edit2 } from "lucide-react";
 import { CropperModal } from "./CropperModal";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useAuthStore } from "@/lib/client/useAuthStore";
 
 interface ProfileHeaderProps {
   userProfile: {

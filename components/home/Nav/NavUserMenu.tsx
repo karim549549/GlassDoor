@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useAuthStore } from "@/lib/client/useAuthStore";
+import { removeSavedAccount } from "@/lib/client/saved-accounts";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -27,26 +28,17 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
     setIsLogoutPromptOpen(false);
 
     if (!remember && user) {
-      try {
-        const stored = localStorage.getItem("devs_arena_saved_users");
-        if (stored) {
-          const accounts = JSON.parse(stored);
-          const filtered = accounts.filter(
-            (acc: any) => acc.email.toLowerCase() !== user.email.toLowerCase()
-          );
-          localStorage.setItem("devs_arena_saved_users", JSON.stringify(filtered));
-        }
-      } catch (e) {
-        console.error("Failed to clear account from switcher", e);
-      }
+      removeSavedAccount(user.email);
     }
 
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      clearAuth();
-      window.location.href = "/";
     } catch {
       // Ignore errors on sign out
+    } finally {
+      clearAuth();
+      router.push("/");
+      router.refresh();
     }
   };
 

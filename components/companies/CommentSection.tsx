@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useAuthStore } from "@/lib/client/useAuthStore";
 import { MessageSquare, CornerDownRight, Send, Lock, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 

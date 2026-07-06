@@ -8,7 +8,8 @@ import gsap from "gsap";
 import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useAuthStore } from "@/lib/client/useAuthStore";
+import { upsertSavedAccount } from "@/lib/client/saved-accounts";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -124,28 +125,11 @@ export default function SignupForm() {
         setServerError(result.error || "Registration failed.");
         setIsLoading(false);
       } else if (result.success) {
-        try {
-          const stored = localStorage.getItem("devs_arena_saved_users");
-          let accounts = stored ? JSON.parse(stored) : [];
-          const existingIndex = accounts.findIndex(
-            (acc: any) => acc.email.toLowerCase() === data.email.toLowerCase()
-          );
-
-          const accountData = {
-            email: data.email,
-            name: data.fullName || data.email.split("@")[0],
-            refreshToken: result.session?.refreshToken || null,
-          };
-
-          if (existingIndex > -1) {
-            accounts[existingIndex] = accountData;
-          } else {
-            accounts.push(accountData);
-          }
-          localStorage.setItem("devs_arena_saved_users", JSON.stringify(accounts));
-        } catch (e) {
-          console.error("Failed to save local account", e);
-        }
+        upsertSavedAccount({
+          email: data.email,
+          name: data.fullName || data.email.split("@")[0],
+          refreshToken: result.session?.refreshToken || null,
+        });
 
         setIsSuccess(true);
         setIsLoading(false);

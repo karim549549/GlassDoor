@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useAuthStore } from "@/lib/client/useAuthStore";
 import { Trash2, Key, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-
-interface SavedAccount {
-  email: string;
-  name: string;
-  refreshToken?: string | null;
-}
+import {
+  getSavedAccounts,
+  removeSavedAccount,
+  upsertSavedAccount,
+  type SavedAccount,
+} from "@/lib/client/saved-accounts";
 
 interface AccountSwitcherProps {
   onSelectAccount: (email: string) => void;
@@ -33,25 +33,13 @@ export function AccountSwitcher({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("devs_arena_saved_users");
-      if (stored) {
-        setAccounts(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.error("Failed to load saved accounts", e);
-    }
+    setAccounts(getSavedAccounts());
   }, []);
 
   const handleRemove = (email: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updated = accounts.filter((acc) => acc.email !== email);
-    setAccounts(updated);
-    try {
-      localStorage.setItem("devs_arena_saved_users", JSON.stringify(updated));
-    } catch (err) {
-      console.error("Failed to save accounts update", err);
-    }
+    removeSavedAccount(email);
+    setAccounts((prev) => prev.filter((acc) => acc.email !== email));
   };
 
   const handleAccountClick = async (account: SavedAccount) => {
@@ -74,17 +62,13 @@ export function AccountSwitcher({
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // Update user state and store new refresh token (if rotated)
-        try {
-          const stored = localStorage.getItem("devs_arena_saved_users");
-          let storedAccounts: SavedAccount[] = stored ? JSON.parse(stored) : [];
-          const index = storedAccounts.findIndex(acc => acc.email === account.email);
-          if (index > -1 && result.session?.refreshToken) {
-            storedAccounts[index].refreshToken = result.session.refreshToken;
-            localStorage.setItem("devs_arena_saved_users", JSON.stringify(storedAccounts));
-          }
-        } catch (e) {
-          console.error("Failed to update rotated token", e);
+        // Store the rotated refresh token, if Supabase issued a new one
+        if (result.session?.refreshToken) {
+          upsertSavedAccount({
+            email: account.email,
+            name: account.name,
+            refreshToken: result.session.refreshToken,
+          });
         }
 
         // Fetch user state to fetch active roles
@@ -97,7 +81,8 @@ export function AccountSwitcher({
         }
 
         const targetUrl = redirectTo || `/user/${meData.user?.id || result.user?.id}`;
-        window.location.href = targetUrl;
+        router.push(targetUrl);
+        router.refresh();
       } else {
         // Token expired/invalid -> fallback to credentials form
         onSelectAccount(account.email);

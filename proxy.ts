@@ -39,14 +39,18 @@ export async function proxy(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // Protect admin panel:
-    if (request.nextUrl.pathname.startsWith("/admin")) {
-      if (!user) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/login";
-        url.searchParams.set("redirectTo", request.nextUrl.pathname);
-        return NextResponse.redirect(url);
-      }
+    // Optimistic auth check (cookie-based only, no DB call - see Next.js Proxy docs).
+    // Real per-resource authorization still happens close to the data (page/route level).
+    const protectedPrefixes = ["/admin", "/profile", "/user"];
+    const isProtectedRoute = protectedPrefixes.some((prefix) =>
+      request.nextUrl.pathname.startsWith(prefix)
+    );
+
+    if (isProtectedRoute && !user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirectTo", request.nextUrl.pathname);
+      return NextResponse.redirect(url);
     }
   } catch (err) {
     console.error("Proxy middleware error:", err);

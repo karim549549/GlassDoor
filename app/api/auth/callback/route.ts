@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/app/api/lib/supabase/server";
-import { syncUser } from "@/app/api/lib/auth-service";
+import { createClient } from "@/lib/server/supabase/server";
+import { syncUser } from "@/lib/server/auth/auth-service";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -22,14 +22,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/login?error=Authentication+failed", request.url));
   }
 
-  // Synchronize user profile and default role in public DB
-  await syncUser({
-    id: user.id,
-    email: user.email ?? "",
-    fullName: user.user_metadata.full_name || null,
-    roleName: "USER",
-    emailVerified: true,
-  });
+  // Synchronize user profile and default role in public DB. Unlike the credentials
+  // login flow, an OAuth session is already fully established at this point, so a
+  // sync failure can't be silently ignored - redirect with an error instead of a raw 500.
+  try {
+    await syncUser({
+      id: user.id,
+      email: user.email ?? "",
+      fullName: user.user_metadata.full_name || null,
+      roleName: "USER",
+      emailVerified: true,
+    });
+  } catch (syncError) {
+    console.error(`Profile sync failed on OAuth callback for user ${user.id}:`, syncError);
+    return NextResponse.redirect(new URL("/login?error=Profile+sync+failed", request.url));
+  }
 
   const finalRedirect = redirectTo || `/user/${user.id}`;
   return NextResponse.redirect(new URL(finalRedirect, request.url));

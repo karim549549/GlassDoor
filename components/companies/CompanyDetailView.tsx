@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useAuthStore } from "@/lib/client/useAuthStore";
 import type { Company } from "@/lib/companies/types";
 import { Star, Building2, MapPin, Users, Coins, Plus, Calendar } from "lucide-react";
 import { CommentSection, Comment, INITIAL_MOCK_COMMENTS } from "./CommentSection";
