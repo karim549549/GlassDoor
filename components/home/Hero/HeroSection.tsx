@@ -5,8 +5,7 @@ import { HeroHeadline } from "./HeroHeadline";
 export function HeroSection() {
   return (
     <section
-      className="hero-section-container relative bg-[#F1EFE9] text-[#0E0E0D] border-b border-border overflow-visible"
-      style={{ height: "calc(100svh - 88px)", minHeight: 680, maxHeight: 960 }}
+      className="hero-section-container relative bg-[#F1EFE9] text-[#0E0E0D] border-b border-border overflow-visible h-screen min-h-screen"
     >
       {/* Darker Blueprint Grid Backdrop Overlay */}
       <div className="absolute inset-0 opacity-[0.18] pointer-events-none z-0">

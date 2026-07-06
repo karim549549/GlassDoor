@@ -8,7 +8,7 @@ export const ArenasSection = forwardRef<HTMLDivElement, React.ComponentProps<"se
     return (
       <section
         ref={ref}
-        className="arenas-section-container relative min-h-[720px] h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-10 border-b border-border"
+        className="arenas-section-container relative min-h-screen h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-10 border-b border-border"
         {...props}
       >
         {/* Technical Section Header */}
