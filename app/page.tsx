@@ -14,7 +14,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden">
       {/* Editorial Background Blueprint Grid */}
-      <div className="absolute inset-0 opacity-[0.035] pointer-events-none z-0">
+      <div className="absolute inset-0 opacity-[0.085] pointer-events-none z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="landing-grid" width="40" height="40" patternUnits="userSpaceOnUse">
