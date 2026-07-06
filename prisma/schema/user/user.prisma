@@ -1,0 +1,10 @@
+model User {
+  id        String     @id @db.Uuid // Matches Supabase auth.users.id
+  email     String     @unique
+  fullName  String?
+  roles     UserRole[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("users")
+}

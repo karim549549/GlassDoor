@@ -1,0 +1,51 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/app/api/lib/supabase/server";
+import { syncUser } from "@/app/api/lib/auth-service";
+
+export async function POST(request: NextRequest) {
+  try {
+    const { email, password, fullName, roleName = "USER" } = await request.json();
+
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+
+    // 1. Sign up user via Supabase
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    const user = data.user;
+    if (!user) {
+      return NextResponse.json({ error: "Failed to create user account." }, { status: 400 });
+    }
+
+    // 2. Synchronize user and role to Prisma public DB
+    try {
+      await syncUser({
+        id: user.id,
+        email: user.email || email,
+        fullName,
+        roleName,
+      });
+    } catch (dbError) {
+      console.error("Database sync failed on registration route:", dbError);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "An unexpected error occurred." }, { status: 500 });
+  }
+}
