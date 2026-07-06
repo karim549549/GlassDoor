@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/app/api/lib/supabase/server";
 import { prisma } from "@/app/api/lib/prisma";
+import { syncUser } from "@/app/api/lib/auth-service";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 
 interface UserPageProps {
@@ -16,9 +17,28 @@ export default async function UserPage({ params }: UserPageProps) {
   } = await supabase.auth.getUser();
 
   // Fetch target user profile from database
-  const dbUser = await prisma.user.findUnique({
+  let dbUser = await prisma.user.findUnique({
     where: { id },
   });
+
+  // Self-healing sync: If user is authenticated but missing from public DB, create it on-the-fly
+  if (!dbUser && currentUser && currentUser.id === id) {
+    try {
+      await syncUser({
+        id: currentUser.id,
+        email: currentUser.email ?? "",
+        fullName: currentUser.user_metadata?.full_name || null,
+        roleName: "USER",
+        emailVerified: true,
+      });
+      // Try fetching again after sync
+      dbUser = await prisma.user.findUnique({
+        where: { id },
+      });
+    } catch (syncError) {
+      console.error("Self-healing profile sync failed:", syncError);
+    }
+  }
 
   if (!dbUser) {
     redirect("/");
