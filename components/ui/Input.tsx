@@ -42,11 +42,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </button>
           )}
         </div>
-        {error && (
-          <span className="font-mono text-[0.6rem] text-accent mt-0.5 tracking-wide">
-            {error}
-          </span>
-        )}
+        <span className={`font-mono text-[0.6rem] text-accent mt-0.5 tracking-wide block min-h-[12px] leading-none transition-all duration-150 ${
+          error ? "opacity-100" : "opacity-0 select-none pointer-events-none"
+        }`}>
+          {error || "\u00A0"}
+        </span>
       </div>
     );
   }
