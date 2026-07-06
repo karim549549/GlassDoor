@@ -27,7 +27,7 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
   const { setAuth } = useAuthStore();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const redirectTo = searchParams.get("redirectTo") || "/profile";
+  const redirectTo = searchParams.get("redirectTo") || "";
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -132,7 +132,7 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
         // Instantly update active auth state so header updates and modal closes
         setAuth(result.user, ["USER"]);
 
-        const finalTarget = redirectTo === "/profile" ? `/user/${result.user.id}` : redirectTo;
+        const finalTarget = redirectTo || `/user/${result.user.id}`;
         router.push(finalTarget);
         router.refresh();
       }

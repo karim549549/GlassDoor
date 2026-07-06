@@ -5,7 +5,7 @@ import type { Provider } from "@supabase/supabase-js";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const provider = searchParams.get("provider");
-  const redirectTo = searchParams.get("redirectTo") || "/profile";
+  const redirectTo = searchParams.get("redirectTo") || "";
 
   if (!provider) {
     return NextResponse.json({ error: "Provider is required." }, { status: 400 });
