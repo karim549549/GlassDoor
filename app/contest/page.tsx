@@ -15,31 +15,6 @@ type ContestWithTeamsAndMembers = Prisma.ContestGetPayload<{
 // Pre-seeded mock data to merge with database contests for a rich layout
 const MOCK_CONTESTS = [
   {
-    id: "mock-contest-react-2026",
-    title: "Cairo React Winter Hackathon 2026",
-    description: "Egyptian React developers compete live to build high-performance web solutions in a 6-hour sprint.",
-    coverImageUrl: null,
-    status: "IMPLEMENTATION_PHASE",
-    isPrivate: false,
-    isTeam: true,
-    minTeamSize: 2,
-    maxTeamSize: 4,
-    maxParticipants: 50,
-    registrationStart: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-    registrationEnd: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
-    ideaPhaseStart: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
-    ideaPhaseEnd: new Date(Date.now() + 1 * 24 * 3600 * 1000).toISOString(),
-    implPhaseStart: new Date(Date.now() + 1 * 24 * 3600 * 1000).toISOString(),
-    implPhaseEnd: new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString(),
-    requireGithubUrl: true,
-    requireFigmaUrl: true,
-    requireVideoUrl: false,
-    requireWriteup: true,
-    rulesText: "Build within the time box, submit GitHub repo, Figma mockup, and text writeup.",
-    creatorId: "00000000-0000-0000-0000-000000000000",
-    teams: []
-  },
-  {
     id: "mock-contest-devops-2026",
     title: "Alexandria DevOps Speedrun",
     description: "Configure scaling load-balancers, sync replicas, and maintain high availability under massive socket traffic.",

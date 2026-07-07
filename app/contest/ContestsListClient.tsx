@@ -118,79 +118,76 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 md:py-14 font-sans space-y-8">
-      
-      {/* Editorial Header Section */}
-      <div className="border-2 border-[#0E0E0D] bg-[#FAF8F5] p-5 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="text-left space-y-1">
-          <span className="font-mono text-[0.45rem] text-orange uppercase tracking-[0.25em] font-bold block">
-            [ARENA SYSTEM DIRECTORY]
-          </span>
-          <h1 className="font-display italic text-3xl md:text-5xl uppercase tracking-tight text-[#0E0E0D]">
-            Cairo Arenas
-          </h1>
-          <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
-             Cairo Issue 002 · Real-time sprints and competitive developer workspaces.
-          </p>
-        </div>
-
-        <Link
-          href="/contest/create"
-          className="px-6 py-3 bg-orange text-white border-2 border-[#0E0E0D] font-mono text-[0.62rem] font-bold tracking-[0.2em] uppercase hover:bg-[#FAF8F5] hover:text-[#0E0E0D] transition-colors shadow-[4px_4px_0px_0px_#0E0E0D] hover:shadow-[6px_6px_0px_0px_#0E0E0D] active:translate-y-0.5 flex items-center gap-2 shrink-0 self-start md:self-auto"
-        >
-          <Plus className="h-4 w-4" /> Create New Arena
-        </Link>
+    <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-12">
+      {/* Editorial Background Blueprint Grid */}
+      <div className="absolute inset-0 opacity-[0.085] pointer-events-none z-0">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="landing-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#landing-grid)" />
+        </svg>
       </div>
 
-      {/* Upcoming Arena Banner Countdown */}
-      <UpcomingArenaBanner contest={upcomingContest} />
-
-      {/* Two Column Layout: Billboard Left, Registry Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Left Column: Billboard (Width 4/12) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-16">
-          <CairoBillboard contests={billboardContests} />
-        </div>
-
-        {/* Right Column: Registry Listing (Width 8/12) */}
-        <div className="lg:col-span-8 space-y-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-14 space-y-8">
+        {/* Two Column Layout: Billboard Left, Registry Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Tabs Navigation */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#0E0E0D]/10 pb-2">
-            <ContestTabs
-              activeTab={activeTab}
-              setActiveTab={(tab) => {
-                setActiveTab(tab);
-                setCurrentPage(1); // reset to page 1
-              }}
-              allCount={initialContests.length}
-              myCount={
-                user?.id
-                  ? initialContests.filter(
-                      (c) =>
-                        c.creatorId === user.id ||
-                        c.teams.some((team) => team.members.some((m) => m.userId === user.id))
-                    ).length
-                  : 0
-              }
-            />
+          {/* Left Column: Billboard (Width 4/12) */}
+          <div className="lg:col-span-4 lg:sticky lg:top-16">
+            <CairoBillboard contests={billboardContests} />
+          </div>
 
-            {/* Neo-brutalist Search Box */}
-            <div className="relative max-w-xs w-full">
-              <input
-                type="text"
-                placeholder="[Search Arena]"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
+          {/* Right Column: Registry Listing (Width 8/12) */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Tabs Navigation & Search & Create */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#0E0E0D]/10 pb-2">
+              <ContestTabs
+                activeTab={activeTab}
+                setActiveTab={(tab) => {
+                  setActiveTab(tab);
                   setCurrentPage(1); // reset to page 1
                 }}
-                className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] pl-8 pr-3 py-1.5 font-mono text-[0.62rem] placeholder-muted-foreground/60 uppercase focus:outline-none focus:border-accent shadow-[2px_2px_0px_0px_#0E0E0D] transition-colors"
+                allCount={initialContests.length}
+                myCount={
+                  user?.id
+                    ? initialContests.filter(
+                        (c) =>
+                          c.creatorId === user.id ||
+                          c.teams.some((team) => team.members.some((m) => m.userId === user.id))
+                      ).length
+                    : 0
+                }
               />
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#0E0E0D]/60" />
+
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                {/* Neo-brutalist Search Box */}
+                <div className="relative max-w-xs w-full shrink-0">
+                  <input
+                    type="text"
+                    placeholder="[Search Arena]"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1); // reset to page 1
+                    }}
+                    className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] pl-8 pr-3 py-1.5 font-mono text-[0.62rem] placeholder-muted-foreground/60 uppercase focus:outline-none focus:border-accent shadow-[2px_2px_0px_0px_#0E0E0D] transition-colors"
+                  />
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#0E0E0D]/60" />
+                </div>
+
+                {/* Inline Action Button */}
+                <Link
+                  href="/contest/create"
+                  className="px-3.5 py-1.5 bg-orange text-white border-2 border-[#0E0E0D] font-mono text-[0.58rem] font-bold tracking-wider uppercase hover:bg-[#FAF8F5] hover:text-[#0E0E0D] transition-colors shadow-[2px_2px_0px_0px_#0E0E0D] active:translate-y-0.5 flex items-center gap-1.5 shrink-0"
+                >
+                  <Plus className="h-3 w-3" /> Host Arena
+                </Link>
+              </div>
             </div>
-          </div>
 
           {/* Active Tab Contents */}
           {activeTab === "my" && !user?.id ? (
@@ -243,6 +240,7 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
 
       </div>
 
+    </div>
     </div>
   );
 }

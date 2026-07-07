@@ -20,13 +20,15 @@ export function Nav() {
   }, []);
 
   const isCoverPage = pathname.startsWith("/user/") || pathname.startsWith("/companies/");
+  const isContestPage = pathname.startsWith("/contest");
+  const forceDarkNavbar = isScrolled || isContestPage;
 
   // isDarkTheme = true means navbar text should be light (#F1EFE9), suitable for dark backgrounds
-  const isDarkTheme = isScrolled || isCoverPage;
+  const isDarkTheme = forceDarkNavbar || isCoverPage;
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled
+      forceDarkNavbar
         ? "bg-[#0E0E0D] text-[#F1EFE9] border-b border-[#F1EFE9]/10 shadow-sm"
         : isCoverPage
           ? "bg-transparent text-[#F1EFE9]"
