@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid upload type." }, { status: 400 });
     }
 
-    // 3. Validate file - matches the "profiles" bucket's own size/MIME restrictions,
+    // 3. Validate file - matches the "DevsArena" bucket's own size/MIME restrictions,
     // enforced here too since a request can bypass the client-side check entirely.
     const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
@@ -49,9 +49,9 @@ export async function POST(request: NextRequest) {
     const fileExtension = "jpg"; // We compress to JPEG on client anyway
     const filePath = `${type}s/${user.id}.${fileExtension}`;
 
-    // Upload to 'profiles' bucket (overwrites existing because of upsert: true)
+    // Upload to 'DevsArena' bucket (overwrites existing because of upsert: true)
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("profiles")
+      .from("DevsArena")
       .upload(filePath, buffer, {
         contentType: "image/jpeg",
         upsert: true,
@@ -60,13 +60,13 @@ export async function POST(request: NextRequest) {
     if (uploadError) {
       console.error("Supabase Storage Upload Error:", uploadError);
       return NextResponse.json(
-        { error: `Upload failed: ${uploadError.message}. Make sure 'profiles' bucket exists.` },
+        { error: `Upload failed: ${uploadError.message}. Make sure 'DevsArena' bucket exists.` },
         { status: 500 }
       );
     }
 
     // 5. Retrieve Public URL
-    const { data: urlData } = supabase.storage.from("profiles").getPublicUrl(filePath);
+    const { data: urlData } = supabase.storage.from("DevsArena").getPublicUrl(filePath);
     const publicUrl = urlData.publicUrl;
 
     // Cache-busting URL parameter ensures client browsers don't serve old cached assets
