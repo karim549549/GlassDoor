@@ -207,54 +207,74 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
       )}
 
       {/* Overlay Content Container (full-width left aligned) */}
-      <div className="relative z-20 w-full px-8 md:px-12 pt-24 pb-8 sm:pt-32 sm:pb-10 flex flex-col sm:flex-row items-center sm:items-end gap-6 text-[#F1EFE9] text-center sm:text-left">
+      <div className="relative z-20 w-full px-8 md:px-12 pt-24 pb-8 sm:pt-32 sm:pb-10 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 text-[#F1EFE9] text-center sm:text-left">
         
-        {/* Circular Avatar overlap */}
-        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-[#F1EFE9] overflow-hidden bg-[#FAF8F5] relative group/avatar shadow-2xl shrink-0">
-          {profile.avatarUrl ? (
-            <Image
-              src={profile.avatarUrl}
-              alt="Avatar"
-              fill
-              sizes="(min-width: 640px) 8rem, 6rem"
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center font-display text-[2rem] font-bold text-[#0E0E0D] bg-[#FAF8F5]">
-              {getInitials()}
-            </div>
-          )}
+        {/* Left Side Group (Avatar + Info) */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 flex-1 min-w-0">
+          {/* Circular Avatar overlap */}
+          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-[#F1EFE9] overflow-hidden bg-[#FAF8F5] relative group/avatar shadow-2xl shrink-0">
+            {profile.avatarUrl ? (
+              <Image
+                src={profile.avatarUrl}
+                alt="Avatar"
+                fill
+                sizes="(min-width: 640px) 8rem, 6rem"
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center font-display text-[2rem] font-bold text-[#0E0E0D] bg-[#FAF8F5]">
+                {getInitials()}
+              </div>
+            )}
 
-          {/* Edit Avatar Hover Button */}
-          {isOwner && (
-            <button
-              onClick={() => handleEditClick("avatar")}
-              className="absolute inset-0 bg-[#0E0E0D]/75 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center text-[#F1EFE9] cursor-pointer"
-            >
-              <Camera className="h-5 w-5 mb-1" />
-              <span className="font-mono text-[0.45rem] uppercase tracking-wider font-bold">
-                Change
-              </span>
-            </button>
-          )}
-        </div>
-
-        {/* Identity Details */}
-        <div className="flex-1 min-w-0 flex flex-col items-center sm:items-start pb-1">
-          <div className="flex flex-col sm:flex-row sm:items-baseline gap-2.5">
-            <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-[#F1EFE9] drop-shadow-md">
-              {profile.fullName || "Developer Identity"}
-            </h1>
-            {profile.handle && (
-              <span className="font-mono text-[0.65rem] sm:text-[0.75rem] text-orange font-bold tracking-wider lowercase">
-                @{profile.handle}
-              </span>
+            {/* Edit Avatar Hover Button */}
+            {isOwner && (
+              <button
+                onClick={() => handleEditClick("avatar")}
+                className="absolute inset-0 bg-[#0E0E0D]/75 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center text-[#F1EFE9] cursor-pointer"
+              >
+                <Camera className="h-5 w-5 mb-1" />
+                <span className="font-mono text-[0.45rem] uppercase tracking-wider font-bold">
+                  Change
+                </span>
+              </button>
             )}
           </div>
-          <p className="font-mono text-[0.65rem] sm:text-[0.75rem] text-[#F1EFE9]/70 uppercase tracking-widest mt-1.5 sm:mt-2 truncate max-w-full">
-            {profile.email}
-          </p>
+
+          {/* Identity Details */}
+          <div className="flex-1 min-w-0 flex flex-col items-center sm:items-start pb-1">
+            <div className="flex flex-col sm:flex-row sm:items-baseline gap-2.5">
+              <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-[#F1EFE9] drop-shadow-md">
+                {profile.fullName || "Developer Identity"}
+              </h1>
+              {profile.handle && (
+                <span className="font-mono text-[0.65rem] sm:text-[0.75rem] text-orange font-bold tracking-wider lowercase">
+                  @{profile.handle}
+                </span>
+              )}
+            </div>
+            <p className="font-mono text-[0.65rem] sm:text-[0.75rem] text-[#F1EFE9]/70 uppercase tracking-widest mt-1.5 sm:mt-2 truncate max-w-full">
+              {profile.email}
+            </p>
+          </div>
         </div>
+
+        {/* Right Side Group (Follow Button) */}
+        {!isOwner && (
+          <div className="shrink-0 mb-1 sm:mb-2">
+            <button
+              onClick={handleFollowToggle}
+              disabled={isFollowLoading}
+              className={`px-6 py-2.5 font-mono text-[0.65rem] font-bold border tracking-widest transition-all duration-150 cursor-pointer ${
+                isFollowing
+                  ? "bg-[#F1EFE9] text-[#0E0E0D] border-[#F1EFE9] hover:bg-transparent hover:text-[#F1EFE9]"
+                  : "bg-transparent text-[#F1EFE9] border-[#F1EFE9]/40 hover:border-[#F1EFE9] hover:bg-[#F1EFE9]/10"
+              }`}
+            >
+              {isFollowing ? "UNFOLLOW" : "FOLLOW"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* CV-Style Links & Stats Marquee Band */}
@@ -330,20 +350,7 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
             <span>ACTIVE: {formatLastActive(profile.lastActiveAt)}</span>
           </div>
 
-          {/* Social Follow Toggle Action */}
-          {!isOwner && (
-            <button
-              onClick={handleFollowToggle}
-              disabled={isFollowLoading}
-              className={`px-4 py-1.5 font-mono text-[0.55rem] font-bold border tracking-widest transition-all duration-150 cursor-pointer ${
-                isFollowing
-                  ? "bg-[#F1EFE9] text-[#0E0E0D] border-[#F1EFE9] hover:bg-transparent hover:text-[#F1EFE9]"
-                  : "bg-transparent text-[#F1EFE9] border-[#F1EFE9]/40 hover:border-[#F1EFE9] hover:bg-[#F1EFE9]/10"
-              }`}
-            >
-              {isFollowing ? "FOLLOWING" : "FOLLOW"}
-            </button>
-          )}
+
         </div>
       </div>
 
