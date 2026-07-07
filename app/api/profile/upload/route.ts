@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/server/supabase/server";
+import { createAdminClient } from "@/lib/server/supabase/admin";
 import { prisma } from "@/lib/server/prisma";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // 1. Authenticate user
+    // 1. Authenticate user against their own session
     const {
       data: { user },
       error: authError,
@@ -45,12 +46,15 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 4. Upload to Supabase Storage
+    // 4. Upload to Supabase Storage via the service-role client. This bypasses
+    // storage RLS, which is safe here because filePath is built from user.id
+    // taken from the verified session above, never from client input.
     const fileExtension = "jpg"; // We compress to JPEG on client anyway
     const filePath = `${type}s/${user.id}.${fileExtension}`;
+    const admin = createAdminClient();
 
     // Upload to 'DevsArena' bucket (overwrites existing because of upsert: true)
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await admin.storage
       .from("DevsArena")
       .upload(filePath, buffer, {
         contentType: "image/jpeg",
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Retrieve Public URL
-    const { data: urlData } = supabase.storage.from("DevsArena").getPublicUrl(filePath);
+    const { data: urlData } = admin.storage.from("DevsArena").getPublicUrl(filePath);
     const publicUrl = urlData.publicUrl;
 
     // Cache-busting URL parameter ensures client browsers don't serve old cached assets
