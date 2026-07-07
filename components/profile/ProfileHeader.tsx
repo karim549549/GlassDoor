@@ -164,8 +164,8 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
         </button>
       )}
 
-      {/* Overlay Content Container (stretches to page constraint) */}
-      <div className="relative z-20 w-full max-w-4xl mx-auto px-6 pt-24 pb-8 sm:pt-32 sm:pb-12 flex flex-col sm:flex-row items-center sm:items-end gap-6 text-[#F1EFE9] text-center sm:text-left">
+      {/* Overlay Content Container (full-width left aligned) */}
+      <div className="relative z-20 w-full px-8 md:px-12 pt-24 pb-8 sm:pt-32 sm:pb-12 flex flex-col sm:flex-row items-center sm:items-end gap-6 text-[#F1EFE9] text-center sm:text-left">
         
         {/* Circular Avatar overlap */}
         <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-[#F1EFE9] overflow-hidden bg-[#FAF8F5] relative group/avatar shadow-2xl shrink-0">
