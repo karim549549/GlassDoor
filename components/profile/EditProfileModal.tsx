@@ -161,7 +161,7 @@ export function EditProfileModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-10 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.78rem] uppercase tracking-wider text-[#0E0E0D] z-50">
+      <DialogContent className="sm:max-w-4xl w-full max-h-[85vh] overflow-y-auto p-10 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.78rem] uppercase tracking-wider text-[#0E0E0D] z-50">
         <form onSubmit={handleSave} className="space-y-8">
           <div>
             <h3 className="font-display text-[1.5rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-[#0E0E0D]">
