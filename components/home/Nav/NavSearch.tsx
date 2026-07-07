@@ -114,7 +114,7 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
       <DialogTrigger
         render={
           <button
-            className={`flex items-center justify-between gap-6 px-3.5 py-1.5 font-mono text-[0.55rem] tracking-wider uppercase border transition-all duration-150 cursor-pointer ${
+            className={`w-full lg:w-80 flex items-center justify-between gap-6 px-3.5 py-1.5 font-mono text-[0.55rem] tracking-wider uppercase border transition-all duration-150 cursor-pointer ${
               isDarkTheme
                 ? "bg-[#0E0E0D] text-[#F1EFE9] border-[#F1EFE9]/20 hover:border-[#F1EFE9]"
                 : "bg-[#FAF8F5] text-[#0E0E0D] border-[#0E0E0D]/25 hover:border-[#0E0E0D] shadow-[2px_2px_0px_0px_currentColor] active:translate-y-0.5 active:shadow-none"
@@ -128,7 +128,7 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
 
       <DialogContent 
         showCloseButton={false}
-        className="max-w-lg p-0 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-[100] overflow-hidden"
+        className="w-full max-w-3xl p-0 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-[100] overflow-hidden"
       >
         {/* Header Search Input */}
         <div className="flex items-center gap-3 p-4 border-b-2 border-[#0E0E0D] bg-[#FAF8F5]">

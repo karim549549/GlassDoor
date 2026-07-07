@@ -6,6 +6,7 @@ import { NavBrand } from "./NavBrand";
 import { NavTabs } from "./NavTabs";
 import { NavSearch } from "./NavSearch";
 import { NavUserMenu } from "./NavUserMenu";
+import { BurgerMenu } from "./BurgerMenu";
 
 export function Nav() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -37,16 +38,26 @@ export function Nav() {
         {/* Left Section: Branding */}
         <NavBrand isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
 
-        {/* Middle Section: Navigation Tabs & Search */}
-        <div className="flex items-center gap-6">
-          <NavTabs isDarkTheme={isDarkTheme} />
+        {/* Center Section: Search on Left, Tabs on Right (Desktop only) */}
+        <div className="hidden lg:flex items-center gap-6">
           <Suspense fallback={null}>
             <NavSearch isDarkTheme={isDarkTheme} />
           </Suspense>
+          <NavTabs isDarkTheme={isDarkTheme} />
         </div>
 
-        {/* Right Section: User Menu & Actions */}
-        <NavUserMenu isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
+        {/* Right Section: User Menu / Actions & Responsive Burger Menu */}
+        <div className="flex items-center gap-3 sm:gap-5">
+          {/* User Menu Actions: Visible on Tablet/Desktop (>= md), Hidden on Mobile (< md) */}
+          <div className="hidden md:flex items-center">
+            <NavUserMenu isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
+          </div>
+
+          {/* Burger Menu Trigger: Visible on Tablet/Mobile (< lg), Hidden on Desktop (>= lg) */}
+          <div className="lg:hidden flex items-center">
+            <BurgerMenu isDarkTheme={isDarkTheme} />
+          </div>
+        </div>
       </div>
     </nav>
   );
