@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { NavBrand } from "./NavBrand";
+import { NavTabs } from "./NavTabs";
+import { NavSearch } from "./NavSearch";
 import { NavUserMenu } from "./NavUserMenu";
 
 export function Nav() {
@@ -32,7 +34,18 @@ export function Nav() {
       <div className={`flex items-center justify-between h-11 transition-all duration-300 ${
         isScrolled ? "px-40" : "px-6"
       }`}>
+        {/* Left Section: Branding */}
         <NavBrand isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
+
+        {/* Middle Section: Navigation Tabs & Search */}
+        <div className="flex items-center gap-6">
+          <NavTabs isDarkTheme={isDarkTheme} />
+          <Suspense fallback={null}>
+            <NavSearch isDarkTheme={isDarkTheme} />
+          </Suspense>
+        </div>
+
+        {/* Right Section: User Menu & Actions */}
         <NavUserMenu isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
       </div>
     </nav>
