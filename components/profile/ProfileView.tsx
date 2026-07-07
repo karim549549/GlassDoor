@@ -30,13 +30,14 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
       <ProfileHeader 
         userProfile={profile} 
         isOwner={isOwner} 
+        onEditClick={() => setEditModalOpen(true)}
         onUpdateSuccess={(type, url) => {
           setProfile((prev: any) => ({ ...prev, [type === "avatar" ? "avatarUrl" : "coverUrl"]: url }));
         }}
       />
 
-      {/* Main Stacked Feed Container */}
-      <div className="max-w-4xl mx-auto mt-8 px-6 space-y-6">
+      {/* Main Stacked Feed Container (max-w-[1500px] matching header padding) */}
+      <div className="max-w-[1500px] mx-auto mt-8 px-8 md:px-12 space-y-6">
         
         {/* Top Row: Left Profile Info (2/3) & Right Arena Stats (1/3) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">

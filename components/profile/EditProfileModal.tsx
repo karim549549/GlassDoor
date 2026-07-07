@@ -161,71 +161,71 @@ export function EditProfileModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-8 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-50">
-        <form onSubmit={handleSave} className="space-y-6">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-10 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.78rem] uppercase tracking-wider text-[#0E0E0D] z-50">
+        <form onSubmit={handleSave} className="space-y-8">
           <div>
-            <h3 className="font-display text-[1.3rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-[#0E0E0D]">
+            <h3 className="font-display text-[1.5rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-[#0E0E0D]">
               Edit developer credentials
             </h3>
-            <p className="font-sans text-[0.58rem] text-muted-foreground leading-normal mt-1 lowercase first-letter:uppercase">
+            <p className="font-sans text-[0.65rem] text-muted-foreground leading-normal mt-1 lowercase first-letter:uppercase">
               Update your CV details, social accounts, tech skills, and employment status.
             </p>
           </div>
 
           {errorMsg && (
-            <div className="p-3 bg-accent text-[#F1EFE9] border border-[#0E0E0D] font-bold lowercase first-letter:uppercase">
+            <div className="p-3.5 bg-accent text-[#F1EFE9] border border-[#0E0E0D] font-bold lowercase first-letter:uppercase">
               ⚠️ {errorMsg}
             </div>
           )}
 
           {/* Section 1: Personal Credentials */}
-          <div className="space-y-4">
-            <h4 className="font-bold border-b border-[#0E0E0D] pb-1 text-[#0E0E0D]">
+          <div className="space-y-5">
+            <h4 className="font-bold border-b-2 border-[#0E0E0D] pb-1 text-[#0E0E0D] text-[0.85rem]">
               1. Personal Credentials
             </h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="font-bold">First Name</label>
+            <div className="grid grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">First Name</label>
                 <input
                   type="text"
                   required
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.65rem]"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.78rem]"
                   placeholder="e.g. Karim"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="font-bold">Last Name</label>
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Last Name</label>
                 <input
                   type="text"
                   required
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.65rem]"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.78rem]"
                   placeholder="e.g. Khaled"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="font-bold">Arena Handle (Codename)</label>
+            <div className="grid grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Arena Handle (Codename)</label>
                 <input
                   type="text"
                   value={handle}
                   onChange={(e) => setHandle(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.65rem]"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
                   placeholder="e.g. karim_99"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="font-bold">Education (University)</label>
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Education (University)</label>
                 <input
                   type="text"
                   value={education}
                   onChange={(e) => setEducation(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.65rem]"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.78rem]"
                   placeholder="e.g. Cairo University"
                 />
               </div>
@@ -233,17 +233,17 @@ export function EditProfileModal({
           </div>
 
           {/* Section 2: Employment & Specialties */}
-          <div className="space-y-4">
-            <h4 className="font-bold border-b border-[#0E0E0D] pb-1 text-[#0E0E0D]">
+          <div className="space-y-5">
+            <h4 className="font-bold border-b-2 border-[#0E0E0D] pb-1 text-[#0E0E0D] text-[0.85rem]">
               2. Employment & Specialties
             </h4>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <label className="font-bold">Seniority Level</label>
+            <div className="grid grid-cols-3 gap-5">
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Seniority Level</label>
                 <select
                   value={seniority}
                   onChange={(e) => setSeniority(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none rounded-none text-[0.65rem] uppercase cursor-pointer"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none rounded-none text-[0.78rem] uppercase cursor-pointer"
                 >
                   <option value="">Select Seniority</option>
                   <option value="JUNIOR">Junior Developer</option>
@@ -254,12 +254,12 @@ export function EditProfileModal({
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold">Employment Status</label>
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Employment Status</label>
                 <select
                   value={employmentStatus}
                   onChange={(e) => setEmploymentStatus(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none rounded-none text-[0.65rem] uppercase cursor-pointer"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none rounded-none text-[0.78rem] uppercase cursor-pointer"
                 >
                   <option value="">Select Status</option>
                   <option value="UNEMPLOYED">Looking For Work</option>
@@ -270,14 +270,14 @@ export function EditProfileModal({
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold">Current Employer</label>
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Current Employer</label>
                 <input
                   type="text"
                   disabled={!showEmployerField}
                   value={showEmployerField ? currentEmployer : ""}
                   onChange={(e) => setCurrentEmployer(e.target.value)}
-                  className={`w-full p-2 border border-[#0E0E0D] focus:outline-none rounded-none uppercase text-[0.65rem] ${
+                  className={`w-full p-3 border border-[#0E0E0D] focus:outline-none rounded-none uppercase text-[0.78rem] ${
                     showEmployerField ? "bg-[#FAF8F5]" : "bg-gray-200 cursor-not-allowed opacity-50"
                   }`}
                   placeholder={showEmployerField ? "e.g. Google" : "Not Employed"}
@@ -286,11 +286,11 @@ export function EditProfileModal({
             </div>
 
             {/* Specialties (Job Types) Decoupled Dropdown */}
-            <div className="space-y-1.5 relative">
-              <label className="font-bold">Specialties (Job Roles)</label>
+            <div className="space-y-2 relative">
+              <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Specialties (Job Roles)</label>
               <div 
                 onClick={() => setJobTypesDropdownOpen(!jobTypesDropdownOpen)}
-                className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] min-h-[34px] flex flex-wrap gap-1.5 items-center cursor-pointer select-none"
+                className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] min-h-[42px] flex flex-wrap gap-2 items-center cursor-pointer select-none"
               >
                 {selectedJobTypes.length === 0 ? (
                   <span className="text-muted-foreground/65">Click to select specialties</span>
@@ -298,12 +298,12 @@ export function EditProfileModal({
                   selectedJobTypes.map((id) => {
                     const jtName = dbJobTypes.find(j => j.id === id)?.name || id;
                     return (
-                      <span key={id} className="px-2 py-0.5 bg-[#0E0E0D] text-[#F1EFE9] flex items-center gap-1 hover:bg-orange transition-colors">
+                      <span key={id} className="px-2.5 py-1 bg-[#0E0E0D] text-[#F1EFE9] flex items-center gap-1.5 hover:bg-orange transition-colors">
                         {jtName}
                         <button 
                           type="button" 
                           onClick={(e) => { e.stopPropagation(); toggleJobType(id); }}
-                          className="font-black text-[0.6rem] ml-1 hover:text-accent focus:outline-none bg-transparent border-none p-0 cursor-pointer"
+                          className="font-black text-[0.7rem] ml-1 hover:text-accent focus:outline-none bg-transparent border-none p-0 cursor-pointer"
                         >
                           ✕
                         </button>
@@ -314,14 +314,14 @@ export function EditProfileModal({
               </div>
 
               {jobTypesDropdownOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 bg-[#F1EFE9] border border-[#0E0E0D] z-50 max-h-48 overflow-y-auto divide-y divide-[#0E0E0D]/10 shadow-lg">
+                <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#F1EFE9] border border-[#0E0E0D] z-50 max-h-48 overflow-y-auto divide-y divide-[#0E0E0D]/10 shadow-lg">
                   {dbJobTypes.map((jt) => {
                     const selected = selectedJobTypes.includes(jt.id);
                     return (
                       <div 
                         key={jt.id}
                         onClick={() => toggleJobType(jt.id)}
-                        className={`p-2.5 cursor-pointer flex items-center justify-between transition-colors ${
+                        className={`p-3.5 cursor-pointer flex items-center justify-between transition-colors ${
                           selected ? "bg-orange/15 font-bold text-orange hover:bg-orange/20" : "hover:bg-[#0E0E0D]/5"
                         }`}
                       >
@@ -336,27 +336,27 @@ export function EditProfileModal({
           </div>
 
           {/* Section 3: About Bio & Tech Skills */}
-          <div className="space-y-4">
-            <h4 className="font-bold border-b border-[#0E0E0D] pb-1 text-[#0E0E0D]">
+          <div className="space-y-5">
+            <h4 className="font-bold border-b-2 border-[#0E0E0D] pb-1 text-[#0E0E0D] text-[0.85rem]">
               3. About & Tech Skills
             </h4>
-            <div className="space-y-1.5">
-              <label className="font-bold">Bio (About Statement)</label>
+            <div className="space-y-2">
+              <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Bio (About Statement)</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={3}
-                className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase first-letter:uppercase text-[0.65rem] normal-case"
+                className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase first-letter:uppercase text-[0.78rem] normal-case"
                 placeholder="Brief summary of your development experience..."
               />
             </div>
 
             {/* Skills Multi-Select Dropdown */}
-            <div className="space-y-1.5 relative">
-              <label className="font-bold">Tech Skills Dropdown</label>
+            <div className="space-y-2 relative">
+              <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Tech Skills Dropdown</label>
               <div 
                 onClick={() => setSkillsDropdownOpen(!skillsDropdownOpen)}
-                className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] min-h-[34px] flex flex-wrap gap-1.5 items-center cursor-pointer select-none"
+                className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] min-h-[42px] flex flex-wrap gap-2 items-center cursor-pointer select-none"
               >
                 {selectedSkills.length === 0 ? (
                   <span className="text-muted-foreground/65">Click to select skills</span>
@@ -364,12 +364,12 @@ export function EditProfileModal({
                   selectedSkills.map((id) => {
                     const skillName = dbSkills.find(s => s.id === id)?.name || id;
                     return (
-                      <span key={id} className="px-2 py-0.5 bg-orange text-[#FAF8F5] flex items-center gap-1 hover:bg-[#0E0E0D] transition-colors">
+                      <span key={id} className="px-2.5 py-1 bg-orange text-[#FAF8F5] flex items-center gap-1.5 hover:bg-[#0E0E0D] transition-colors">
                         {skillName}
                         <button 
                           type="button" 
                           onClick={(e) => { e.stopPropagation(); toggleSkill(id); }}
-                          className="font-black text-[0.6rem] ml-1 hover:text-accent focus:outline-none bg-transparent border-none p-0 cursor-pointer"
+                          className="font-black text-[0.7rem] ml-1 hover:text-accent focus:outline-none bg-transparent border-none p-0 cursor-pointer"
                         >
                           ✕
                         </button>
@@ -380,14 +380,14 @@ export function EditProfileModal({
               </div>
 
               {skillsDropdownOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 bg-[#F1EFE9] border border-[#0E0E0D] z-50 max-h-48 overflow-y-auto divide-y divide-[#0E0E0D]/10 shadow-lg">
+                <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#F1EFE9] border border-[#0E0E0D] z-50 max-h-48 overflow-y-auto divide-y divide-[#0E0E0D]/10 shadow-lg">
                   {dbSkills.map((skill) => {
                     const selected = selectedSkills.includes(skill.id);
                     return (
                       <div 
                         key={skill.id}
                         onClick={() => toggleSkill(skill.id)}
-                        className={`p-2.5 cursor-pointer flex items-center justify-between transition-colors ${
+                        className={`p-3.5 cursor-pointer flex items-center justify-between transition-colors ${
                           selected ? "bg-orange/15 font-bold text-orange hover:bg-orange/20" : "hover:bg-[#0E0E0D]/5"
                         }`}
                       >
@@ -402,38 +402,38 @@ export function EditProfileModal({
           </div>
 
           {/* Section 4: Social Accounts */}
-          <div className="space-y-4">
-            <h4 className="font-bold border-b border-[#0E0E0D] pb-1 text-[#0E0E0D]">
+          <div className="space-y-5">
+            <h4 className="font-bold border-b-2 border-[#0E0E0D] pb-1 text-[#0E0E0D] text-[0.85rem]">
               4. Social Links (URLs)
             </h4>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <label className="font-bold">GitHub Profile URL</label>
+            <div className="grid grid-cols-3 gap-5">
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">GitHub Profile URL</label>
                 <input
                   type="url"
                   value={githubUrl}
                   onChange={(e) => setGithubUrl(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.65rem]"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
                   placeholder="https://github.com/..."
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="font-bold">LinkedIn Profile URL</label>
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">LinkedIn Profile URL</label>
                 <input
                   type="url"
                   value={linkedinUrl}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.65rem]"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
                   placeholder="https://linkedin.com/in/..."
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="font-bold">Portfolio Website URL</label>
+              <div className="space-y-2">
+                <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground">Portfolio Website URL</label>
                 <input
                   type="url"
                   value={portfolioUrl}
                   onChange={(e) => setPortfolioUrl(e.target.value)}
-                  className="w-full p-2 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.65rem]"
+                  className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
                   placeholder="https://portfolio.dev"
                 />
               </div>
@@ -441,13 +441,13 @@ export function EditProfileModal({
           </div>
 
           {/* Modal Actions */}
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#0E0E0D]">
+          <div className="grid grid-cols-2 gap-5 pt-4 border-t-2 border-[#0E0E0D]">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isLoading}
-              className="w-full"
+              className="w-full py-4 text-[0.78rem]"
             >
               Cancel
             </Button>
@@ -455,7 +455,7 @@ export function EditProfileModal({
               type="submit"
               variant="primary"
               isLoading={isLoading}
-              className="w-full"
+              className="w-full py-4 text-[0.78rem]"
             >
               Save Credentials
             </Button>

@@ -23,10 +23,11 @@ interface ProfileHeaderProps {
     isFollowing: boolean;
   };
   isOwner: boolean;
+  onEditClick?: () => void;
   onUpdateSuccess?: (type: "avatar" | "cover", newUrl: string) => void;
 }
 
-export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: ProfileHeaderProps) {
+export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSuccess }: ProfileHeaderProps) {
   const { setAuth, roles } = useAuthStore();
   const [profile, setProfile] = useState(userProfile);
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -270,7 +271,7 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
       <div className="w-full border-t border-[#F1EFE9]/15 bg-[#FAF8F5]/5 backdrop-blur-sm select-text z-20 relative">
         <div className="w-full px-8 md:px-12 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-mono text-[0.55rem] uppercase tracking-wider text-[#F1EFE9]/85">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            {profile.githubUrl && (
+            {profile.githubUrl ? (
               <a
                 href={profile.githubUrl}
                 target="_blank"
@@ -279,8 +280,18 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
               >
                 GITHUB
               </a>
+            ) : (
+              isOwner && (
+                <button
+                  type="button"
+                  onClick={onEditClick}
+                  className="text-[#F1EFE9]/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
+                >
+                  + ADD GITHUB
+                </button>
+              )
             )}
-            {profile.linkedinUrl && (
+            {profile.linkedinUrl ? (
               <a
                 href={profile.linkedinUrl}
                 target="_blank"
@@ -289,8 +300,18 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
               >
                 LINKEDIN
               </a>
+            ) : (
+              isOwner && (
+                <button
+                  type="button"
+                  onClick={onEditClick}
+                  className="text-[#F1EFE9]/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
+                >
+                  + ADD LINKEDIN
+                </button>
+              )
             )}
-            {profile.portfolioUrl && (
+            {profile.portfolioUrl ? (
               <a
                 href={profile.portfolioUrl}
                 target="_blank"
@@ -299,6 +320,16 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
               >
                 WEBSITE
               </a>
+            ) : (
+              isOwner && (
+                <button
+                  type="button"
+                  onClick={onEditClick}
+                  className="text-[#F1EFE9]/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
+                >
+                  + ADD WEBSITE
+                </button>
+              )
             )}
 
             <div className="h-3.5 w-px bg-[#F1EFE9]/25 hidden sm:block" />
