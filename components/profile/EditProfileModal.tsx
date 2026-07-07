@@ -5,6 +5,7 @@ import * as yup from "yup";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 import { SearchableDropdown } from "@/components/ui/SearchableDropdown";
+import type { UserProfile } from "./types";
 
 interface Option {
   id: string;
@@ -14,7 +15,7 @@ interface Option {
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any;
+  user: UserProfile;
   onSaveSuccess: () => void;
 }
 
@@ -186,7 +187,9 @@ export function EditProfileModal({
 
       // Sync pre-selected skills
       if (user.skills) {
-        setSelectedSkills(user.skills.map((s: any) => s.skillId || s.skill?.id).filter(Boolean));
+        setSelectedSkills(
+          user.skills.map((s) => s.skillId || s.skill?.id).filter((id): id is string => Boolean(id))
+        );
       } else {
         setSelectedSkills([]);
       }

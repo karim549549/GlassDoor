@@ -24,6 +24,7 @@ export interface UserProfile {
   currentEmployer?: string | null;
   seniority?: string | null;
   education?: string | null;
+  location?: string | null;
   githubUrl: string | null;
   linkedinUrl: string | null;
   portfolioUrl: string | null;

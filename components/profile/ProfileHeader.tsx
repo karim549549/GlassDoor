@@ -1,27 +1,15 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Camera, Edit2 } from "lucide-react";
+import Image from "next/image";
+import { Camera } from "lucide-react";
 import { CropperModal } from "./CropperModal";
 import { useAuthStore } from "@/lib/client/useAuthStore";
+import { ACCEPTED_IMAGE_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/upload-constants";
+import type { UserProfile } from "./types";
 
 interface ProfileHeaderProps {
-  userProfile: {
-    id: string;
-    fullName: string | null;
-    email: string;
-    avatarUrl: string | null;
-    coverUrl: string | null;
-    handle: string | null;
-    rating: number;
-    createdAt: string | Date;
-    lastActiveAt: string | Date | null;
-    githubUrl: string | null;
-    linkedinUrl: string | null;
-    portfolioUrl: string | null;
-    followersCount: number;
-    isFollowing: boolean;
-  };
+  userProfile: UserProfile;
   isOwner: boolean;
   onEditClick?: () => void;
   onUpdateSuccess?: (type: "avatar" | "cover", newUrl: string) => void;
@@ -69,14 +57,11 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
     }
   };
 
-  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-  const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type as (typeof ACCEPTED_IMAGE_TYPES)[number])) {
       alert("Please select a JPEG, PNG, or WebP image.");
       return;
     }
@@ -194,10 +179,13 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
       {/* Cover Image Background (absolute layer) */}
       <div className="absolute inset-0 z-0">
         {profile.coverUrl ? (
-          <img
+          <Image
             src={profile.coverUrl}
             alt="Profile Cover"
-            className="w-full h-full object-cover opacity-80"
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover opacity-80"
           />
         ) : (
           <div
@@ -224,10 +212,12 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
         {/* Circular Avatar overlap */}
         <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-[#F1EFE9] overflow-hidden bg-[#FAF8F5] relative group/avatar shadow-2xl shrink-0">
           {profile.avatarUrl ? (
-            <img
+            <Image
               src={profile.avatarUrl}
               alt="Avatar"
-              className="w-full h-full object-cover"
+              fill
+              sizes="(min-width: 640px) 8rem, 6rem"
+              className="object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center font-display text-[2rem] font-bold text-[#0E0E0D] bg-[#FAF8F5]">

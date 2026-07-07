@@ -15,20 +15,24 @@ export default async function UserPage({ params }: UserPageProps) {
     data: { user: currentUser },
   } = await supabase.auth.getUser();
 
-  // Fetch target user profile along with decoupled skills, job specialties, and followers relations
-  const dbUser = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      skills: {
-        include: { skill: true },
+  // Fetch target user profile, follower count, and follow status in parallel -
+  // scoped queries instead of loading every follower row just to compute a
+  // count and a membership check.
+  const [dbUser, followersCount, followRow] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id },
+      include: {
+        skills: { include: { skill: true } },
+        jobTypes: { include: { jobType: true } },
       },
-      jobTypes: {
-        include: { jobType: true },
-      },
-      followers: true,
-      following: true,
-    },
-  });
+    }),
+    prisma.follows.count({ where: { followingId: id } }),
+    currentUser
+      ? prisma.follows.findUnique({
+          where: { followerId_followingId: { followerId: currentUser.id, followingId: id } },
+        })
+      : Promise.resolve(null),
+  ]);
 
   if (!dbUser) {
     notFound();
@@ -51,6 +55,7 @@ export default async function UserPage({ params }: UserPageProps) {
     currentEmployer: dbUser.currentEmployer,
     seniority: dbUser.seniority,
     education: dbUser.education,
+    location: dbUser.location,
     githubUrl: dbUser.githubUrl,
     linkedinUrl: dbUser.linkedinUrl,
     portfolioUrl: dbUser.portfolioUrl,
@@ -59,8 +64,8 @@ export default async function UserPage({ params }: UserPageProps) {
     lastActiveAt: dbUser.lastActiveAt ? dbUser.lastActiveAt.toISOString() : null,
     skills: dbUser.skills,
     jobTypes: dbUser.jobTypes,
-    followersCount: dbUser.followers.length,
-    isFollowing: currentUser ? dbUser.followers.some((f) => f.followerId === currentUser.id) : false,
+    followersCount,
+    isFollowing: !!followRow,
   };
 
   return (

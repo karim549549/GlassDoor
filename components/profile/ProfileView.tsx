@@ -6,9 +6,10 @@ import { Edit2, ExternalLink } from "lucide-react";
 import { ProfileHeader } from "./ProfileHeader";
 import { EditProfileModal } from "./EditProfileModal";
 import { BackgroundGrid } from "../ui/BackgroundGrid";
+import type { UserProfile } from "./types";
 
 interface ProfileViewProps {
-  userProfile: any;
+  userProfile: UserProfile;
   isOwner: boolean;
 }
 
@@ -18,14 +19,16 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
   const pathname = usePathname();
 
   const handleSaveSuccess = async () => {
-    // Force clean refetch from server by reloading
-    window.location.reload();
+    // Re-run the Server Component tree to pick up the saved changes,
+    // without a full page reload.
+    router.refresh();
   };
 
+  const isDefined = (value: string | undefined): value is string => Boolean(value);
   // Pre-formatted skills
-  const skillsList = profile.skills?.map((s: any) => s.skill?.name).filter(Boolean) || [];
+  const skillsList = profile.skills?.map((s) => s.skill?.name).filter(isDefined) || [];
   // Pre-formatted job types (specialties)
-  const specialties = profile.jobTypes?.map((j: any) => j.jobType?.name).filter(Boolean) || [];
+  const specialties = profile.jobTypes?.map((j) => j.jobType?.name).filter(isDefined) || [];
 
   const isEditRoute = pathname === `/user/${profile.id}/edit`;
 
@@ -40,7 +43,7 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
         isOwner={isOwner} 
         onEditClick={() => router.push(`/user/${profile.id}/edit`)}
         onUpdateSuccess={(type, url) => {
-          setProfile((prev: any) => ({ ...prev, [type === "avatar" ? "avatarUrl" : "coverUrl"]: url }));
+          setProfile((prev) => ({ ...prev, [type === "avatar" ? "avatarUrl" : "coverUrl"]: url }));
         }}
       />
 
@@ -131,7 +134,14 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
           </div>
 
           {/* Arena Stats Summary Card (1/3 width, spans h-full) */}
-          <div className="border border-[#0E0E0D] bg-[#FAF8F5] p-6 font-mono text-[0.65rem] uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(14,14,13,0.1)] flex flex-col justify-between gap-4">
+          <div className="relative overflow-hidden border border-[#0E0E0D] bg-[#FAF8F5] p-6 font-mono text-[0.65rem] uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(14,14,13,0.1)] flex flex-col justify-between gap-4">
+            {/* Placeholder disclosure: this section's numbers are not backed by real data yet */}
+            <div className="absolute inset-0 z-10 bg-[#FAF8F5]/85 backdrop-blur-[1px] flex flex-col items-center justify-center gap-2 text-center p-6">
+              <span className="font-mono text-[0.65rem] font-black uppercase tracking-widest text-orange">Coming Soon</span>
+              <span className="font-mono text-[0.5rem] text-muted-foreground uppercase tracking-wider max-w-[200px] leading-relaxed">
+                Arena stats will go live once contests launch. Numbers shown are placeholders.
+              </span>
+            </div>
             <div className="border-b border-[#0E0E0D]/10 pb-2">
               <h3 className="font-bold text-[0.8rem] text-[#0E0E0D]">Arena Stats</h3>
             </div>
@@ -167,7 +177,14 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
         </div>
 
         {/* Bottom Row: Full-width Arena Performance Record Card */}
-        <div className="border border-[#0E0E0D] bg-[#FAF8F5] p-6 font-mono text-[0.65rem] uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(14,14,13,0.1)] space-y-6">
+        <div className="relative overflow-hidden border border-[#0E0E0D] bg-[#FAF8F5] p-6 font-mono text-[0.65rem] uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(14,14,13,0.1)] space-y-6">
+          {/* Placeholder disclosure: this section's charts/results are not backed by real data yet */}
+          <div className="absolute inset-0 z-10 bg-[#FAF8F5]/85 backdrop-blur-[1px] flex flex-col items-center justify-center gap-2 text-center p-6">
+            <span className="font-mono text-[0.7rem] font-black uppercase tracking-widest text-orange">Coming Soon</span>
+            <span className="font-mono text-[0.55rem] text-muted-foreground uppercase tracking-wider max-w-[280px] leading-relaxed">
+              Contest history, rating trends, and solve activity will appear here once Arena contests launch. Data shown is a placeholder preview.
+            </span>
+          </div>
           <div className="border-b border-[#0E0E0D]/10 pb-2">
             <h3 className="font-bold text-[0.8rem] text-[#0E0E0D]">Arena Performance Record</h3>
           </div>

@@ -7,12 +7,12 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
+    // Authoritative auth check - getUser() revalidates against Supabase Auth,
+    // unlike getSession() which just reads the (unverified) cookie.
     const {
-      data: { session },
+      data: { user },
       error,
-    } = await supabase.auth.getSession();
-
-    const user = session?.user;
+    } = await supabase.auth.getUser();
 
     if (error || !user) {
       return NextResponse.json({
@@ -22,17 +22,32 @@ export async function GET() {
       });
     }
 
+    // Non-gating: only used to read the refresh token for the client's
+    // saved-accounts convenience feature, not for any authorization decision.
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
     const roles = await getUserRoles(user.id);
-    const dbUser = await prisma.user.update({
+    const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      data: { lastActiveAt: new Date() },
-      select: { avatarUrl: true, coverUrl: true },
-    }).catch(async () => {
-      return await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { avatarUrl: true, coverUrl: true },
-      });
+      select: { avatarUrl: true, coverUrl: true, lastActiveAt: true },
     });
+
+    // Only write lastActiveAt if it's stale - this endpoint fires on every
+    // authenticated page load, so an unconditional write turns every page
+    // view into a DB write.
+    const STALE_THRESHOLD_MS = 5 * 60 * 1000;
+    const isStale =
+      !dbUser?.lastActiveAt || Date.now() - dbUser.lastActiveAt.getTime() > STALE_THRESHOLD_MS;
+    if (isStale) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastActiveAt: new Date() },
+      }).catch(() => {
+        // Best-effort - don't fail the whole request over a presence timestamp.
+      });
+    }
 
     return NextResponse.json({
       authenticated: true,
@@ -45,7 +60,7 @@ export async function GET() {
       },
       roles: roles.length > 0 ? roles : ["USER"],
       session: {
-        refreshToken: session.refresh_token || null,
+        refreshToken: session?.refresh_token || null,
       },
     });
   } catch (error) {

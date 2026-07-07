@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "kchzipajxxryeicyekso.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   async rewrites() {
     // /login, /signup, /forgot-password are intentionally modal-over-home UX:
     // AuthModal reads the pathname/searchParams and renders the right form while

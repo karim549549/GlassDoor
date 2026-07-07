@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/server/supabase/server";
 import { createAdminClient } from "@/lib/server/supabase/admin";
 import { prisma } from "@/lib/server/prisma";
+import { ACCEPTED_IMAGE_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/upload-constants";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,13 +33,11 @@ export async function POST(request: NextRequest) {
 
     // 3. Validate file - matches the "DevsArena" bucket's own size/MIME restrictions,
     // enforced here too since a request can bypass the client-side check entirely.
-    const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type as (typeof ACCEPTED_IMAGE_TYPES)[number])) {
       return NextResponse.json({ error: "File must be a JPEG, PNG, or WebP image." }, { status: 400 });
     }
 
-    const maxSize = 5 * 1024 * 1024; // 5MB limit
-    if (file.size > maxSize) {
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
       return NextResponse.json({ error: "File size must be under 5MB." }, { status: 400 });
     }
 
