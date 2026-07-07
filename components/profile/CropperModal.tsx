@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 
@@ -175,11 +176,14 @@ export function CropperModal({
               aspectRatio === 1 ? "aspect-square max-w-[320px] mx-auto" : "aspect-[3/1]"
             }`}
           >
-            <img
+            <Image
               ref={imgRef}
               src={imageSrc}
               alt="Crop target"
               onLoad={handleImageLoad}
+              unoptimized
+              width={imgLayout.width || 1}
+              height={imgLayout.height || 1}
               className="absolute select-none pointer-events-none origin-center"
               style={{
                 width: imgLayout.width ? `${imgLayout.width}px` : "auto",
