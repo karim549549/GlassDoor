@@ -24,6 +24,10 @@ model User {
   jobTypes      UserJobType[]
   followers     Follows[]   @relation("UserFollowers")
   following     Follows[]   @relation("UserFollowing")
+  contestsCreated        Contest[]
+  contestInvitationsSent ContestInvitation[] @relation("SentInvitations")
+  contestInvitationsRecv ContestInvitation[] @relation("ReceivedInvitations")
+  contestTeamsJoined     ContestTeamMember[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 

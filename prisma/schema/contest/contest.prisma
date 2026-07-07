@@ -1,0 +1,99 @@
+enum ContestStatus {
+  DRAFT
+  REGISTRATION_OPEN
+  IDEA_PHASE
+  IDEA_REVIEW
+  IMPLEMENTATION_PHASE
+  COMPLETED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Contest {
+  id                     String            @id @default(uuid()) @db.Uuid
+  title                  String
+  description            String            @db.Text
+  coverImageUrl          String?           
+  creatorId              String            @db.Uuid
+  creator                User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  status                 ContestStatus     @default(DRAFT)
+  
+  // Access Control & Invites
+  isPrivate              Boolean           @default(false)
+  inviteCode             String?           @unique
+  
+  // Timeline
+  registrationStart      DateTime
+  registrationEnd        DateTime
+  ideaPhaseStart         DateTime
+  ideaPhaseEnd           DateTime
+  implPhaseStart         DateTime
+  implPhaseEnd           DateTime
+
+  // Team Setup
+  isTeam                 Boolean           @default(false)
+  minTeamSize            Int               @default(1)
+  maxTeamSize            Int               @default(1)
+  maxParticipants        Int?              
+  
+  // Submission Toggles
+  requireGithubUrl       Boolean           @default(true)
+  requireFigmaUrl        Boolean           @default(false)
+  requireVideoUrl        Boolean           @default(false)
+  requireWriteup         Boolean           @default(true)
+  
+  rulesText              String            @db.Text
+
+  // Relations
+  invitations            ContestInvitation[]
+  teams                  ContestTeam[]
+
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  @@map("contests")
+}
+
+model ContestInvitation {
+  id        String           @id @default(uuid()) @db.Uuid
+  contestId String           @db.Uuid
+  contest   Contest          @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  senderId  String           @db.Uuid
+  sender    User             @relation("SentInvitations", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String          @db.Uuid
+  receiver  User             @relation("ReceivedInvitations", fields: [receiverId], references: [id], onDelete: Cascade)
+  status    InvitationStatus @default(PENDING)
+  
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@map("contest_invitations")
+}
+
+model ContestTeam {
+  id        String              @id @default(uuid()) @db.Uuid
+  contestId String              @db.Uuid
+  contest   Contest             @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  name      String              
+  members   ContestTeamMember[]
+  
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@map("contest_teams")
+}
+
+model ContestTeamMember {
+  teamId    String      @db.Uuid
+  team      ContestTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String      @db.Uuid
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isLeader  Boolean     @default(false)
+
+  @@id([teamId, userId])
+  @@map("contest_team_members")
+}
