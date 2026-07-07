@@ -112,7 +112,7 @@ export function CropperModal({
     const vHeight = viewport.clientHeight;
 
     // Output target sizing
-    const targetWidth = aspectRatio === 1 ? 400 : 1200;
+    const targetWidth = aspectRatio === 1 ? 400 : 1600;
     const targetHeight = aspectRatio === 1 ? 400 : 400;
 
     const canvas = document.createElement("canvas");
@@ -173,7 +173,7 @@ export function CropperModal({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleMouseUp}
             className={`w-full overflow-hidden relative border border-[#0E0E0D]/65 bg-[#0E0E0D]/10 cursor-move ${
-              aspectRatio === 1 ? "aspect-square max-w-[320px] mx-auto" : "aspect-[3/1]"
+              aspectRatio === 1 ? "aspect-square max-w-[320px] mx-auto" : "aspect-[4/1]"
             }`}
           >
             <Image

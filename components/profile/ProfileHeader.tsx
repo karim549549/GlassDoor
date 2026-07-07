@@ -217,7 +217,7 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
           setImageSrc(null);
         }}
         imageSrc={imageSrc}
-        aspectRatio={cropType === "avatar" ? 1 : 3}
+        aspectRatio={cropType === "avatar" ? 1 : 4}
         onCropComplete={handleCropComplete}
         isLoading={isUploading}
       />
