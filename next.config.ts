@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
         source: "/forgot-password",
         destination: "/",
       },
+      {
+        source: "/user/:id/edit",
+        destination: "/user/:id",
+      },
     ];
   },
 };

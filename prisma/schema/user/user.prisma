@@ -10,6 +10,7 @@ model User {
   currentEmployer  String?
   seniority     String?
   education     String?
+  location      String?
   githubUrl     String?
   linkedinUrl   String?
   portfolioUrl  String?

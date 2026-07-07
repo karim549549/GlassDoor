@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Edit2, ExternalLink } from "lucide-react";
 import { ProfileHeader } from "./ProfileHeader";
 import { EditProfileModal } from "./EditProfileModal";
+import { BackgroundGrid } from "../ui/BackgroundGrid";
 
 interface ProfileViewProps {
   userProfile: any;
@@ -12,7 +14,8 @@ interface ProfileViewProps {
 
 export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
   const [profile, setProfile] = useState(userProfile);
-  const [editModalOpen, setEditModalOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleSaveSuccess = async () => {
     // Force clean refetch from server by reloading
@@ -24,20 +27,25 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
   // Pre-formatted job types (specialties)
   const specialties = profile.jobTypes?.map((j: any) => j.jobType?.name).filter(Boolean) || [];
 
+  const isEditRoute = pathname === `/user/${profile.id}/edit`;
+
   return (
-    <div className="min-h-screen bg-[#F1EFE9] text-[#0E0E0D] pb-16">
+    <div className="min-h-screen bg-[#F1EFE9] text-[#0E0E0D] pb-16 relative overflow-hidden">
+      {/* Blueprint Grid Backdrop */}
+      <BackgroundGrid />
+
       {/* Cover and header ribbon banner */}
       <ProfileHeader 
         userProfile={profile} 
         isOwner={isOwner} 
-        onEditClick={() => setEditModalOpen(true)}
+        onEditClick={() => router.push(`/user/${profile.id}/edit`)}
         onUpdateSuccess={(type, url) => {
           setProfile((prev: any) => ({ ...prev, [type === "avatar" ? "avatarUrl" : "coverUrl"]: url }));
         }}
       />
 
       {/* Main Stacked Feed Container (max-w-[1500px] matching header padding) */}
-      <div className="max-w-[1500px] mx-auto mt-8 px-8 md:px-12 space-y-6">
+      <div className="max-w-[1500px] mx-auto mt-8 px-8 md:px-12 space-y-6 relative z-10">
         
         {/* Top Row: Left Profile Info (2/3) & Right Arena Stats (1/3) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
@@ -47,7 +55,7 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
             {/* Edit Button */}
             {isOwner && (
               <button
-                onClick={() => setEditModalOpen(true)}
+                onClick={() => router.push(`/user/${profile.id}/edit`)}
                 className="absolute top-4 right-4 p-1.5 bg-[#F1EFE9] border border-[#0E0E0D] hover:bg-orange hover:text-[#FAF8F5] transition-colors cursor-pointer"
                 title="Edit Profile"
               >
@@ -88,9 +96,9 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
                 <span className="font-bold block text-[#0E0E0D]">Credentials & Employment:</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-muted-foreground font-mono">
                   <div className="flex justify-between border-b border-[#0E0E0D]/5 pb-1">
-                    <span>Specialties</span>
+                    <span>Job Title</span>
                     <span className="font-bold text-[#0E0E0D] text-right max-w-[65%] truncate">
-                      {specialties.join(", ") || "None"}
+                      {specialties[0] || "None"}
                     </span>
                   </div>
                   <div className="flex justify-between border-b border-[#0E0E0D]/5 pb-1">
@@ -105,9 +113,17 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
                     <span>Employer</span>
                     <span className="font-bold text-[#0E0E0D]">{profile.currentEmployer || "None"}</span>
                   </div>
-                  <div className="flex justify-between sm:col-span-2 border-b border-[#0E0E0D]/5 pb-1">
+                  <div className="flex justify-between border-b border-[#0E0E0D]/5 pb-1">
                     <span>Education</span>
-                    <span className="font-bold text-[#0E0E0D]">{profile.education || "None"}</span>
+                    <span className="font-bold text-[#0E0E0D] text-right max-w-[65%] truncate">
+                      {profile.education || "None"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-b border-[#0E0E0D]/5 pb-1">
+                    <span>Location</span>
+                    <span className="font-bold text-[#0E0E0D] text-right max-w-[65%] truncate">
+                      {profile.location || "None"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -288,8 +304,8 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
 
       {/* Edit Profile Modal Dialog */}
       <EditProfileModal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
+        isOpen={isEditRoute}
+        onClose={() => router.push(`/user/${profile.id}`)}
         user={profile}
         onSaveSuccess={handleSaveSuccess}
       />

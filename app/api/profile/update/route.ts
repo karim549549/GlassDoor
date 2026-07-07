@@ -17,14 +17,14 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const {
-      firstName,
-      lastName,
+      fullName,
       handle,
       bio,
       employmentStatus,
       currentEmployer,
       seniority,
       education,
+      location,
       githubUrl,
       linkedinUrl,
       portfolioUrl,
@@ -49,19 +49,28 @@ export async function POST(req: Request) {
 
     const processedHandle = handle ? handle.trim().toLowerCase().replace(/^@/, "") : null;
 
+    let firstNameVal = null;
+    let lastNameVal = null;
+    if (fullName) {
+      const parts = fullName.trim().split(/\s+/);
+      firstNameVal = parts[0] || null;
+      lastNameVal = parts.slice(1).join(" ") || null;
+    }
+
     // Update core user data (sequential standard queries to prevent PgBouncer transaction timeouts)
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
-        firstName: firstName || null,
-        lastName: lastName || null,
-        fullName: firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || null,
+        fullName: fullName || null,
+        firstName: firstNameVal,
+        lastName: lastNameVal,
         handle: processedHandle,
         bio: bio || null,
         employmentStatus: employmentStatus || null,
         currentEmployer: (employmentStatus === "EMPLOYED" || employmentStatus === "FREELANCER" || employmentStatus === "INTERN") ? (currentEmployer || null) : null,
         seniority: seniority || null,
         education: education || null,
+        location: location || null,
         githubUrl: githubUrl || null,
         linkedinUrl: linkedinUrl || null,
         portfolioUrl: portfolioUrl || null,
