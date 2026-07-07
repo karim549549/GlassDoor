@@ -17,9 +17,10 @@ import { Bell, Settings, LogOut, User, MessageSquare } from "lucide-react";
 
 interface NavUserMenuProps {
   isScrolled: boolean;
+  isDarkTheme: boolean;
 }
 
-export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
+export function NavUserMenu({ isScrolled, isDarkTheme }: NavUserMenuProps) {
   const { user, clearAuth, notifications, markNotificationAsRead } = useAuthStore();
   const router = useRouter();
   const [isLogoutPromptOpen, setIsLogoutPromptOpen] = useState(false);
@@ -60,9 +61,9 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
           <button 
             onClick={() => alert("Chat panel is under development.")}
             className={`p-1.5 rounded-full border border-transparent transition-all duration-200 cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95 ${
-              isScrolled
-                ? "text-[#0E0E0D] hover:bg-[#0E0E0D]/10"
-                : "text-[#F1EFE9] hover:bg-[#F1EFE9]/15"
+              isDarkTheme
+                ? "text-[#F1EFE9] hover:bg-[#F1EFE9]/15"
+                : "text-[#0E0E0D] hover:bg-[#0E0E0D]/10"
             }`}
             title="Messages"
           >
@@ -73,9 +74,9 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
           <button 
             onClick={() => alert("Notifications panel is under development.")}
             className={`p-1.5 rounded-full border border-transparent transition-all duration-200 cursor-pointer flex items-center justify-center relative hover:scale-105 active:scale-95 ${
-              isScrolled
-                ? "text-[#0E0E0D] hover:bg-[#0E0E0D]/10"
-                : "text-[#F1EFE9] hover:bg-[#F1EFE9]/15"
+              isDarkTheme
+                ? "text-[#F1EFE9] hover:bg-[#F1EFE9]/15"
+                : "text-[#0E0E0D] hover:bg-[#0E0E0D]/10"
             }`}
             title="Notifications"
           >
@@ -87,7 +88,7 @@ export function NavUserMenu({ isScrolled }: NavUserMenuProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger className={`relative flex h-7 w-7 items-center justify-center font-mono text-[0.7rem] font-bold border focus:outline-none transition-all duration-150 rounded-full cursor-pointer overflow-hidden hover:scale-105 active:scale-95 ${
-              isScrolled
+              isDarkTheme
                 ? "bg-[#F1EFE9] text-[#0E0E0D] border-[#F1EFE9]/20 hover:border-[#F1EFE9]"
                 : "bg-[#0E0E0D] text-[#F1EFE9] border-[#0E0E0D]/25 hover:border-[#0E0E0D]"
             }`}>

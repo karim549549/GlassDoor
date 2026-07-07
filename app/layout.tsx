@@ -29,6 +29,7 @@ export const metadata: Metadata = {
 import AuthProvider from "@/components/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 import { Nav } from "@/components/home/Nav";
+import { LayoutSpacer } from "@/components/providers/LayoutSpacer";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -46,10 +47,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <Nav />
-          {children}
+          <LayoutSpacer>{children}</LayoutSpacer>
         </AuthProvider>
       </body>
     </html>
+
   );
 }
 
