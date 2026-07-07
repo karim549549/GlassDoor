@@ -47,13 +47,20 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
     }
   };
 
+  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024; // 5MB, matches the "profiles" bucket limit
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate size and format
-    if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file.");
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      alert("Please select a JPEG, PNG, or WebP image.");
+      return;
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      alert("Image must be under 5MB.");
       return;
     }
 
@@ -124,7 +131,7 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
       />
 

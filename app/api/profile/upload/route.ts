@@ -29,9 +29,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid upload type." }, { status: 400 });
     }
 
-    // 3. Validate file
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json({ error: "File must be an image." }, { status: 400 });
+    // 3. Validate file - matches the "profiles" bucket's own size/MIME restrictions,
+    // enforced here too since a request can bypass the client-side check entirely.
+    const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: "File must be a JPEG, PNG, or WebP image." }, { status: 400 });
     }
 
     const maxSize = 5 * 1024 * 1024; // 5MB limit
