@@ -47,7 +47,8 @@ const contestSchema = z.object({
   path: ["registrationEnd"],
 });
 
-type ContestFormValues = z.infer<typeof contestSchema>;
+type ContestFormInput = z.input<typeof contestSchema>;
+type ContestFormOutput = z.output<typeof contestSchema>;
 
 export default function CreateContestPage() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function CreateContestPage() {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<ContestFormValues>({
+  } = useForm<ContestFormInput, any, ContestFormOutput>({
     resolver: zodResolver(contestSchema),
     defaultValues: {
       isPrivate: false,
@@ -75,7 +76,7 @@ export default function CreateContestPage() {
   const watchIsPrivate = watch("isPrivate");
   const watchIsTeam = watch("isTeam");
 
-  const onSubmit = async (data: ContestFormValues) => {
+  const onSubmit = async (data: ContestFormOutput) => {
     setIsSubmitting(true);
     try {
       // API call to save contest will go here
