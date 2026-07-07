@@ -125,7 +125,7 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
   };
 
   return (
-    <div className="w-full bg-[#FAF8F5] border border-[#0E0E0D]">
+    <div className="w-full relative bg-[#0E0E0D] border-b border-[#0E0E0D] overflow-hidden pt-14 select-none">
       {/* Hidden file input */}
       <input
         type="file"
@@ -135,37 +135,40 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
         className="hidden"
       />
 
-      {/* Cover Image Block (3:1 aspect ratio) */}
-      <div className="w-full aspect-[3/1] relative overflow-hidden bg-[#FAF8F5] border-b border-[#0E0E0D] group">
+      {/* Cover Image Background (absolute layer) */}
+      <div className="absolute inset-0 z-0">
         {profile.coverUrl ? (
           <img
             src={profile.coverUrl}
             alt="Profile Cover"
-            className="w-full h-full object-cover select-none pointer-events-none"
+            className="w-full h-full object-cover opacity-80"
           />
         ) : (
-          // Stark brutalist architectural layout grid paper background
+          // Brutalist blueprints layout grid paper background
           <div
-            className="w-full h-full bg-[#E4E1D9] bg-[linear-gradient(to_right,#0e0e0d0b_1px,transparent_1px),linear-gradient(to_bottom,#0e0e0d0b_1px,transparent_1px)] bg-[size:16px_16px]"
+            className="w-full h-full bg-[#1A1A19] bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:20px_20px]"
           />
         )}
-
-        {/* Edit Cover Pencil Button */}
-        {isOwner && (
-          <button
-            onClick={() => handleEditClick("cover")}
-            className="absolute top-4 right-4 p-2 bg-[#F1EFE9] text-[#0E0E0D] border border-[#0E0E0D] font-mono text-[0.55rem] uppercase tracking-wider font-bold hover:bg-[#0E0E0D] hover:text-[#F1EFE9] transition-colors cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(14,14,13,0.15)] hover:shadow-none active:translate-x-0.5 active:translate-y-0.5"
-          >
-            <Camera className="h-3.5 w-3.5" />
-            <span>Edit Banner</span>
-          </button>
-        )}
+        {/* Dark contrast gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/10 z-10" />
       </div>
 
-      {/* Lower Profile Header Section */}
-      <div className="px-6 pb-6 pt-16 sm:pt-20 relative flex flex-col sm:flex-row sm:items-end justify-between gap-5">
-        {/* Avatar Frame (1:1 aspect ratio) */}
-        <div className="absolute top-0 left-6 -translate-y-1/2 w-24 h-24 sm:w-28 sm:h-28 border border-[#0E0E0D] bg-[#F1EFE9] overflow-hidden select-none group/avatar shadow-[4px_4px_0px_0px_rgba(14,14,13,0.15)]">
+      {/* Edit Cover Pencil Button */}
+      {isOwner && (
+        <button
+          onClick={() => handleEditClick("cover")}
+          className="absolute top-20 right-6 p-2 bg-[#F1EFE9] text-[#0E0E0D] border border-[#0E0E0D] font-mono text-[0.55rem] uppercase tracking-wider font-bold hover:bg-[#0E0E0D] hover:text-[#F1EFE9] transition-colors cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(14,14,13,0.15)] z-30 hover:shadow-none active:translate-x-0.5 active:translate-y-0.5"
+        >
+          <Camera className="h-3.5 w-3.5" />
+          <span>Edit Banner</span>
+        </button>
+      )}
+
+      {/* Overlay Content Container (stretches to page constraint) */}
+      <div className="relative z-20 w-full max-w-4xl mx-auto px-6 pt-24 pb-8 sm:pt-32 sm:pb-12 flex flex-col sm:flex-row items-center sm:items-end gap-6 text-[#F1EFE9] text-center sm:text-left">
+        
+        {/* Circular Avatar overlap */}
+        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-[#F1EFE9] overflow-hidden bg-[#FAF8F5] relative group/avatar shadow-2xl shrink-0">
           {profile.avatarUrl ? (
             <img
               src={profile.avatarUrl}
@@ -173,16 +176,16 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center font-display text-[1.8rem] italic text-muted-foreground bg-[#E4E1D9]">
+            <div className="w-full h-full flex items-center justify-center font-display text-[2rem] font-bold text-[#0E0E0D] bg-[#FAF8F5]">
               {getInitials()}
             </div>
           )}
 
-          {/* Edit Avatar Overlay Hover Button */}
+          {/* Edit Avatar Hover Button */}
           {isOwner && (
             <button
               onClick={() => handleEditClick("avatar")}
-              className="absolute inset-0 bg-[#0E0E0D]/70 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center text-[#F1EFE9] cursor-pointer"
+              className="absolute inset-0 bg-[#0E0E0D]/75 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center text-[#F1EFE9] cursor-pointer"
             >
               <Camera className="h-5 w-5 mb-1" />
               <span className="font-mono text-[0.45rem] uppercase tracking-wider font-bold">
@@ -192,19 +195,15 @@ export function ProfileHeader({ userProfile, isOwner, onUpdateSuccess }: Profile
           )}
         </div>
 
-        {/* Left Side: Name and Affiliation Details */}
-        <div className="flex-1 min-w-0">
-          <h1 className="font-display text-2xl sm:text-3xl italic tracking-tight text-[#0E0E0D] truncate">
+        {/* Identity Details */}
+        <div className="flex-1 min-w-0 flex flex-col items-center sm:items-start">
+          <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-[#F1EFE9] drop-shadow-md">
             {profile.fullName || "Developer Identity"}
           </h1>
-          <p className="font-mono text-[0.6rem] text-muted-foreground uppercase mt-1 tracking-widest truncate">
+          <p className="font-mono text-[0.65rem] sm:text-[0.75rem] text-[#F1EFE9]/70 uppercase tracking-widest mt-1.5 sm:mt-2 truncate max-w-full">
             {profile.email}
           </p>
-        </div>
-
-        {/* Right Side: Simple verification status indicators */}
-        <div className="flex items-center gap-3 shrink-0">
-          <span className="font-mono text-[0.55rem] uppercase tracking-widest border border-[#0E0E0D]/15 px-2 py-1 text-muted-foreground bg-[#E4E1D9]/40 select-none">
+          <span className="font-mono text-[0.52rem] uppercase tracking-widest border border-[#F1EFE9]/25 px-2 py-0.5 mt-3.5 inline-block bg-[#F1EFE9]/5 text-[#F1EFE9]/60 select-none">
             Member since {new Date().getFullYear()}
           </span>
         </div>
