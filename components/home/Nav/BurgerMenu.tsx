@@ -99,8 +99,8 @@ export function BurgerMenu({ isDarkTheme }: BurgerMenuProps) {
                 <Link href="/" onClick={() => setIsOpen(false)} className={linkClass}>
                   Reviews
                 </Link>
-                <Link href="/context" onClick={() => setIsOpen(false)} className={linkClass}>
-                  Context
+                <Link href="/contest" onClick={() => setIsOpen(false)} className={linkClass}>
+                  Arenas
                 </Link>
               </nav>
             </div>

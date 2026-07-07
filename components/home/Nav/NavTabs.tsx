@@ -18,8 +18,8 @@ export function NavTabs({ isDarkTheme }: NavTabsProps) {
       <Link href="/" className={linkClass}>
         Reviews
       </Link>
-      <Link href="/context" className={linkClass}>
-        Context
+      <Link href="/contest" className={linkClass}>
+        Arenas
       </Link>
     </div>
   );
