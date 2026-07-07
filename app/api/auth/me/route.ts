@@ -23,9 +23,15 @@ export async function GET() {
     }
 
     const roles = await getUserRoles(user.id);
-    const dbUser = await prisma.user.findUnique({
+    const dbUser = await prisma.user.update({
       where: { id: user.id },
+      data: { lastActiveAt: new Date() },
       select: { avatarUrl: true, coverUrl: true },
+    }).catch(async () => {
+      return await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { avatarUrl: true, coverUrl: true },
+      });
     });
 
     return NextResponse.json({

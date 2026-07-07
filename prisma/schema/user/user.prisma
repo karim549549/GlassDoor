@@ -2,10 +2,27 @@ model User {
   id        String     @id @db.Uuid // Matches Supabase auth.users.id
   email     String     @unique
   fullName      String?
+  firstName     String?
+  lastName      String?
+  handle        String?    @unique
+  bio           String?    @db.Text
+  employmentStatus String?
+  currentEmployer  String?
+  seniority     String?
+  education     String?
+  githubUrl     String?
+  linkedinUrl   String?
+  portfolioUrl  String?
+  rating        Int        @default(0)
+  lastActiveAt  DateTime?
   emailVerified Boolean    @default(false)
   avatarUrl     String?
   coverUrl      String?
   roles         UserRole[]
+  skills        UserSkill[]
+  jobTypes      UserJobType[]
+  followers     Follows[]   @relation("UserFollowers")
+  following     Follows[]   @relation("UserFollowing")
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 

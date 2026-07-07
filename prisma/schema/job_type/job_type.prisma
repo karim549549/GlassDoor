@@ -1,0 +1,7 @@
+model JobType {
+  id    String        @id @default(uuid()) @db.Uuid
+  name  String        @unique
+  users UserJobType[]
+
+  @@map("job_types")
+}

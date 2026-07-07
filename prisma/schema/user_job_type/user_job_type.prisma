@@ -1,0 +1,9 @@
+model UserJobType {
+  userId    String  @db.Uuid
+  jobTypeId String  @db.Uuid
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobType   JobType @relation(fields: [jobTypeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, jobTypeId])
+  @@map("user_job_types")
+}

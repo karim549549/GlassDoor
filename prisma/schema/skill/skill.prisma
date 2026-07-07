@@ -1,0 +1,7 @@
+model Skill {
+  id    String      @id @default(uuid()) @db.Uuid
+  name  String      @unique
+  users UserSkill[]
+
+  @@map("skills")
+}
