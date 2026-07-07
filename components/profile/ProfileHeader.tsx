@@ -3,8 +3,10 @@
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { Camera } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
 import { CropperModal } from "./CropperModal";
 import { useAuthStore } from "@/lib/client/useAuthStore";
+import { useToast } from "@/components/providers/ToastProvider";
 import { ACCEPTED_IMAGE_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/upload-constants";
 import type { UserProfile } from "./types";
 
@@ -16,7 +18,10 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSuccess }: ProfileHeaderProps) {
-  const { setAuth, roles } = useAuthStore();
+  const { setAuth, roles, user } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { toast } = useToast();
   const [profile, setProfile] = useState(userProfile);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropType, setCropType] = useState<"avatar" | "cover">("avatar");
@@ -130,8 +135,23 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
   };
 
   const handleFollowToggle = async () => {
+    if (!user) {
+      toast("Please sign in to follow developers!", "info");
+      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
     if (isFollowLoading) return;
+
+    const previousIsFollowing = isFollowing;
+    const previousFollowersCount = followersCount;
+
+    // Optimistically update local states
+    const nextIsFollowing = !previousIsFollowing;
+    setIsFollowing(nextIsFollowing);
+    setFollowersCount(nextIsFollowing ? previousFollowersCount + 1 : previousFollowersCount - 1);
     setIsFollowLoading(true);
+
     try {
       const res = await fetch("/api/user/follow", {
         method: "POST",
@@ -140,11 +160,25 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        // Sync state with exact server values
         setIsFollowing(data.following);
         setFollowersCount(data.followersCount);
+
+        const action = data.following ? "followed" : "unfollowed";
+        const name = profile.fullName || "developer";
+        toast(`Successfully ${action} ${name}!`, "success");
+      } else {
+        // Rollback states
+        setIsFollowing(previousIsFollowing);
+        setFollowersCount(previousFollowersCount);
+        toast(data.error || "Failed to update follow status.", "error");
       }
     } catch (err) {
       console.error("Failed to toggle follow status:", err);
+      // Rollback states
+      setIsFollowing(previousIsFollowing);
+      setFollowersCount(previousFollowersCount);
+      toast("Network error. Failed to update follow status.", "error");
     } finally {
       setIsFollowLoading(false);
     }

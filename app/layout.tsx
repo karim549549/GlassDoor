@@ -30,6 +30,7 @@ import AuthProvider from "@/components/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 import { Nav } from "@/components/home/Nav";
 import { LayoutSpacer } from "@/components/providers/LayoutSpacer";
+import { ToastProvider } from "@/components/providers/ToastProvider";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -46,12 +47,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
-          <Nav />
-          <LayoutSpacer>{children}</LayoutSpacer>
+          <ToastProvider>
+            <Nav />
+            <LayoutSpacer>{children}</LayoutSpacer>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
-
   );
 }
 
