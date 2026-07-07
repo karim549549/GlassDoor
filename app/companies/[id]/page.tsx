@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getCompanyById } from "@/lib/companies/service";
-import { Nav } from "@/components/home/Nav";
 import { Footer } from "@/components/home/Footer";
 import { CompanyDetailView } from "@/components/companies/CompanyDetailView";
 
@@ -50,7 +49,6 @@ export default async function CompanyPage({ params }: PageProps) {
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Nav />
         <main className="flex-1">
           <CompanyDetailView company={company} />
         </main>

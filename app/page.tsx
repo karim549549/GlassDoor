@@ -1,4 +1,3 @@
-import { Nav } from "@/components/home/Nav";
 import { Billboard } from "@/components/home/Billboard";
 import { HeroAndArenas } from "@/components/home/HeroAndArenas";
 import { Footer } from "@/components/home/Footer";
@@ -21,7 +20,6 @@ export default async function Home() {
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Nav />
         <Billboard />
         <HeroAndArenas />
         <Footer />

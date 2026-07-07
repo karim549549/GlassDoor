@@ -28,6 +28,7 @@ export const metadata: Metadata = {
 
 import AuthProvider from "@/components/providers/AuthProvider";
 import { cn } from "@/lib/utils";
+import { Nav } from "@/components/home/Nav";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -43,8 +44,12 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", instrumentSerif.variable, dmSans.variable, jetbrainsMono.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <Nav />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
 }
+
