@@ -43,7 +43,7 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
         ref={ref}
         // Set z-index to z-30 (up from z-10) to force the container and its absolute children (the cards) 
         // to render on top of the subsequent pink section (z-10) during scroll translations.
-        className="arenas-section-container relative min-h-screen h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-30 border-b border-[#0E0E0D]"
+        className="arenas-section-container relative h-auto md:h-screen md:min-h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-12 md:py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-30 border-b border-[#0E0E0D]"
         {...props}
       >
         {/* Technical Section Header */}
@@ -75,13 +75,13 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
         </div>
 
         {/* Dynamic Center landing space for fanned cards */}
-        <div className="flex-1 w-full max-w-7xl mx-auto relative flex items-center justify-center min-h-[360px] overflow-visible">
+        <div className="flex-1 w-full max-w-7xl mx-auto relative flex flex-col md:flex-row items-center justify-center min-h-[360px] md:overflow-visible overflow-hidden mt-6">
           
           {/* Camera Viewfinder Slots */}
           {DOCK_SLOTS.map((slot) => (
             <div
               key={slot.id}
-              className={`absolute left-1/2 top-1/2 w-[calc(min(480px,88vw)+32px)] h-[322px] pointer-events-none ${slot.desktopClass} ${slot.mobileClass} md:scale-90 scale-[0.82] transition-colors duration-300 overflow-visible`}
+              className={`hidden md:block absolute left-1/2 top-1/2 w-[calc(min(480px,88vw)+32px)] h-[322px] pointer-events-none ${slot.desktopClass} ${slot.mobileClass} md:scale-90 scale-[0.82] transition-colors duration-300 overflow-visible`}
             >
               <div className="absolute inset-0 border border-dashed border-current/5" />
               <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-current" />
@@ -112,7 +112,7 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
         </div>
 
         {/* Enter the Arena Action Button (Contained naturally within vertical flex flow under the cards grid) */}
-        <div className="arena-enter-button w-full flex justify-center py-6 opacity-0 translate-y-4 pointer-events-none transition-all duration-300">
+        <div className="arena-enter-button w-full flex justify-center py-6 md:opacity-0 md:translate-y-4 md:pointer-events-none transition-all duration-300">
           <a
             href="/arenas"
             className="px-8 py-3.5 bg-orange text-[#FAF8F5] border border-orange font-mono text-[0.65rem] font-bold tracking-[0.25em] uppercase hover:bg-[#FAF8F5] hover:text-[#0E0E0D] hover:border-[#0E0E0D] transition-colors shadow-[4px_4px_0px_0px_rgba(14,14,13,1)] hover:shadow-[6px_6px_0px_0px_rgba(14,14,13,1)] active:translate-y-0.5 flex items-center gap-2 pointer-events-auto"

@@ -73,9 +73,19 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
   // Track active state of carousel buttons when user enters Section 3
   const [showCarouselControls, setShowCarouselControls] = useState(false);
 
+  // Detect mobile size
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+
   // Storing stacking state refs for reordering animations
   const zIndices = useRef<number[]>([10, 20, 30]);
   const stackOrder = useRef<number[]>([0, 1, 2]); // indices mapping to ARENA_CARDS
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobileScreen(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     // Dynamic countdown timer loop for the active card
@@ -92,8 +102,17 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       setActiveTimer(`${hrs}:${secs}`);
     }, 1000);
 
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileScreen) {
+      setEntranceFinished(true);
+      return;
+    }
+
     const cards = cardRefs.current;
-    if (!cards) return;
+    if (!cards || cards.length === 0) return;
 
     // Lock page scroll on initial load to prevent user from scrolling during card entrance
     document.body.style.overflow = "hidden";
@@ -107,8 +126,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
       const tl = gsap.timeline({ delay: 0.4 });
 
-      const isDesktop = window.innerWidth >= 768;
-      const scaleBase = isDesktop ? 1.5 : 1.0;
+      const scaleBase = 1.5;
 
       // Cards gather in the center of the Hero section (which is top: -100vh relative to ArenasSection container)
       tl.to(cards[0], { opacity: 1, x: 0, y: "-100vh", rotate: -4, scale: scaleBase, duration: 1.15, ease: "power3.out" })
@@ -132,13 +150,12 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     return () => {
       ctx.revert();
       document.body.style.overflow = ""; // Ensure scroll is restored on unmount
-      clearInterval(interval);
     };
-  }, []);
+  }, [isMobileScreen]);
 
   // 2. GSAP ScrollTrigger Animations
   useEffect(() => {
-    if (!entranceFinished || !containerRef.current || !arenasRef.current) return;
+    if (isMobileScreen || !entranceFinished || !containerRef.current || !arenasRef.current) return;
 
     const cards = cardRefs.current;
     if (!cards) return;
@@ -355,6 +372,100 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       });
   };
 
+  if (isMobileScreen) {
+    return (
+      <div className="w-full flex flex-col gap-6 px-4 md:px-0 py-6 pointer-events-auto z-45 max-w-[480px] mx-auto">
+        {ARENA_CARDS.map((card, idx) => {
+          const shadowStyle = idx === 0 
+            ? "2px 2px 0px 0px rgba(14,14,13,0.75)" 
+            : idx === 1 
+              ? "3px 3px 0px 0px rgba(14,14,13,0.85)" 
+              : "4px 4px 0px 0px rgba(14,14,13,0.9)";
+              
+          // Match organizers based on idx
+          const initials = idx === 0 ? "CC" : idx === 1 ? "SO" : "DA";
+          const organizer = idx === 0 ? "Coon Cluster" : idx === 1 ? "StackOps" : "Devs Arena";
+
+          return (
+            <div
+              key={card.id}
+              className="bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-5 relative flex flex-col justify-between"
+              style={{
+                boxShadow: shadowStyle,
+              }}
+            >
+              {/* Outline grids */}
+              <div className="absolute inset-1 border border-[#0E0E0D]/15 pointer-events-none" />
+              <div className="absolute inset-1.5 border border-dashed border-[#0E0E0D]/10 pointer-events-none" />
+
+              {/* Card Header */}
+              <div className="space-y-3 text-left">
+                <div className="font-display italic text-lg leading-[1.1] text-[#0E0E0D] tracking-tight">
+                  <span className="text-orange font-bold not-italic font-mono text-[0.6rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2 align-middle">
+                    [{card.tag}]
+                  </span>
+                  {card.title}
+                </div>
+                
+                <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                  {card.description}
+                </p>
+              </div>
+
+              {/* Organizer Badge Inside Card */}
+              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-dashed border-[#0E0E0D]/15">
+                <div className="w-6 h-6 rounded-full border border-[#0E0E0D] flex items-center justify-center font-mono text-[0.5rem] font-bold bg-[#FAF8F5] text-[#0E0E0D]">
+                  {initials}
+                </div>
+                <div className="text-left">
+                  <span className="font-mono text-[0.35rem] text-muted-foreground uppercase tracking-widest block font-bold leading-none mb-0.5">
+                    [ORGANIZER]
+                  </span>
+                  <span className="font-mono text-[0.45rem] font-bold uppercase tracking-wider leading-none">
+                    {organizer}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bottom Content Row */}
+              <div className="flex flex-row items-end justify-between gap-4 pt-3 border-t border-[#0E0E0D]/15 mt-3 text-left">
+                <div className="flex flex-col">
+                  <span className="font-mono text-[0.38rem] uppercase tracking-[0.25em] text-muted-foreground mb-0.5 block font-bold">
+                    [{card.timeLabel}]
+                  </span>
+                  <div className={`font-mono text-sm font-bold leading-none tracking-widest ${card.isLive ? "text-[#0E0E0D]" : "text-muted-foreground"}`}>
+                    {card.isLive ? (
+                      <>
+                        {activeTimer.split(":")[0]}
+                        <span className="text-orange animate-pulse">:</span>
+                        {activeTimer.split(":")[1]}
+                        <span className="text-orange animate-pulse">:</span>
+                        <span className="text-orange">{activeTimer.split(":")[2]}</span>
+                      </>
+                    ) : (
+                      card.timeValue
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-1">
+                  {card.tech.map((tech) => (
+                    <span
+                      key={tech}
+                      className="font-mono text-[0.42rem] uppercase tracking-wider text-[#0E0E0D] font-bold"
+                    >
+                      [{tech}]
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={stackRef}
@@ -465,4 +576,5 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     </div>
   );
 }
+
 export default HeroArenaCard;
