@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Trophy, Calendar, Users, Shield, Link2, FileText, ArrowRight } from "lucide-react";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
+import gsap from "gsap";
 
 // Form Validation Schema using Zod
 const contestSchema = z.object({
@@ -54,6 +55,25 @@ type ContestFormOutput = z.output<typeof contestSchema>;
 export default function CreateContestPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Elegant typographic fade-up reveal on page load
+    gsap.fromTo(
+      ".masthead-title",
+      { opacity: 0, y: 55 },
+      { opacity: 1, y: 0, duration: 1.1, ease: "power4.out", delay: 0.15 }
+    );
+    gsap.fromTo(
+      ".masthead-subtitle",
+      { opacity: 0, y: 15 },
+      { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.4 }
+    );
+    gsap.fromTo(
+      ".masthead-desc",
+      { opacity: 0, y: 15 },
+      { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.55 }
+    );
+  }, []);
 
   const {
     register,
@@ -112,20 +132,22 @@ export default function CreateContestPage() {
           </svg>
         </div>
         
-        <div className="max-w-6xl mx-auto relative z-10 space-y-3">
-          <span className="font-mono text-[0.6rem] uppercase tracking-[0.25em] text-orange font-bold block">
+        <div className="max-w-[85%] mx-auto relative z-10 space-y-3">
+          <span className="masthead-subtitle opacity-0 font-mono text-[0.6rem] uppercase tracking-[0.25em] text-orange font-bold block">
             [HOSTING PORTAL SYSTEM DIRECTORY]
           </span>
-          <h1 className="font-display italic text-4xl md:text-6xl uppercase tracking-tight text-[#F1EFE9]">
-            Setup Arena Contest
-          </h1>
-          <p className="font-mono text-[0.52rem] text-[#F1EFE9]/60 uppercase tracking-widest leading-relaxed max-w-2xl">
+          <div className="overflow-hidden py-1">
+            <h1 className="masthead-title opacity-0 font-display italic text-4xl md:text-6xl uppercase tracking-tight text-[#F1EFE9]">
+              Setup Arena Contest
+            </h1>
+          </div>
+          <p className="masthead-desc opacity-0 font-mono text-[0.52rem] text-[#F1EFE9]/60 uppercase tracking-widest leading-relaxed max-w-2xl">
             Cairo Issue 002 · Configure registration windows, phases, team limits, and submission rules for Egyptian developer cohorts.
           </p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-12 md:py-16 relative z-10">
+      <div className="max-w-[85%] mx-auto py-12 md:py-16 relative z-10">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           
           {/* Two-Column Form Grid Layout */}
