@@ -157,7 +157,7 @@ export function ContestsListClient({
           </svg>
         </div>
         
-        <div className="max-w-7xl mx-auto relative z-10 space-y-3">
+        <div className="w-[92%] xl:w-[80%] max-w-[1700px] mx-auto relative z-10 space-y-3">
           <span className="font-mono text-[0.55rem] text-orange tracking-widest font-bold block uppercase">
             Home &gt; History &gt; Arena
           </span>
@@ -186,7 +186,7 @@ export function ContestsListClient({
           </svg>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 space-y-8">
+        <div className="relative z-10 w-[92%] xl:w-[80%] max-w-[1700px] mx-auto px-4 space-y-8">
           {/* Two Column Layout: Billboard Left (Width 3/12), Registry Right (Width 9/12) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
