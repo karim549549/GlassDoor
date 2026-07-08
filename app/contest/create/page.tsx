@@ -264,7 +264,7 @@ export default function CreateContestPage() {
               <div className="group block bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[2px_2px_0px_0px_#0E0E0D] pointer-events-none">
                 <div className="flex flex-col gap-3">
                   {/* Cover Image Block */}
-                  <div className="w-full h-24 relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
+                  <div className="w-full aspect-[4/1] relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
                     {watchCoverImageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -395,7 +395,7 @@ export default function CreateContestPage() {
                           <img
                             src={watchCoverImageUrl}
                             alt="Uploaded cover preview"
-                            className="h-20 w-36 object-cover border border-foreground/20 shadow-[2px_2px_0px_0px_#0E0E0D]"
+                            className="w-48 aspect-[4/1] object-cover border border-foreground/20 shadow-[2px_2px_0px_0px_#0E0E0D]"
                           />
                           <span className="font-mono text-[0.55rem] uppercase tracking-wider text-orange font-bold">
                             [✓] IMAGE UPLOADED (CLICK TO CHANGE)
