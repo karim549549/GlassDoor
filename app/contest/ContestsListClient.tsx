@@ -1,48 +1,21 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Plus, Search, Trophy, Filter } from "lucide-react";
+import { Plus, Search, Trophy } from "lucide-react";
 import { useAuthStore } from "@/lib/client/useAuthStore";
+import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
 import { CairoBillboard } from "@/components/contest/CairoBillboard";
-import { UpcomingArenaBanner } from "@/components/contest/UpcomingArenaBanner";
 import { ContestTabs } from "@/components/contest/ContestTabs";
 import { ContestCard, ContestCardSkeleton } from "@/components/contest/ContestCard";
 import { ContestHeader } from "@/components/contest/ContestHeader";
-
-interface ClientContest {
-  id: string;
-  title: string;
-  description: string;
-  coverImageUrl?: string | null;
-  status: string;
-  isPrivate: boolean;
-  isTeam: boolean;
-  minTeamSize: number;
-  maxTeamSize: number;
-  maxParticipants?: number | null;
-  registrationStart: string;
-  registrationEnd: string;
-  ideaPhaseStart: string;
-  ideaPhaseEnd: string;
-  implPhaseStart: string;
-  implPhaseEnd: string;
-  requireGithubUrl: boolean;
-  requireFigmaUrl: boolean;
-  requireVideoUrl: boolean;
-  requireWriteup: boolean;
-  rulesText: string;
-  creatorId: string;
-  teams: {
-    id: string;
-    members: {
-      userId: string;
-    }[];
-  }[];
-}
+import { ContestContainer } from "@/components/contest/ContestContainer";
+import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
+import type { SerializedContestListItem } from "@/lib/contest/types";
+import type { ContestStatusFilter, ContestAccessFilter, ContestSortOption } from "@/lib/contest/schema";
 
 interface ContestsListClientProps {
-  initialContests: ClientContest[];
+  initialContests: SerializedContestListItem[];
   initialTotalPages: number;
   initialTotalCount: number;
 }
@@ -58,25 +31,31 @@ export function ContestsListClient({
   const [currentPage, setCurrentPage] = useState(1);
   
   // Filter & Sort States
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "active" | "completed">("all");
-  const [accessFilter, setAccessFilter] = useState<"all" | "public" | "private">("all");
-  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title" | "teams">("newest");
+  const [statusFilter, setStatusFilter] = useState<ContestStatusFilter>("all");
+  const [accessFilter, setAccessFilter] = useState<ContestAccessFilter>("all");
+  const [sortBy, setSortBy] = useState<ContestSortOption>("newest");
 
   // Dynamic state loaded via HTTP calls
-  const [contests, setContests] = useState<ClientContest[]>(initialContests);
+  const [contests, setContests] = useState<SerializedContestListItem[]>(initialContests);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const isFirstLoad = useRef(true);
+
+  // Only the free-text search needs debouncing; the other filters are
+  // discrete/select-driven and can trigger a fetch immediately.
+  const debouncedSearch = useDebouncedValue(searchQuery, 250);
 
   // Sync API state updates when search queries or filters alter
   useEffect(() => {
-    if (isFirstLoad) {
-      setIsFirstLoad(false);
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
       return;
     }
 
-    const fetcher = setTimeout(async () => {
+    let cancelled = false;
+
+    (async () => {
       setIsLoading(true);
       try {
         const queryParams = new URLSearchParams({
@@ -84,13 +63,13 @@ export function ContestsListClient({
           limit: "50",
           status: statusFilter,
           access: accessFilter,
-          search: searchQuery,
+          search: debouncedSearch,
           sortBy: sortBy,
           tab: activeTab
         });
 
         const res = await fetch(`/api/contest?${queryParams}`);
-        if (res.ok) {
+        if (res.ok && !cancelled) {
           const data = await res.json();
           setContests(data.contests);
           setTotalPages(data.totalPages);
@@ -99,32 +78,14 @@ export function ContestsListClient({
       } catch (err) {
         console.error("API fetch error:", err);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
-    }, 250); // debounce API calls for search query entries
+    })();
 
-    return () => clearTimeout(fetcher);
-  }, [currentPage, statusFilter, accessFilter, searchQuery, sortBy, activeTab, isFirstLoad]);
-
-  // Reset page pagination back to 1 when filters alter
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, accessFilter, searchQuery, sortBy, activeTab]);
-
-  // Identify today's active upcoming registered contest
-  const upcomingContest = useMemo(() => {
-    if (user?.id) {
-      const registered = contests.find((c) => 
-        (c.status === "IMPLEMENTATION_PHASE" || c.status === "IDEA_PHASE" || c.status === "REGISTRATION_OPEN") &&
-        c.teams.some((team) => team.members.some((m) => m.userId === user.id))
-      );
-      if (registered) return registered;
-    }
-
-    return contests.find(
-      (c) => c.status === "IMPLEMENTATION_PHASE" || c.status === "IDEA_PHASE"
-    ) || null;
-  }, [contests, user]);
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPage, statusFilter, accessFilter, debouncedSearch, sortBy, activeTab]);
 
   // Billboard Contests (10 items teaser ranks based on initial data count)
   const billboardContests = useMemo(() => {
@@ -154,18 +115,9 @@ export function ContestsListClient({
       {/* 2. Main Page Content (Sand background with blueprint lines) */}
       <div className="relative z-10 py-12 md:py-16">
         {/* Editorial Background Blueprint Grid */}
-        <div className="absolute inset-0 opacity-[0.085] pointer-events-none z-0">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="landing-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#landing-grid)" />
-          </svg>
-        </div>
+        <BackgroundGrid opacity={0.085} />
 
-        <div className="relative z-10 w-[92%] xl:w-[80%] max-w-[1700px] mx-auto px-4 space-y-8">
+        <ContestContainer className="relative z-10 px-4 space-y-8">
           {/* Two Column Layout: Billboard Left (Width 3/12), Registry Right (Width 9/12) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
@@ -219,7 +171,7 @@ export function ContestsListClient({
                   <select
                     value={statusFilter}
                     onChange={(e) => {
-                      setStatusFilter(e.target.value as any);
+                      setStatusFilter(e.target.value as ContestStatusFilter);
                       setCurrentPage(1);
                     }}
                     className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
@@ -237,7 +189,7 @@ export function ContestsListClient({
                   <select
                     value={accessFilter}
                     onChange={(e) => {
-                      setAccessFilter(e.target.value as any);
+                      setAccessFilter(e.target.value as ContestAccessFilter);
                       setCurrentPage(1);
                     }}
                     className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
@@ -254,7 +206,7 @@ export function ContestsListClient({
                   <select
                     value={sortBy}
                     onChange={(e) => {
-                      setSortBy(e.target.value as any);
+                      setSortBy(e.target.value as ContestSortOption);
                       setCurrentPage(1);
                     }}
                     className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
@@ -376,7 +328,7 @@ export function ContestsListClient({
             </div>
 
           </div>
-        </div>
+        </ContestContainer>
       </div>
     </div>
   );

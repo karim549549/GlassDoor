@@ -1,14 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import { Trophy, Shield } from "lucide-react";
+import type { ContestListItem } from "@/lib/contest/types";
 
-interface BillboardContest {
-  id: string;
-  title: string;
-  isPrivate: boolean;
-  status: string;
+type BillboardContest = Pick<ContestListItem, "id" | "title" | "isPrivate" | "status"> & {
   participantCount: number;
-}
+};
 
 interface CairoBillboardProps {
   contests: BillboardContest[];

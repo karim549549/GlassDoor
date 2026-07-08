@@ -4,56 +4,30 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { contestSchema, contestBaseSchema, type ContestFormInput, type ContestFormOutput } from "@/lib/contest/schema";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Trophy, Calendar, Users, Shield, Link2, FileText, ArrowRight, Image as ImageIcon, ExternalLink } from "lucide-react";
+import { Trophy, Calendar, Users, Shield, Link2, FileText, ArrowRight, Image as ImageIcon } from "lucide-react";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { useToast } from "@/components/providers/ToastProvider";
 import { CropperModal } from "@/components/profile/CropperModal";
 import { ContestHeader } from "@/components/contest/ContestHeader";
+import { ContestContainer } from "@/components/contest/ContestContainer";
+import { ContestCardBody } from "@/components/contest/ContestCard";
 import gsap from "gsap";
 
-// Form Validation Schema using Zod
-const contestSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  coverImageUrl: z.string().min(1, "Cover image upload is required").url("Must be a valid URL"),
-  isPrivate: z.boolean().default(false),
-  inviteCode: z.string().optional(),
-  
-  // Timeline
-  registrationStart: z.string().min(1, "Registration start date is required"),
-  registrationEnd: z.string().min(1, "Registration end date is required"),
-  ideaPhaseStart: z.string().min(1, "Idea phase start date is required"),
-  ideaPhaseEnd: z.string().min(1, "Idea phase end date is required"),
-  implPhaseStart: z.string().min(1, "Implementation phase start date is required"),
-  implPhaseEnd: z.string().min(1, "Implementation end date is required"),
-  
-  // Teams
-  isTeam: z.boolean().default(false),
-  minTeamSize: z.coerce.number().min(1, "Min team size is 1").default(1),
-  maxTeamSize: z.coerce.number().min(1, "Max team size is 1").default(1),
-  maxParticipants: z.coerce.number().optional(),
-
-  // Submission Rules
-  requireGithubUrl: z.boolean().default(true),
-  requireFigmaUrl: z.boolean().default(false),
-  requireVideoUrl: z.boolean().default(false),
-  requireWriteup: z.boolean().default(true),
-  rulesText: z.string().min(10, "Please provide some rules for the contest"),
-}).refine((data) => {
-  // Simple validation for dates order
-  const regStart = new Date(data.registrationStart);
-  const regEnd = new Date(data.registrationEnd);
-  return regEnd > regStart;
-}, {
-  message: "Registration end must be after registration start",
-  path: ["registrationEnd"],
+// Per-section field slices, derived from the single shared schema so a min-length/format
+// change there automatically updates the progress HUD below — no hardcoded magic numbers.
+const generalSectionSchema = contestBaseSchema.pick({ title: true, description: true, coverImageUrl: true });
+const timelineSectionSchema = contestBaseSchema.pick({
+  registrationStart: true,
+  registrationEnd: true,
+  ideaPhaseStart: true,
+  ideaPhaseEnd: true,
+  implPhaseStart: true,
+  implPhaseEnd: true,
 });
-
-type ContestFormInput = z.input<typeof contestSchema>;
-type ContestFormOutput = z.output<typeof contestSchema>;
+const rulesSectionSchema = contestBaseSchema.pick({ rulesText: true });
 
 export default function CreateContestPage() {
   const router = useRouter();
@@ -88,7 +62,7 @@ export default function CreateContestPage() {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<ContestFormInput, any, ContestFormOutput>({
+  } = useForm<ContestFormInput, unknown, ContestFormOutput>({
     resolver: zodResolver(contestSchema),
     defaultValues: {
       isPrivate: false,
@@ -167,12 +141,26 @@ export default function CreateContestPage() {
     }
   };
 
-  // Determine section validation states
-  const isGeneralValid = !!(watchTitle && watchTitle.length >= 3 && watchDescription && watchDescription.length >= 10 && watchCoverImageUrl);
-  const isAccessValid = !watchIsPrivate || !!(watchInviteCode && watchInviteCode.length > 0);
-  const isTeamValid = !watchIsTeam || !!(watchMinTeam >= 1 && watchMaxTeam >= watchMinTeam);
-  const isTimelineValid = !!(watchRegStart && watchRegEnd && watchIdeaStart && watchIdeaEnd && watchImplStart && watchImplEnd);
-  const isRulesValid = !!(watchRulesText?.length >= 10);
+  // Determine section validation states from the shared schema instead of hand-copied
+  // rules (min lengths, requiredness). Conditional business rules that aren't expressible
+  // as a single field's constraint (invite code only required when private, max team size
+  // must be >= min) stay explicit here rather than folded into the schema.
+  const isGeneralValid = generalSectionSchema.safeParse({
+    title: watchTitle,
+    description: watchDescription,
+    coverImageUrl: watchCoverImageUrl,
+  }).success;
+  const isAccessValid = !watchIsPrivate || !!watchInviteCode;
+  const isTeamValid = !watchIsTeam || (watchMinTeam >= 1 && watchMaxTeam >= watchMinTeam);
+  const isTimelineValid = timelineSectionSchema.safeParse({
+    registrationStart: watchRegStart,
+    registrationEnd: watchRegEnd,
+    ideaPhaseStart: watchIdeaStart,
+    ideaPhaseEnd: watchIdeaEnd,
+    implPhaseStart: watchImplStart,
+    implPhaseEnd: watchImplEnd,
+  }).success;
+  const isRulesValid = rulesSectionSchema.safeParse({ rulesText: watchRulesText }).success;
 
   // Calculate completed section count
   const completedCount = [
@@ -228,11 +216,13 @@ export default function CreateContestPage() {
       {/* Setup Contest Masthead Header using decoupled reusable component */}
       <ContestHeader
         subtitle="[HOSTING PORTAL SYSTEM DIRECTORY]"
-        subtitleClassName="masthead-subtitle opacity-0"
         title="Setup Arena Contest"
-        titleClassName="masthead-title opacity-0"
         description="Cairo Issue 002 · Configure registration windows, phases, team limits, and submission rules for Egyptian developer cohorts."
-        descClassName="masthead-desc opacity-0"
+        animationHooks={{
+          subtitle: "masthead-subtitle opacity-0",
+          title: "masthead-title opacity-0",
+          description: "masthead-desc opacity-0",
+        }}
       >
         <div className="border-2 border-dashed border-[#F1EFE9]/25 bg-[#F1EFE9]/5 p-4 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(241,239,233,0.06)]">
           <span className="font-mono text-[0.45rem] text-[#F1EFE9]/50 uppercase tracking-[0.25em] font-bold block mb-2">
@@ -240,70 +230,24 @@ export default function CreateContestPage() {
           </span>
           
           <div className="group block bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[2px_2px_0px_0px_#0E0E0D] pointer-events-none">
-            <div className="flex flex-col gap-3">
-              {/* Cover Image Block */}
-              <div className="w-full aspect-[4/1] relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
-                {watchCoverImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={watchCoverImageUrl}
-                    alt="Cover preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-2 text-center text-[#0E0E0D]/20">
-                    <Trophy className="h-6 w-6 stroke-[1.25]" />
-                    <span className="font-mono text-[0.38rem] tracking-[0.2em] uppercase mt-1">NO COVER IMAGE</span>
-                  </div>
-                )}
-                
-                <div className="absolute top-1.5 left-1.5 flex flex-wrap gap-1">
-                  <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-[#0E0E0D]">
-                    {watchIsPrivate ? "INVITE ONLY" : "PUBLIC"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <span className="font-mono text-[0.42rem] font-bold uppercase tracking-widest px-1 py-0.5 border bg-blue-100 text-blue-900 border-blue-300">
-                    [REGISTRATION OPEN]
-                  </span>
-                </div>
-
-                <h3 className="font-display italic text-sm font-normal leading-tight text-[#0E0E0D] uppercase truncate">
-                  {watchTitle || "UNTITLED ARENA"}
-                </h3>
-
-                <p className="font-sans text-[0.58rem] text-muted-foreground line-clamp-2 mt-1 normal-case leading-normal">
-                  {watchDescription || "No overview description provided yet. Enter details on the left to sync."}
-                </p>
-
-                {/* Footer Details */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-dashed border-[#0E0E0D]/10">
-                  <div className="flex items-center gap-2.5 font-mono text-[0.45rem] uppercase tracking-wider text-muted-foreground">
-                    <span className="flex items-center gap-0.5">
-                      <Users className="h-2.5 w-2.5" /> {watchIsTeam ? `Squad: ${watchMinTeam || 1}-${watchMaxTeam || 1} Devs` : "Solo Arena"}
-                    </span>
-                    <span className="flex items-center gap-0.5">
-                      <Calendar className="h-2.5 w-2.5" /> {watchRegStart ? new Date(watchRegStart).toLocaleDateString() : "PENDING DATE"}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-1">
-                    <span className="font-mono text-[0.42rem] text-accent font-bold flex items-center gap-0.5">
-                      ENTER <ExternalLink className="h-1.5 w-1.5" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ContestCardBody
+              contest={{
+                title: watchTitle || "UNTITLED ARENA",
+                description: watchDescription || "No overview description provided yet. Enter details on the left to sync.",
+                coverImageUrl: watchCoverImageUrl,
+                status: "REGISTRATION_OPEN",
+                isPrivate: watchIsPrivate,
+                isTeam: watchIsTeam,
+                minTeamSize: watchMinTeam || 1,
+                maxTeamSize: watchMaxTeam || 1,
+              }}
+              footerDate={watchRegStart}
+            />
           </div>
         </div>
       </ContestHeader>
 
-      <div className="w-[92%] xl:w-[80%] max-w-[1700px] mx-auto py-12 md:py-16 relative z-10">
+      <ContestContainer className="py-12 md:py-16 relative z-10">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           
           {/* Two-Column Form Grid Layout */}
@@ -713,7 +657,7 @@ export default function CreateContestPage() {
           </div>
 
         </form>
-      </div>
+      </ContestContainer>
 
       {/* Cropper Modal for Event Cover Image */}
       <CropperModal
