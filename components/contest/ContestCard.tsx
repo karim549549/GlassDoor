@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Calendar, Users, Trophy, ExternalLink } from "lucide-react";
+import { buildContestSlug } from "@/lib/contest-slug";
 
 export interface ContestCardProps {
   contest: {
@@ -91,7 +92,7 @@ export function ContestCard({ contest }: ContestCardProps) {
 
   return (
     <Link
-      href={`/contest/${contest.id}`}
+      href={`/contest/${buildContestSlug(contest.title, contest.id)}`}
       className="group block bg-white text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[4px_4px_0px_0px_#0E0E0D] hover:shadow-[6px_6px_0px_0px_#0E0E0D] hover:-translate-y-0.5 transition-all duration-200"
     >
       <div className="flex flex-col gap-3">
