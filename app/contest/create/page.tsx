@@ -224,18 +224,92 @@ export default function CreateContestPage() {
           </svg>
         </div>
         
-        <div className="max-w-[85%] mx-auto relative z-10 space-y-3">
-          <span className="masthead-subtitle opacity-0 font-mono text-[0.6rem] uppercase tracking-[0.25em] text-orange font-bold block">
-            [HOSTING PORTAL SYSTEM DIRECTORY]
-          </span>
-          <div className="overflow-hidden py-1">
-            <h1 className="masthead-title opacity-0 font-display italic text-4xl md:text-6xl uppercase tracking-tight text-[#F1EFE9]">
-              Setup Arena Contest
-            </h1>
+        <div className="max-w-[85%] mx-auto relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 py-2">
+          {/* Left Column: Title Info */}
+          <div className="space-y-3 max-w-2xl">
+            <span className="masthead-subtitle opacity-0 font-mono text-[0.6rem] uppercase tracking-[0.25em] text-orange font-bold block">
+              [HOSTING PORTAL SYSTEM DIRECTORY]
+            </span>
+            <div className="overflow-hidden py-1">
+              <h1 className="masthead-title opacity-0 font-display italic text-4xl md:text-6xl uppercase tracking-tight text-[#F1EFE9]">
+                Setup Arena Contest
+              </h1>
+            </div>
+            <p className="masthead-desc opacity-0 font-mono text-[0.52rem] text-[#F1EFE9]/60 uppercase tracking-widest leading-relaxed">
+              Cairo Issue 002 · Configure registration windows, phases, team limits, and submission rules for Egyptian developer cohorts.
+            </p>
           </div>
-          <p className="masthead-desc opacity-0 font-mono text-[0.52rem] text-[#F1EFE9]/60 uppercase tracking-widest leading-relaxed max-w-2xl">
-            Cairo Issue 002 · Configure registration windows, phases, team limits, and submission rules for Egyptian developer cohorts.
-          </p>
+
+          {/* Right Column: Floating Visual Live Preview Card */}
+          <div className="w-full lg:w-auto shrink-0 lg:max-w-md">
+            <div className="border-2 border-dashed border-[#F1EFE9]/25 bg-[#F1EFE9]/5 p-4 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(241,239,233,0.06)]">
+              <span className="font-mono text-[0.45rem] text-[#F1EFE9]/50 uppercase tracking-[0.25em] font-bold block mb-2">
+                [LIVE CARD PREVIEW]
+              </span>
+              
+              <div className="group block bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[2px_2px_0px_0px_#0E0E0D] pointer-events-none">
+                <div className="flex flex-col gap-3">
+                  {/* Cover Image Block */}
+                  <div className="w-full h-24 relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
+                    {watchCoverImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={watchCoverImageUrl}
+                        alt="Cover preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-2 text-center text-[#0E0E0D]/20">
+                        <Trophy className="h-6 w-6 stroke-[1.25]" />
+                        <span className="font-mono text-[0.38rem] tracking-[0.2em] uppercase mt-1">NO COVER IMAGE</span>
+                      </div>
+                    )}
+                    
+                    <div className="absolute top-1.5 left-1.5 flex flex-wrap gap-1">
+                      <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-[#0E0E0D]">
+                        {watchIsPrivate ? "INVITE ONLY" : "PUBLIC"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="font-mono text-[0.42rem] font-bold uppercase tracking-widest px-1 py-0.5 border bg-blue-100 text-blue-900 border-blue-300">
+                        [REGISTRATION OPEN]
+                      </span>
+                    </div>
+
+                    <h3 className="font-display italic text-sm font-normal leading-tight text-[#0E0E0D] uppercase truncate">
+                      {watchTitle || "UNTITLED ARENA"}
+                    </h3>
+
+                    <p className="font-sans text-[0.58rem] text-muted-foreground line-clamp-2 mt-1 normal-case leading-normal">
+                      {watchDescription || "No overview description provided yet. Enter details on the left to sync."}
+                    </p>
+
+                    {/* Footer Details */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-dashed border-[#0E0E0D]/10">
+                      <div className="flex items-center gap-2.5 font-mono text-[0.45rem] uppercase tracking-wider text-muted-foreground">
+                        <span className="flex items-center gap-0.5">
+                          <Users className="h-2.5 w-2.5" /> {watchIsTeam ? `Squad: ${watchMinTeam || 1}-${watchMaxTeam || 1} Devs` : "Solo Arena"}
+                        </span>
+                        <span className="flex items-center gap-0.5">
+                          <Calendar className="h-2.5 w-2.5" /> {watchRegStart ? new Date(watchRegStart).toLocaleDateString() : "PENDING DATE"}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-1">
+                        <span className="font-mono text-[0.42rem] text-accent font-bold flex items-center gap-0.5">
+                          ENTER <ExternalLink className="h-1.5 w-1.5" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -249,7 +323,7 @@ export default function CreateContestPage() {
             <div className="lg:col-span-8 space-y-8">
               
               {/* Section 1: General Info */}
-              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+              <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
                 <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
                   <Trophy className="h-4 w-4" /> 01. General Details
                 </h2>
@@ -339,7 +413,7 @@ export default function CreateContestPage() {
               </div>
 
               {/* Section 2: Access & Privacy */}
-              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+              <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
                 <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
                   <Shield className="h-4 w-4" /> 02. Access & Security
                 </h2>
@@ -374,7 +448,7 @@ export default function CreateContestPage() {
               </div>
 
               {/* Section 4: Team Setup */}
-              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+              <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
                 <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
                   <Users className="h-4 w-4" /> 04. Team Configurations
                 </h2>
@@ -420,7 +494,7 @@ export default function CreateContestPage() {
               </div>
 
               {/* Section 3: Timeline Phases */}
-              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+              <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
                 <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
                   <Calendar className="h-4 w-4" /> 03. Timeline & Phases
                 </h2>
@@ -468,7 +542,7 @@ export default function CreateContestPage() {
               </div>
 
               {/* Section 5: Submissions & Rules */}
-              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+              <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
                 <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
                   <FileText className="h-4 w-4" /> 05. Submission Deliverables & Rules
                 </h2>
@@ -551,140 +625,71 @@ export default function CreateContestPage() {
 
             </div>
 
-            {/* Right Column (Width 4/12): Sticky Progress HUD, Live Preview, & Actions */}
+            {/* Right Column (Width 4/12): Sticky Progress HUD & Actions */}
             <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
               
-              {/* 1. Live Preview Card */}
-              <div className="border-2 border-foreground bg-card p-4 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden">
-                <span className="font-mono text-[0.48rem] text-orange uppercase tracking-[0.25em] font-bold block mb-2">
-                  [LIVE CARD PREVIEW]
-                </span>
-                
-                <div className="group block bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[2px_2px_0px_0px_#0E0E0D] pointer-events-none">
-                  <div className="flex flex-col gap-3">
-                    {/* Cover Image Block */}
-                    <div className="w-full h-28 relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
-                      {watchCoverImageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={watchCoverImageUrl}
-                          alt="Cover preview"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center p-2 text-center text-[#0E0E0D]/20">
-                          <Trophy className="h-7 w-7 stroke-[1.25]" />
-                          <span className="font-mono text-[0.42rem] tracking-[0.2em] uppercase mt-1">NO COVER IMAGE</span>
-                        </div>
-                      )}
-                      
-                      <div className="absolute top-1.5 left-1.5 flex flex-wrap gap-1">
-                        <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-[#0E0E0D]">
-                          {watchIsPrivate ? "INVITE ONLY" : "PUBLIC"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Info */}
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="font-mono text-[0.42rem] font-bold uppercase tracking-widest px-1 py-0.5 border bg-blue-100 text-blue-900 border-blue-300">
-                          [REGISTRATION OPEN]
-                        </span>
-                      </div>
-
-                      <h3 className="font-display italic text-base font-normal leading-tight text-[#0E0E0D] uppercase truncate">
-                        {watchTitle || "UNTITLED ARENA"}
-                      </h3>
-
-                      <p className="font-sans text-[0.62rem] text-muted-foreground line-clamp-2 mt-1 normal-case">
-                        {watchDescription || "No overview description provided yet. Enter details on the left to sync."}
-                      </p>
-
-                      {/* Footer Details */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 mt-2.5 border-t border-dashed border-[#0E0E0D]/10">
-                        <div className="flex items-center gap-2.5 font-mono text-[0.48rem] uppercase tracking-wider text-muted-foreground">
-                          <span className="flex items-center gap-0.5">
-                            <Users className="h-2.5 w-2.5" /> {watchIsTeam ? `Squad: ${watchMinTeam || 1}-${watchMaxTeam || 1} Devs` : "Solo Arena"}
-                          </span>
-                          <span className="flex items-center gap-0.5">
-                            <Calendar className="h-2.5 w-2.5" /> {watchRegStart ? new Date(watchRegStart).toLocaleDateString() : "PENDING DATE"}
-                          </span>
-                        </div>
-
-                        <div className="flex gap-1">
-                          <span className="font-mono text-[0.42rem] text-accent font-bold flex items-center gap-0.5">
-                            ENTER <ExternalLink className="h-1.5 w-1.5" />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Progress HUD Box */}
-              <div className="border-2 border-foreground bg-[#FAF8F5] p-5 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden">
+              {/* Progress HUD Box - Solid dark console theme for high contrast */}
+              <div className="border-2 border-[#FAF8F5]/15 bg-[#0E0E0D] text-[#F1EFE9] p-5 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden">
                 {/* Visual grids inside HUD */}
-                <div className="absolute inset-1 border border-[#0E0E0D]/10 pointer-events-none" />
+                <div className="absolute inset-1 border border-[#F1EFE9]/10 pointer-events-none" />
                 
                 <span className="font-mono text-[0.48rem] text-orange uppercase tracking-[0.25em] font-bold block mb-1">
                   [PROGRESS REGISTER HUD]
                 </span>
-                <h3 className="font-display italic text-lg uppercase tracking-tight text-[#0E0E0D] border-b border-[#0E0E0D]/15 pb-2.5 mb-4">
+                <h3 className="font-display italic text-lg uppercase tracking-tight text-[#F1EFE9] border-b border-[#F1EFE9]/15 pb-2.5 mb-4">
                   Arena Specifications
                 </h3>
 
                 {/* Section checklist */}
-                <ul className="space-y-3 font-mono text-[0.62rem] uppercase tracking-wider text-[#0E0E0D] mb-6">
+                <ul className="space-y-3 font-mono text-[0.62rem] uppercase tracking-wider text-[#F1EFE9] mb-6">
                   <li className="flex items-center justify-between gap-3">
-                    <span className={isGeneralValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                    <span className={isGeneralValid ? "line-through text-[#F1EFE9]/40" : "font-bold"}>
                       01. GENERAL DETAILS
                     </span>
-                    <span className={`font-bold shrink-0 ${isGeneralValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                    <span className={`font-bold shrink-0 ${isGeneralValid ? "text-orange" : "text-[#F1EFE9]/30"}`}>
                       {isGeneralValid ? "[✓] DONE" : "[ ] PENDING"}
                     </span>
                   </li>
                   <li className="flex items-center justify-between gap-3">
-                    <span className={isAccessValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                    <span className={isAccessValid ? "line-through text-[#F1EFE9]/40" : "font-bold"}>
                       02. ACCESS SECURITY
                     </span>
-                    <span className={`font-bold shrink-0 ${isAccessValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                    <span className={`font-bold shrink-0 ${isAccessValid ? "text-orange" : "text-[#F1EFE9]/30"}`}>
                       {isAccessValid ? "[✓] DONE" : "[ ] PENDING"}
                     </span>
                   </li>
                   <li className="flex items-center justify-between gap-3">
-                    <span className={isTeamValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                    <span className={isTeamValid ? "line-through text-[#F1EFE9]/40" : "font-bold"}>
                       03. TEAM LIMITS
                     </span>
-                    <span className={`font-bold shrink-0 ${isTeamValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                    <span className={`font-bold shrink-0 ${isTeamValid ? "text-orange" : "text-[#F1EFE9]/30"}`}>
                       {isTeamValid ? "[✓] DONE" : "[ ] PENDING"}
                     </span>
                   </li>
                   <li className="flex items-center justify-between gap-3">
-                    <span className={isTimelineValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                    <span className={isTimelineValid ? "line-through text-[#F1EFE9]/40" : "font-bold"}>
                       04. RUN TIMELINE
                     </span>
-                    <span className={`font-bold shrink-0 ${isTimelineValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                    <span className={`font-bold shrink-0 ${isTimelineValid ? "text-orange" : "text-[#F1EFE9]/30"}`}>
                       {isTimelineValid ? "[✓] DONE" : "[ ] PENDING"}
                     </span>
                   </li>
                   <li className="flex items-center justify-between gap-3">
-                    <span className={isRulesValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                    <span className={isRulesValid ? "line-through text-[#F1EFE9]/40" : "font-bold"}>
                       05. RULES & LAWS
                     </span>
-                    <span className={`font-bold shrink-0 ${isRulesValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                    <span className={`font-bold shrink-0 ${isRulesValid ? "text-orange" : "text-[#F1EFE9]/30"}`}>
                       {isRulesValid ? "[✓] DONE" : "[ ] PENDING"}
                     </span>
                   </li>
                 </ul>
 
                 {/* Progress bar info */}
-                <div className="border-t border-[#0E0E0D]/15 pt-3.5 mt-4 flex justify-between items-center text-[0.55rem] font-mono font-bold tracking-widest text-[#0E0E0D]">
+                <div className="border-t border-[#F1EFE9]/15 pt-3.5 mt-4 flex justify-between items-center text-[0.55rem] font-mono font-bold tracking-widest text-[#F1EFE9]">
                   <span>COMPLETION RATIO:</span>
                   <span className="text-orange">{completedCount} / 5 SECS</span>
                 </div>
-                <div className="w-full bg-[#0E0E0D]/10 h-1.5 border border-[#0E0E0D] mt-2 relative">
+                <div className="w-full bg-[#FAF8F5]/10 h-1.5 border border-[#FAF8F5]/20 mt-2 relative">
                   <div
                     className="bg-orange h-full transition-all duration-300"
                     style={{ width: `${(completedCount / 5) * 100}%` }}
