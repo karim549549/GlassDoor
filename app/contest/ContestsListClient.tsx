@@ -7,7 +7,7 @@ import { useAuthStore } from "@/lib/client/useAuthStore";
 import { CairoBillboard } from "@/components/contest/CairoBillboard";
 import { UpcomingArenaBanner } from "@/components/contest/UpcomingArenaBanner";
 import { ContestTabs } from "@/components/contest/ContestTabs";
-import { ContestCard } from "@/components/contest/ContestCard";
+import { ContestCard, ContestCardSkeleton } from "@/components/contest/ContestCard";
 
 interface ClientContest {
   id: string;
@@ -333,8 +333,8 @@ export function ContestsListClient({
                 )}
               </div>
 
-              {/* Active Tab Contents with retro transition loading opacity overlay */}
-              <div className={`transition-opacity duration-200 ${isLoading ? "opacity-45 pointer-events-none" : "opacity-100"}`}>
+              {/* Active Tab Contents */}
+              <div>
                 {activeTab === "my" && !user?.id ? (
                   <div className="border-2 border-dashed border-[#0E0E0D]/20 bg-white p-10 text-center space-y-3 shadow-[4px_4px_0px_0px_#0E0E0D]">
                     <Trophy className="h-10 w-10 mx-auto text-muted-foreground/50 stroke-[1.25]" />
@@ -342,6 +342,15 @@ export function ContestsListClient({
                     <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                       Sign in to view and track your registered arenas, created hackathons, and live team lobbies.
                     </p>
+                  </div>
+                ) : isLoading ? (
+                  <div className="space-y-6">
+                    {/* Pulsing Skeleton Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {Array.from({ length: 6 }).map((_, idx) => (
+                        <ContestCardSkeleton key={idx} />
+                      ))}
+                    </div>
                   </div>
                 ) : contests.length > 0 ? (
                   <div className="space-y-6">

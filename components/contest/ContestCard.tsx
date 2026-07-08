@@ -175,4 +175,39 @@ export function ContestCard({ contest }: ContestCardProps) {
   );
 }
 
+export function ContestCardSkeleton() {
+  return (
+    <div className="block bg-white text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[4px_4px_0px_0px_#0E0E0D] animate-pulse">
+      <div className="flex flex-col gap-3">
+        {/* Cover Image Block Placeholder */}
+        <div className="w-full aspect-[4/1] bg-[#0E0E0D]/10 border border-[#0E0E0D]/10" />
+
+        {/* Card Main Info Placeholder */}
+        <div className="min-w-0 flex flex-col gap-2">
+          {/* Status Tag Placeholder */}
+          <div className="h-4 w-20 bg-[#0E0E0D]/10 border border-[#0E0E0D]/10" />
+          
+          {/* Title Placeholder */}
+          <div className="h-6 w-3/4 bg-[#0E0E0D]/10" />
+
+          {/* Description Placeholder */}
+          <div className="space-y-1.5 mt-1">
+            <div className="h-3 w-full bg-[#0E0E0D]/10" />
+            <div className="h-3 w-5/6 bg-[#0E0E0D]/10" />
+          </div>
+        </div>
+
+        {/* Footer Details Placeholder */}
+        <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-dashed border-[#0E0E0D]/10">
+          <div className="flex gap-2">
+            <div className="h-3.5 w-16 bg-[#0E0E0D]/10" />
+            <div className="h-3.5 w-16 bg-[#0E0E0D]/10" />
+          </div>
+          <div className="h-3.5 w-12 bg-[#0E0E0D]/10" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default ContestCard;
