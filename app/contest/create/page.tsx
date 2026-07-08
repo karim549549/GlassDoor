@@ -7,15 +7,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Trophy, Calendar, Users, Shield, Link2, FileText, ArrowRight } from "lucide-react";
+import { Trophy, Calendar, Users, Shield, Link2, FileText, ArrowRight, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
+import { useToast } from "@/components/providers/ToastProvider";
 import gsap from "gsap";
 
 // Form Validation Schema using Zod
 const contestSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  coverImageUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  coverImageUrl: z.string().min(1, "Cover image upload is required").url("Must be a valid URL"),
   isPrivate: z.boolean().default(false),
   inviteCode: z.string().optional(),
   
@@ -75,10 +76,14 @@ export default function CreateContestPage() {
     );
   }, []);
 
+  const { toast } = useToast();
+  const [isUploading, setIsUploading] = useState(false);
+
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<ContestFormInput, any, ContestFormOutput>({
     resolver: zodResolver(contestSchema),
@@ -100,6 +105,7 @@ export default function CreateContestPage() {
   // Watches for Progress HUD Indicators
   const watchTitle = watch("title") as string;
   const watchDescription = watch("description") as string;
+  const watchCoverImageUrl = watch("coverImageUrl") as string;
   const watchInviteCode = watch("inviteCode") as string;
   const watchMinTeam = watch("minTeamSize") as number;
   const watchMaxTeam = watch("maxTeamSize") as number;
@@ -111,8 +117,43 @@ export default function CreateContestPage() {
   const watchImplEnd = watch("implPhaseEnd") as string;
   const watchRulesText = watch("rulesText") as string;
 
+  // File Upload Handler for Supabase
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast("File size must be under 5MB.", "error");
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/contest/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        toast(data.error || "Failed to upload cover image.", "error");
+      } else {
+        setValue("coverImageUrl", data.url, { shouldValidate: true });
+        toast("Cover image uploaded successfully!", "success");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast("Network error. Failed to upload image.", "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Determine section validation states
-  const isGeneralValid = !!(watchTitle && watchTitle.length >= 3 && watchDescription && watchDescription.length >= 10);
+  const isGeneralValid = !!(watchTitle && watchTitle.length >= 3 && watchDescription && watchDescription.length >= 10 && watchCoverImageUrl);
   const isAccessValid = !watchIsPrivate || !!(watchInviteCode && watchInviteCode.length > 0);
   const isTeamValid = !watchIsTeam || !!(watchMinTeam >= 1 && watchMaxTeam >= watchMinTeam);
   const isTimelineValid = !!(watchRegStart && watchRegEnd && watchIdeaStart && watchIdeaEnd && watchImplStart && watchImplEnd);
@@ -130,14 +171,35 @@ export default function CreateContestPage() {
   const onSubmit = async (data: ContestFormOutput) => {
     setIsSubmitting(true);
     try {
-      // API call to save contest will go here
-      console.log("Submitting Contest Data: ", data);
-      
-      // Temporary redirection
-      alert("Contest draft schema created successfully!");
-      router.push("/");
+      // Browser Local -> UTC ISO String conversion
+      const payload = {
+        ...data,
+        registrationStart: new Date(data.registrationStart).toISOString(),
+        registrationEnd: new Date(data.registrationEnd).toISOString(),
+        ideaPhaseStart: new Date(data.ideaPhaseStart).toISOString(),
+        ideaPhaseEnd: new Date(data.ideaPhaseEnd).toISOString(),
+        implPhaseStart: new Date(data.implPhaseStart).toISOString(),
+        implPhaseEnd: new Date(data.implPhaseEnd).toISOString(),
+      };
+
+      const res = await fetch("/api/contest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        toast(result.error || "Failed to host arena contest.", "error");
+      } else {
+        toast("Arena contest hosted successfully!", "success");
+        router.push("/contest");
+      }
     } catch (err) {
       console.error(err);
+      toast("Network error. Failed to save contest.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -219,12 +281,60 @@ export default function CreateContestPage() {
                     )}
                   </div>
 
-                  <Input
-                    label="Cover Image URL (Optional)"
-                    placeholder="https://example.com/cover-image.jpg"
-                    error={errors.coverImageUrl?.message}
-                    {...register("coverImageUrl")}
-                  />
+                  <div className="flex flex-col gap-2">
+                    <label className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
+                      Upload Cover Image (Required)
+                    </label>
+                    
+                    <div className="border-2 border-dashed border-foreground/30 bg-secondary/20 p-5 text-center relative hover:bg-secondary/40 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={isUploading}
+                      />
+                      {isUploading ? (
+                        <div className="flex flex-col items-center justify-center py-2">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange mb-2" />
+                          <span className="font-mono text-[0.55rem] uppercase tracking-wider text-muted-foreground">
+                            Uploading image to storage...
+                          </span>
+                        </div>
+                      ) : watchCoverImageUrl ? (
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={watchCoverImageUrl}
+                            alt="Uploaded cover preview"
+                            className="h-20 w-36 object-cover border border-foreground/20 shadow-[2px_2px_0px_0px_#0E0E0D]"
+                          />
+                          <span className="font-mono text-[0.55rem] uppercase tracking-wider text-orange font-bold">
+                            [✓] IMAGE UPLOADED (CLICK TO CHANGE)
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-2">
+                          <ImageIcon className="h-6 w-6 text-muted-foreground/40 mb-1.5" />
+                          <span className="font-mono text-[0.58rem] uppercase tracking-wider text-[#0E0E0D] font-bold block">
+                            Drag & drop image file or Click to browse
+                          </span>
+                          <span className="font-mono text-[0.48rem] uppercase tracking-widest text-muted-foreground block mt-0.5">
+                            PNG, JPEG, WEBP · Max 5MB
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Register coverImageUrl hidden input to satisfy react-hook-form schema validations */}
+                    <input type="hidden" {...register("coverImageUrl")} />
+                    
+                    {errors.coverImageUrl && (
+                      <span className="font-mono text-[0.6rem] text-accent tracking-wide mt-0.5">
+                        {errors.coverImageUrl.message}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -441,10 +551,79 @@ export default function CreateContestPage() {
 
             </div>
 
-            {/* Right Column (Width 4/12): Sticky Progress HUD & Action Panel */}
+            {/* Right Column (Width 4/12): Sticky Progress HUD, Live Preview, & Actions */}
             <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
               
-              {/* Progress HUD Box */}
+              {/* 1. Live Preview Card */}
+              <div className="border-2 border-foreground bg-card p-4 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden">
+                <span className="font-mono text-[0.48rem] text-orange uppercase tracking-[0.25em] font-bold block mb-2">
+                  [LIVE CARD PREVIEW]
+                </span>
+                
+                <div className="group block bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[2px_2px_0px_0px_#0E0E0D] pointer-events-none">
+                  <div className="flex flex-col gap-3">
+                    {/* Cover Image Block */}
+                    <div className="w-full h-28 relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
+                      {watchCoverImageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={watchCoverImageUrl}
+                          alt="Cover preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-2 text-center text-[#0E0E0D]/20">
+                          <Trophy className="h-7 w-7 stroke-[1.25]" />
+                          <span className="font-mono text-[0.42rem] tracking-[0.2em] uppercase mt-1">NO COVER IMAGE</span>
+                        </div>
+                      )}
+                      
+                      <div className="absolute top-1.5 left-1.5 flex flex-wrap gap-1">
+                        <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-[#0E0E0D]">
+                          {watchIsPrivate ? "INVITE ONLY" : "PUBLIC"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="font-mono text-[0.42rem] font-bold uppercase tracking-widest px-1 py-0.5 border bg-blue-100 text-blue-900 border-blue-300">
+                          [REGISTRATION OPEN]
+                        </span>
+                      </div>
+
+                      <h3 className="font-display italic text-base font-normal leading-tight text-[#0E0E0D] uppercase truncate">
+                        {watchTitle || "UNTITLED ARENA"}
+                      </h3>
+
+                      <p className="font-sans text-[0.62rem] text-muted-foreground line-clamp-2 mt-1 normal-case">
+                        {watchDescription || "No overview description provided yet. Enter details on the left to sync."}
+                      </p>
+
+                      {/* Footer Details */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 mt-2.5 border-t border-dashed border-[#0E0E0D]/10">
+                        <div className="flex items-center gap-2.5 font-mono text-[0.48rem] uppercase tracking-wider text-muted-foreground">
+                          <span className="flex items-center gap-0.5">
+                            <Users className="h-2.5 w-2.5" /> {watchIsTeam ? `Squad: ${watchMinTeam || 1}-${watchMaxTeam || 1} Devs` : "Solo Arena"}
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <Calendar className="h-2.5 w-2.5" /> {watchRegStart ? new Date(watchRegStart).toLocaleDateString() : "PENDING DATE"}
+                          </span>
+                        </div>
+
+                        <div className="flex gap-1">
+                          <span className="font-mono text-[0.42rem] text-accent font-bold flex items-center gap-0.5">
+                            ENTER <ExternalLink className="h-1.5 w-1.5" />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Progress HUD Box */}
               <div className="border-2 border-foreground bg-[#FAF8F5] p-5 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden">
                 {/* Visual grids inside HUD */}
                 <div className="absolute inset-1 border border-[#0E0E0D]/10 pointer-events-none" />
@@ -513,7 +692,7 @@ export default function CreateContestPage() {
                 </div>
               </div>
 
-              {/* Action Buttons Panel inside the HUD Column */}
+              {/* 3. Action Buttons Panel */}
               <div className="border-2 border-[#0E0E0D] bg-[#FAF8F5] p-5 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden flex flex-col gap-3">
                 <Button
                   type="submit"
