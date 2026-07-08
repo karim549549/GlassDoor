@@ -73,19 +73,9 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
   // Track active state of carousel buttons when user enters Section 3
   const [showCarouselControls, setShowCarouselControls] = useState(false);
 
-  // Detect mobile size
-  const [isMobileScreen, setIsMobileScreen] = useState(false);
-
   // Storing stacking state refs for reordering animations
   const zIndices = useRef<number[]>([10, 20, 30]);
   const stackOrder = useRef<number[]>([0, 1, 2]); // indices mapping to ARENA_CARDS
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobileScreen(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   useEffect(() => {
     // Dynamic countdown timer loop for the active card
@@ -106,56 +96,58 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
   }, []);
 
   useEffect(() => {
-    if (isMobileScreen) {
-      setEntranceFinished(true);
-      return;
-    }
-
     const cards = cardRefs.current;
     if (!cards || cards.length === 0) return;
 
-    // Lock page scroll on initial load to prevent user from scrolling during card entrance
-    document.body.style.overflow = "hidden";
-
-    // 1. GSAP Card Gathering Entrance Animation (Lands centered relative to Hero)
+    // GSAP matchMedia to only run entrance animations on desktop screens
     const ctx = gsap.context(() => {
-      // Set initial scattered positions completely OUTSIDE the screen frame/viewport
-      gsap.set(cards[0], { opacity: 0, x: -1400, y: 1000, rotate: -75, scale: 0.8 });
-      gsap.set(cards[1], { opacity: 0, x: 1400, y: -1000, rotate: 65, scale: 0.9 });
-      gsap.set(cards[2], { opacity: 0, x: -1200, y: -1200, rotate: -90, scale: 1.0 });
+      const mm = gsap.matchMedia();
 
-      const tl = gsap.timeline({ delay: 0.4 });
+      mm.add("(min-width: 768px)", () => {
+        // Lock page scroll on initial load to prevent user from scrolling during card entrance
+        document.body.style.overflow = "hidden";
 
-      const scaleBase = 1.5;
+        // Set initial scattered positions completely OUTSIDE the screen frame/viewport
+        gsap.set(cards[0], { opacity: 0, x: -1400, y: 1000, rotate: -75, scale: 0.8 });
+        gsap.set(cards[1], { opacity: 0, x: 1400, y: -1000, rotate: 65, scale: 0.9 });
+        gsap.set(cards[2], { opacity: 0, x: -1200, y: -1200, rotate: -90, scale: 1.0 });
 
-      // Cards gather in the center of the Hero section (which is top: -100vh relative to ArenasSection container)
-      tl.to(cards[0], { opacity: 1, x: 0, y: "-100vh", rotate: -4, scale: scaleBase, duration: 1.15, ease: "power3.out" })
-        .to(cards[1], { opacity: 1, x: 0, y: "-100vh", rotate: 3, scale: scaleBase, duration: 1.15, ease: "power3.out" }, "-=0.85")
-        .to(cards[2], { 
-          opacity: 1, 
-          x: 0, 
-          y: "-100vh", 
-          rotate: -1.5, 
-          scale: scaleBase, 
-          duration: 1.3, 
-          ease: "back.out(1.1)",
-          onComplete: () => {
-            // Re-enable scrolling only after flight completes, then flag entranceFinished
-            document.body.style.overflow = "";
-            setEntranceFinished(true);
-          }
-        }, "-=0.85");
+        const tl = gsap.timeline({ delay: 0.4 });
+        const scaleBase = 1.5;
+
+        // Cards gather in the center of the Hero section (which is top: -100vh relative to ArenasSection container)
+        tl.to(cards[0], { opacity: 1, x: 0, y: "-100vh", rotate: -4, scale: scaleBase, duration: 1.15, ease: "power3.out" })
+          .to(cards[1], { opacity: 1, x: 0, y: "-100vh", rotate: 3, scale: scaleBase, duration: 1.15, ease: "power3.out" }, "-=0.85")
+          .to(cards[2], { 
+            opacity: 1, 
+            x: 0, 
+            y: "-100vh", 
+            rotate: -1.5, 
+            scale: scaleBase, 
+            duration: 1.3, 
+            ease: "back.out(1.1)",
+            onComplete: () => {
+              document.body.style.overflow = "";
+              setEntranceFinished(true);
+            }
+          }, "-=0.85");
+      });
+
+      mm.add("(max-width: 767px)", () => {
+        // On mobile, bypass entrance animation state locks instantly
+        setEntranceFinished(true);
+      });
     }, stackRef);
 
     return () => {
       ctx.revert();
       document.body.style.overflow = ""; // Ensure scroll is restored on unmount
     };
-  }, [isMobileScreen]);
+  }, []);
 
-  // 2. GSAP ScrollTrigger Animations
+  // GSAP ScrollTrigger Animations
   useEffect(() => {
-    if (isMobileScreen || !entranceFinished || !containerRef.current || !arenasRef.current) return;
+    if (!entranceFinished || !containerRef.current || !arenasRef.current) return;
 
     const cards = cardRefs.current;
     if (!cards) return;
@@ -163,40 +155,41 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     const scrollCtx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
-      // Trigger 1: Smoothly fade out Hero text and fade in ArenasSection background color
-      const fadeTimeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: arenasRef.current,
-          start: "top bottom", // Starts when ArenasSection enters from bottom
-          end: "top top",      // Ends when ArenasSection fills the screen
-          scrub: true,
-        }
-      });
-      fadeTimeline.to(".hero-section-container", { opacity: 0, ease: "none" }, 0);
-      fadeTimeline.to(arenasRef.current, {
-        backgroundColor: "#0E0E0D",
-        color: "#F1EFE9",
-        borderColor: "rgba(241, 239, 233, 0.15)",
-        ease: "none"
-      }, 0);
-
-      // Trigger 2: Slide the cards down to stay locked in viewport during natural scroll down the Hero
-      const slideTimeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: arenasRef.current,
-          start: "top bottom",
-          end: "top top",
-          scrub: true,
-        }
-      });
-      // Move cards down from y: -100vh (Hero center) to y: 0 (ArenasSection center) as page scrolls
-      slideTimeline.to(cards[0], { y: 0, ease: "none" }, 0);
-      slideTimeline.to(cards[1], { y: 0, ease: "none" }, 0);
-      slideTimeline.to(cards[2], { y: 0, ease: "none" }, 0);
-
-      // Trigger 3: Lock/Pin scrolling exactly when ArenasSection hits the top of the viewport,
-      // and separate the cards gradually while pinned. Increased end duration to +=1800 to fully lock.
+      // Only mount scroll animations on desktop devices
       mm.add("(min-width: 768px)", () => {
+        // Trigger 1: Smoothly fade out Hero text and fade in ArenasSection background color
+        const fadeTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: arenasRef.current,
+            start: "top bottom", // Starts when ArenasSection enters from bottom
+            end: "top top",      // Ends when ArenasSection fills the screen
+            scrub: true,
+          }
+        });
+        fadeTimeline.to(".hero-section-container", { opacity: 0, ease: "none" }, 0);
+        fadeTimeline.to(arenasRef.current, {
+          backgroundColor: "#0E0E0D",
+          color: "#F1EFE9",
+          borderColor: "rgba(241, 239, 233, 0.15)",
+          ease: "none"
+        }, 0);
+
+        // Trigger 2: Slide the cards down to stay locked in viewport during natural scroll down the Hero
+        const slideTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: arenasRef.current,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+          }
+        });
+        // Move cards down from y: -100vh (Hero center) to y: 0 (ArenasSection center) as page scrolls
+        slideTimeline.to(cards[0], { y: 0, ease: "none" }, 0);
+        slideTimeline.to(cards[1], { y: 0, ease: "none" }, 0);
+        slideTimeline.to(cards[2], { y: 0, ease: "none" }, 0);
+
+        // Trigger 3: Lock/Pin scrolling exactly when ArenasSection hits the top of the viewport,
+        // and separate the cards gradually while pinned. Increased end duration to +=1800 to fully lock.
         const pinTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: arenasRef.current,
@@ -215,45 +208,9 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
         // Organizers and button reveal from 0.75 to 1.0 (settled phase)
         pinTimeline.to(".arena-organizer-block", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75)
                    .to(".arena-enter-button", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75);
-      });
 
-      // Mobile Pinned separation
-      mm.add("(max-width: 767px)", () => {
-        const pinTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: arenasRef.current,
-            start: "top top",
-            end: "+=1800",
-            scrub: 1,
-            pin: true,
-          }
-        });
-
-        pinTimeline.to(cards[0], { y: "-24vh", scale: 0.82, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0)
-                   .to(cards[1], { y: "0vh", scale: 0.82, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0)
-                   .to(cards[2], { y: "24vh", scale: 0.82, rotate: 0, ease: "power1.inOut", duration: 0.75 }, 0);
-
-        pinTimeline.to(".arena-organizer-block", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75)
-                   .to(".arena-enter-button", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75);
-      });
-
-      // Dedicated ScrollTrigger to manage carousel controls visibility when Section 3 is visible
-      ScrollTrigger.create({
-        trigger: ".pink-section-container",
-        start: "top 60%",       // Fade in when Section 3 is 60% into the viewport
-        end: "bottom 40%",     // Fade out when scrolling past Section 3
-        onToggle: (self) => {
-          setShowCarouselControls(self.isActive);
-        },
-        onUpdate: (self) => {
-          setShowCarouselControls(self.isActive);
-        }
-      });
-
-      // Trigger 4: Transition cards as user scrolls from ArenasSection down into the PinkSection.
-      // The cards stack back up and align on the right column (desktop) or center (mobile) at y: 100vh.
-      // Concurrently morphs the background color back to Section 1 color (light cream #F1EFE9).
-      mm.add("(min-width: 768px)", () => {
+        // Trigger 4: Transition cards as user scrolls from ArenasSection down into the PinkSection.
+        // The cards stack back up and align on the right column (desktop) or center (mobile) at y: 100vh.
         const pinkTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: ".pink-section-container",
@@ -280,31 +237,18 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
         }, 0);
       });
 
-      // Mobile Pink transition: stack cards back up at center (x: 0, y: 100vh), scale back to 1.0
-      mm.add("(max-width: 767px)", () => {
-        const pinkTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: ".pink-section-container",
-            start: "top bottom",
-            end: "top top",
-            scrub: true,
-          }
-        });
-
-        pinkTimeline.to(cards[0], { y: "100vh", x: 0, rotate: -4, scale: 1.0, ease: "power1.inOut" }, 0);
-        pinkTimeline.to(cards[1], { y: "100vh", x: 0, rotate: 3, scale: 1.0, ease: "power1.inOut" }, 0);
-        pinkTimeline.to(cards[2], { y: "100vh", x: 0, rotate: -1.5, scale: 1.0, ease: "power1.inOut" }, 0);
-
-        pinkTimeline.to(".arena-carousel-controls", { y: "100vh", x: 0, ease: "power1.inOut" }, 0);
-
-        pinkTimeline.to(".pink-section-container", {
-          backgroundColor: "#F1EFE9",
-          color: "#0E0E0D",
-          borderColor: "rgba(14, 14, 13, 0.15)",
-          ease: "none"
-        }, 0);
+      // Dedicated ScrollTrigger to manage carousel controls visibility when Section 3 is visible
+      ScrollTrigger.create({
+        trigger: ".pink-section-container",
+        start: "top 60%",       // Fade in when Section 3 is 60% into the viewport
+        end: "bottom 40%",     // Fade out when scrolling past Section 3
+        onToggle: (self) => {
+          setShowCarouselControls(self.isActive);
+        },
+        onUpdate: (self) => {
+          setShowCarouselControls(self.isActive);
+        }
       });
-
     }, containerRef);
 
     return () => {
@@ -317,9 +261,8 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
     const cards = cardRefs.current;
     if (!cards) return;
 
-    const isDesktop = window.innerWidth >= 768;
-    const baseScale = isDesktop ? 1.5 : 1.0;
-    const baseOffsetX = isDesktop ? 420 : 0;
+    const baseScale = 1.5;
+    const baseOffsetX = 420;
 
     // Get current top card in visual hierarchy
     const topCardIdx = direction === "next" 
@@ -331,7 +274,6 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
     // 1. Swipe current card out to the right/left
     const swipeOutX = baseOffsetX + (direction === "next" ? 220 : -220);
-    const restingRotations = [-4, 3, -1.5];
 
     gsap.timeline()
       .to(targetCard, {
@@ -360,120 +302,27 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
               gsap.set(cardEl, { zIndex: newZ });
             }
           });
+
+          // 3. Swipe card back underneath the new stack top
+          const newRotation = [-4, 3, -1.5][stackOrder.current.indexOf(topCardIdx)];
+          const newScale = baseScale;
+
+          gsap.to(targetCard, {
+            x: baseOffsetX,
+            y: "100vh",
+            rotate: newRotation,
+            scale: newScale,
+            duration: 0.28,
+            ease: "back.out(1.1)"
+          });
         }
-      })
-      // 3. Tuck the card back into the deck stack
-      .to(targetCard, {
-        x: baseOffsetX,
-        rotate: restingRotations[topCardIdx],
-        scale: baseScale,
-        duration: 0.24,
-        ease: "power2.inOut",
       });
   };
-
-  if (isMobileScreen) {
-    return (
-      <div className="w-full flex flex-col gap-6 px-4 md:px-0 py-6 pointer-events-auto z-45 max-w-[480px] mx-auto">
-        {ARENA_CARDS.map((card, idx) => {
-          const shadowStyle = idx === 0 
-            ? "2px 2px 0px 0px rgba(14,14,13,0.75)" 
-            : idx === 1 
-              ? "3px 3px 0px 0px rgba(14,14,13,0.85)" 
-              : "4px 4px 0px 0px rgba(14,14,13,0.9)";
-              
-          // Match organizers based on idx
-          const initials = idx === 0 ? "CC" : idx === 1 ? "SO" : "DA";
-          const organizer = idx === 0 ? "Coon Cluster" : idx === 1 ? "StackOps" : "Devs Arena";
-
-          return (
-            <div
-              key={card.id}
-              className="bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-5 relative flex flex-col justify-between"
-              style={{
-                boxShadow: shadowStyle,
-              }}
-            >
-              {/* Outline grids */}
-              <div className="absolute inset-1 border border-[#0E0E0D]/15 pointer-events-none" />
-              <div className="absolute inset-1.5 border border-dashed border-[#0E0E0D]/10 pointer-events-none" />
-
-              {/* Card Header */}
-              <div className="space-y-3 text-left">
-                <div className="font-display italic text-lg leading-[1.1] text-[#0E0E0D] tracking-tight">
-                  <span className="text-orange font-bold not-italic font-mono text-[0.6rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2 align-middle">
-                    [{card.tag}]
-                  </span>
-                  {card.title}
-                </div>
-                
-                <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
-                  {card.description}
-                </p>
-              </div>
-
-              {/* Organizer Badge Inside Card */}
-              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-dashed border-[#0E0E0D]/15">
-                <div className="w-6 h-6 rounded-full border border-[#0E0E0D] flex items-center justify-center font-mono text-[0.5rem] font-bold bg-[#FAF8F5] text-[#0E0E0D]">
-                  {initials}
-                </div>
-                <div className="text-left">
-                  <span className="font-mono text-[0.35rem] text-muted-foreground uppercase tracking-widest block font-bold leading-none mb-0.5">
-                    [ORGANIZER]
-                  </span>
-                  <span className="font-mono text-[0.45rem] font-bold uppercase tracking-wider leading-none">
-                    {organizer}
-                  </span>
-                </div>
-              </div>
-
-              {/* Bottom Content Row */}
-              <div className="flex flex-row items-end justify-between gap-4 pt-3 border-t border-[#0E0E0D]/15 mt-3 text-left">
-                <div className="flex flex-col">
-                  <span className="font-mono text-[0.38rem] uppercase tracking-[0.25em] text-muted-foreground mb-0.5 block font-bold">
-                    [{card.timeLabel}]
-                  </span>
-                  <div className={`font-mono text-sm font-bold leading-none tracking-widest ${card.isLive ? "text-[#0E0E0D]" : "text-muted-foreground"}`}>
-                    {card.isLive ? (
-                      <>
-                        {activeTimer.split(":")[0]}
-                        <span className="text-orange animate-pulse">:</span>
-                        {activeTimer.split(":")[1]}
-                        <span className="text-orange animate-pulse">:</span>
-                        <span className="text-orange">{activeTimer.split(":")[2]}</span>
-                      </>
-                    ) : (
-                      card.timeValue
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1">
-                  {card.tech.map((tech) => (
-                    <span
-                      key={tech}
-                      className="font-mono text-[0.42rem] uppercase tracking-wider text-[#0E0E0D] font-bold"
-                    >
-                      [{tech}]
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
 
   return (
     <div
       ref={stackRef}
-      className="absolute left-1/2 z-25 w-[min(480px,88vw)] min-h-[290px] pointer-events-none overflow-visible"
-      style={{
-        top: "50%", // Placed centered relative to ArenasSection docking container
-        transform: "translate(-50%, -50%)",
-      }}
+      className="relative w-full flex flex-col gap-6 px-4 md:px-0 py-6 max-w-[480px] mx-auto md:absolute md:left-1/2 md:z-25 md:w-[min(480px,88vw)] md:min-h-[290px] md:pointer-events-none md:overflow-visible md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2"
     >
       {ARENA_CARDS.map((card, idx) => {
         const zIndexClass = idx === 0 ? "z-10" : idx === 1 ? "z-20" : "z-30";
@@ -483,22 +332,26 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             ? "3px 3px 0px 0px rgba(14,14,13,0.85)" 
             : "4px 4px 0px 0px rgba(14,14,13,0.9)";
 
+        // Match organizers based on idx
+        const initials = idx === 0 ? "CC" : idx === 1 ? "SO" : "DA";
+        const organizer = idx === 0 ? "Coon Cluster" : idx === 1 ? "StackOps" : "Devs Arena";
+
         return (
           <div
             key={card.id}
             ref={(el) => {
               cardRefs.current[idx] = el;
             }}
-            className={`absolute inset-0 bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-5 md:p-7 cursor-pointer select-none flex flex-col justify-between pointer-events-auto ${zIndexClass}`}
+            className={`md:absolute md:inset-0 relative w-full bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-5 md:p-7 md:cursor-pointer md:select-none flex flex-col justify-between md:pointer-events-auto ${zIndexClass}`}
             style={{
               boxShadow: shadowStyle,
             }}
           >
             {/* Outline grids */}
-            <div className="absolute inset-1 border border-[#0E0E0D]/10 pointer-events-none" />
-            <div className="absolute inset-1.5 border border-dashed border-[#0E0E0D]/5 pointer-events-none" />
+            <div className="absolute inset-1 border border-[#0E0E0D]/15 pointer-events-none" />
+            <div className="absolute inset-1.5 border border-dashed border-[#0E0E0D]/10 pointer-events-none" />
 
-            {/* Poster Header / Title Lockup */}
+            {/* Card Header / Title Lockup */}
             <div className="space-y-3.5 text-left">
               <div className="font-display italic text-[clamp(1.15rem,2.8vw,1.85rem)] leading-[1.1] text-[#0E0E0D] tracking-tight">
                 <span className="text-orange font-bold not-italic font-mono text-[0.6rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2.5 align-middle -translate-y-0.5">
@@ -507,20 +360,35 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
                 {card.title}
               </div>
               
-              <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-sm:max-w-xs">
+              <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-w-sm">
                 {card.description}
               </p>
             </div>
 
+            {/* Organizer Badge (Mobile Only, hidden on desktop since the viewfinder shows it) */}
+            <div className="flex md:hidden items-center gap-2 mt-4 pt-3 border-t border-dashed border-[#0E0E0D]/15">
+              <div className="w-6 h-6 rounded-full border border-[#0E0E0D] flex items-center justify-center font-mono text-[0.5rem] font-bold bg-[#FAF8F5] text-[#0E0E0D]">
+                {initials}
+              </div>
+              <div className="text-left">
+                <span className="font-mono text-[0.35rem] text-muted-foreground uppercase tracking-widest block font-bold leading-none mb-0.5">
+                  [ORGANIZER]
+                </span>
+                <span className="font-mono text-[0.45rem] font-bold uppercase tracking-wider leading-none">
+                  {organizer}
+                </span>
+              </div>
+            </div>
+
             {/* Bottom Content Row */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-4 border-t border-dashed border-[#0E0E0D]/20 mt-4 text-left">
+            <div className="flex flex-row items-end justify-between gap-4 pt-3 md:pt-4 border-t border-dashed border-[#0E0E0D]/20 mt-3 md:mt-4 text-left">
               
               {/* Bottom Left: Countdown */}
               <div className="flex flex-col">
                 <span className="font-mono text-[0.42rem] uppercase tracking-[0.25em] text-muted-foreground mb-1 block font-bold">
                   [{card.timeLabel}]
                 </span>
-                <div className={`font-mono text-[1.1rem] font-bold leading-none tracking-widest ${card.isLive ? "text-[#0E0E0D]" : "text-muted-foreground"}`}>
+                <div className={`font-mono text-sm md:text-[1.1rem] font-bold leading-none tracking-widest ${card.isLive ? "text-[#0E0E0D]" : "text-muted-foreground"}`}>
                   {card.isLive ? (
                     <>
                       {activeTimer.split(":")[0]}
@@ -536,11 +404,11 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
               </div>
 
               {/* Bottom Right: Tech Badges */}
-              <div className="flex flex-wrap gap-1.5 sm:justify-end">
+              <div className="flex flex-wrap gap-1.5 justify-end">
                 {card.tech.map((tech) => (
                   <span
                     key={tech}
-                    className="font-mono text-[0.48rem] uppercase tracking-wider text-[#0E0E0D] font-bold"
+                    className="font-mono text-[0.42rem] md:text-[0.48rem] uppercase tracking-wider text-[#0E0E0D] font-bold"
                   >
                     [{tech}]
                   </span>
@@ -554,7 +422,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
 
       {/* Carousel Stack Control Arrows */}
       <div 
-        className={`arena-carousel-controls absolute left-0 right-0 top-[260px] md:top-[280px] z-40 flex justify-center items-center gap-3 pointer-events-auto transition-all duration-300 ${
+        className={`arena-carousel-controls hidden md:flex absolute left-0 right-0 top-[260px] md:top-[280px] z-40 justify-center items-center gap-3 pointer-events-auto transition-all duration-300 ${
           showCarouselControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
         }`}
       >
