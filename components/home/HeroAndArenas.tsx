@@ -17,7 +17,7 @@ export function HeroAndArenas() {
       <ArenasSection ref={arenasRef} containerRef={containerRef} />
 
       {/* Third Section - Starts dark (matching Section 2) and morphs to light cream (matching Section 1) */}
-      <div className="pink-section-container h-screen min-h-screen bg-[#0E0E0D] text-[#F1EFE9] w-full border-t border-[#0E0E0D]/10 relative flex flex-col justify-center items-center py-12 z-10 transition-colors duration-300 overflow-visible">
+      <div className="pink-section-container h-auto py-16 md:h-screen md:min-h-screen bg-[#0E0E0D] text-[#F1EFE9] w-full border-t border-[#0E0E0D]/10 relative flex flex-col justify-center items-center md:py-12 z-10 transition-colors duration-300 overflow-visible">
         {/* Editorial Blueprint Grid Backdrop Overlay */}
         <div className="absolute inset-0 opacity-[0.18] pointer-events-none z-0">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +38,7 @@ export function HeroAndArenas() {
             <div className="w-full md:w-1/2 flex flex-col justify-center text-left pointer-events-auto pr-0 md:pr-4 max-w-xl">
               
               {/* The 4-Floor Unified Brutalist Grid Box */}
-              <div className="w-full border-4 border-double border-current bg-[#FAF8F5]/5 flex flex-col h-[520px] shadow-[4px_4px_0px_0px_currentColor] relative">
+              <div className="w-full border-4 border-double border-current bg-[#FAF8F5]/5 flex flex-col h-auto md:h-[520px] shadow-[4px_4px_0px_0px_currentColor] relative">
                 
                 {/* Floor 1: Identifier & Section Header */}
                 <div className="flex-1 flex flex-col justify-between p-5 border-b border-current/15">
@@ -99,7 +99,7 @@ export function HeroAndArenas() {
             <div className="hidden md:block w-px h-[520px] bg-current/15 self-center mx-8" />
 
             {/* Right Column Spacer (Provides layout alignment for the absolute stacked cards) */}
-            <div className="w-full md:w-1/2 h-[350px] relative pointer-events-none" />
+            <div className="hidden md:block md:w-1/2 md:h-[350px] relative pointer-events-none" />
           </div>
 
           {/* Centered Billboard standings redirect button */}
