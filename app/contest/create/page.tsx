@@ -94,12 +94,12 @@ export default function CreateContestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-11">
+    <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0">
       {/* Editorial Background Blueprint Grid */}
       <BackgroundGrid opacity={0.08} />
 
       {/* Setup Contest Masthead Banner: Full-width, coupled directly with the navbar */}
-      <div className="w-full bg-[#0E0E0D] text-[#F1EFE9] border-b-4 border-double border-[#F1EFE9]/25 pt-16 pb-12 px-6 md:px-12 relative overflow-hidden">
+      <div className="w-full bg-[#0E0E0D] text-[#F1EFE9] border-b-4 border-double border-[#F1EFE9]/25 pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
         {/* Faint blueprint grid overlay specifically inside the dark masthead block */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
