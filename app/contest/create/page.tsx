@@ -11,6 +11,7 @@ import { Trophy, Calendar, Users, Shield, Link2, FileText, ArrowRight, Image as 
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { useToast } from "@/components/providers/ToastProvider";
 import { CropperModal } from "@/components/profile/CropperModal";
+import { ContestHeader } from "@/components/contest/ContestHeader";
 import gsap from "gsap";
 
 // Form Validation Schema using Zod
@@ -224,110 +225,85 @@ export default function CreateContestPage() {
       {/* Editorial Background Blueprint Grid */}
       <BackgroundGrid opacity={0.08} />
 
-      {/* Setup Contest Masthead Banner: Full-width, coupled directly with the navbar */}
-      <div className="w-full bg-[#0E0E0D] text-[#F1EFE9] border-b-4 border-double border-[#F1EFE9]/25 pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
-        {/* Faint blueprint grid overlay specifically inside the dark masthead block */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="masthead-grid" width="30" height="30" patternUnits="userSpaceOnUse">
-                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="currentColor" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#masthead-grid)" />
-          </svg>
-        </div>
-        
-        <div className="max-w-[85%] mx-auto relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 py-2">
-          {/* Left Column: Title Info */}
-          <div className="space-y-3 max-w-2xl">
-            <span className="masthead-subtitle opacity-0 font-mono text-[0.6rem] uppercase tracking-[0.25em] text-orange font-bold block">
-              [HOSTING PORTAL SYSTEM DIRECTORY]
-            </span>
-            <div className="overflow-hidden py-1">
-              <h1 className="masthead-title opacity-0 font-display italic text-4xl md:text-6xl uppercase tracking-tight text-[#F1EFE9]">
-                Setup Arena Contest
-              </h1>
-            </div>
-            <p className="masthead-desc opacity-0 font-mono text-[0.52rem] text-[#F1EFE9]/60 uppercase tracking-widest leading-relaxed">
-              Cairo Issue 002 · Configure registration windows, phases, team limits, and submission rules for Egyptian developer cohorts.
-            </p>
-          </div>
+      {/* Setup Contest Masthead Header using decoupled reusable component */}
+      <ContestHeader
+        subtitle="[HOSTING PORTAL SYSTEM DIRECTORY]"
+        subtitleClassName="masthead-subtitle opacity-0"
+        title="Setup Arena Contest"
+        titleClassName="masthead-title opacity-0"
+        description="Cairo Issue 002 · Configure registration windows, phases, team limits, and submission rules for Egyptian developer cohorts."
+        descClassName="masthead-desc opacity-0"
+      >
+        <div className="border-2 border-dashed border-[#F1EFE9]/25 bg-[#F1EFE9]/5 p-4 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(241,239,233,0.06)]">
+          <span className="font-mono text-[0.45rem] text-[#F1EFE9]/50 uppercase tracking-[0.25em] font-bold block mb-2">
+            [LIVE CARD PREVIEW]
+          </span>
+          
+          <div className="group block bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[2px_2px_0px_0px_#0E0E0D] pointer-events-none">
+            <div className="flex flex-col gap-3">
+              {/* Cover Image Block */}
+              <div className="w-full aspect-[4/1] relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
+                {watchCoverImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={watchCoverImageUrl}
+                    alt="Cover preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-2 text-center text-[#0E0E0D]/20">
+                    <Trophy className="h-6 w-6 stroke-[1.25]" />
+                    <span className="font-mono text-[0.38rem] tracking-[0.2em] uppercase mt-1">NO COVER IMAGE</span>
+                  </div>
+                )}
+                
+                <div className="absolute top-1.5 left-1.5 flex flex-wrap gap-1">
+                  <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-[#0E0E0D]">
+                    {watchIsPrivate ? "INVITE ONLY" : "PUBLIC"}
+                  </span>
+                </div>
+              </div>
 
-          {/* Right Column: Floating Visual Live Preview Card with Fixed Desktop Width to Prevent CLS */}
-          <div className="w-full lg:w-[350px] shrink-0">
-            <div className="border-2 border-dashed border-[#F1EFE9]/25 bg-[#F1EFE9]/5 p-4 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(241,239,233,0.06)]">
-              <span className="font-mono text-[0.45rem] text-[#F1EFE9]/50 uppercase tracking-[0.25em] font-bold block mb-2">
-                [LIVE CARD PREVIEW]
-              </span>
-              
-              <div className="group block bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[2px_2px_0px_0px_#0E0E0D] pointer-events-none">
-                <div className="flex flex-col gap-3">
-                  {/* Cover Image Block */}
-                  <div className="w-full aspect-[4/1] relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
-                    {watchCoverImageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={watchCoverImageUrl}
-                        alt="Cover preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center p-2 text-center text-[#0E0E0D]/20">
-                        <Trophy className="h-6 w-6 stroke-[1.25]" />
-                        <span className="font-mono text-[0.38rem] tracking-[0.2em] uppercase mt-1">NO COVER IMAGE</span>
-                      </div>
-                    )}
-                    
-                    <div className="absolute top-1.5 left-1.5 flex flex-wrap gap-1">
-                      <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-[#0E0E0D]">
-                        {watchIsPrivate ? "INVITE ONLY" : "PUBLIC"}
-                      </span>
-                    </div>
+              {/* Info */}
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <span className="font-mono text-[0.42rem] font-bold uppercase tracking-widest px-1 py-0.5 border bg-blue-100 text-blue-900 border-blue-300">
+                    [REGISTRATION OPEN]
+                  </span>
+                </div>
+
+                <h3 className="font-display italic text-sm font-normal leading-tight text-[#0E0E0D] uppercase truncate">
+                  {watchTitle || "UNTITLED ARENA"}
+                </h3>
+
+                <p className="font-sans text-[0.58rem] text-muted-foreground line-clamp-2 mt-1 normal-case leading-normal">
+                  {watchDescription || "No overview description provided yet. Enter details on the left to sync."}
+                </p>
+
+                {/* Footer Details */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-dashed border-[#0E0E0D]/10">
+                  <div className="flex items-center gap-2.5 font-mono text-[0.45rem] uppercase tracking-wider text-muted-foreground">
+                    <span className="flex items-center gap-0.5">
+                      <Users className="h-2.5 w-2.5" /> {watchIsTeam ? `Squad: ${watchMinTeam || 1}-${watchMaxTeam || 1} Devs` : "Solo Arena"}
+                    </span>
+                    <span className="flex items-center gap-0.5">
+                      <Calendar className="h-2.5 w-2.5" /> {watchRegStart ? new Date(watchRegStart).toLocaleDateString() : "PENDING DATE"}
+                    </span>
                   </div>
 
-                  {/* Info */}
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="font-mono text-[0.42rem] font-bold uppercase tracking-widest px-1 py-0.5 border bg-blue-100 text-blue-900 border-blue-300">
-                        [REGISTRATION OPEN]
-                      </span>
-                    </div>
-
-                    <h3 className="font-display italic text-sm font-normal leading-tight text-[#0E0E0D] uppercase truncate">
-                      {watchTitle || "UNTITLED ARENA"}
-                    </h3>
-
-                    <p className="font-sans text-[0.58rem] text-muted-foreground line-clamp-2 mt-1 normal-case leading-normal">
-                      {watchDescription || "No overview description provided yet. Enter details on the left to sync."}
-                    </p>
-
-                    {/* Footer Details */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-dashed border-[#0E0E0D]/10">
-                      <div className="flex items-center gap-2.5 font-mono text-[0.45rem] uppercase tracking-wider text-muted-foreground">
-                        <span className="flex items-center gap-0.5">
-                          <Users className="h-2.5 w-2.5" /> {watchIsTeam ? `Squad: ${watchMinTeam || 1}-${watchMaxTeam || 1} Devs` : "Solo Arena"}
-                        </span>
-                        <span className="flex items-center gap-0.5">
-                          <Calendar className="h-2.5 w-2.5" /> {watchRegStart ? new Date(watchRegStart).toLocaleDateString() : "PENDING DATE"}
-                        </span>
-                      </div>
-
-                      <div className="flex gap-1">
-                        <span className="font-mono text-[0.42rem] text-accent font-bold flex items-center gap-0.5">
-                          ENTER <ExternalLink className="h-1.5 w-1.5" />
-                        </span>
-                      </div>
-                    </div>
+                  <div className="flex gap-1">
+                    <span className="font-mono text-[0.42rem] text-accent font-bold flex items-center gap-0.5">
+                      ENTER <ExternalLink className="h-1.5 w-1.5" />
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </ContestHeader>
 
-      <div className="max-w-[85%] mx-auto py-12 md:py-16 relative z-10">
+      <div className="w-[92%] xl:w-[80%] max-w-[1700px] mx-auto py-12 md:py-16 relative z-10">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           
           {/* Two-Column Form Grid Layout */}

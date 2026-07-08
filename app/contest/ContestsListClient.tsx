@@ -8,6 +8,7 @@ import { CairoBillboard } from "@/components/contest/CairoBillboard";
 import { UpcomingArenaBanner } from "@/components/contest/UpcomingArenaBanner";
 import { ContestTabs } from "@/components/contest/ContestTabs";
 import { ContestCard, ContestCardSkeleton } from "@/components/contest/ContestCard";
+import { ContestHeader } from "@/components/contest/ContestHeader";
 
 interface ClientContest {
   id: string;
@@ -143,34 +144,12 @@ export function ContestsListClient({
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0">
-      {/* 1. Normalized Dark Masthead Header with Breadcrumbs */}
-      <div className="w-full bg-[#0E0E0D] text-[#F1EFE9] border-b-4 border-double border-[#F1EFE9]/25 pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
-        {/* Faint blueprint grid overlay */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="masthead-grid" width="30" height="30" patternUnits="userSpaceOnUse">
-                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="currentColor" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#masthead-grid)" />
-          </svg>
-        </div>
-        
-        <div className="w-[92%] xl:w-[80%] max-w-[1700px] mx-auto relative z-10 space-y-3">
-          <span className="font-mono text-[0.55rem] text-orange tracking-widest font-bold block uppercase">
-            Home &gt; History &gt; Arena
-          </span>
-          <div className="overflow-hidden py-1">
-            <h1 className="font-display italic text-4xl md:text-5xl uppercase tracking-tight text-[#F1EFE9]">
-              Devs Arena
-            </h1>
-          </div>
-          <p className="font-mono text-[0.52rem] text-[#F1EFE9]/60 uppercase tracking-widest leading-relaxed max-w-2xl">
-            Cairo Directory Issue 002 · Egypt's active challenges, engineering cohorts, and database replication sprints.
-          </p>
-        </div>
-      </div>
+      {/* 1. Reusable Dark Masthead Header */}
+      <ContestHeader
+        breadcrumbs="Home > History > Arena"
+        title="Devs Arena"
+        description="Cairo Directory Issue 002 · Egypt's active challenges, engineering cohorts, and database replication sprints."
+      />
 
       {/* 2. Main Page Content (Sand background with blueprint lines) */}
       <div className="relative z-10 py-12 md:py-16">
