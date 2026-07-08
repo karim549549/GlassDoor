@@ -94,8 +94,38 @@ export default function CreateContestPage() {
     },
   });
 
-  const watchIsPrivate = watch("isPrivate");
-  const watchIsTeam = watch("isTeam");
+  const watchIsPrivate = watch("isPrivate") as boolean;
+  const watchIsTeam = watch("isTeam") as boolean;
+
+  // Watches for Progress HUD Indicators
+  const watchTitle = watch("title") as string;
+  const watchDescription = watch("description") as string;
+  const watchInviteCode = watch("inviteCode") as string;
+  const watchMinTeam = watch("minTeamSize") as number;
+  const watchMaxTeam = watch("maxTeamSize") as number;
+  const watchRegStart = watch("registrationStart") as string;
+  const watchRegEnd = watch("registrationEnd") as string;
+  const watchIdeaStart = watch("ideaPhaseStart") as string;
+  const watchIdeaEnd = watch("ideaPhaseEnd") as string;
+  const watchImplStart = watch("implPhaseStart") as string;
+  const watchImplEnd = watch("implPhaseEnd") as string;
+  const watchRulesText = watch("rulesText") as string;
+
+  // Determine section validation states
+  const isGeneralValid = !!(watchTitle && watchTitle.length >= 3 && watchDescription && watchDescription.length >= 10);
+  const isAccessValid = !watchIsPrivate || !!(watchInviteCode && watchInviteCode.length > 0);
+  const isTeamValid = !watchIsTeam || !!(watchMinTeam >= 1 && watchMaxTeam >= watchMinTeam);
+  const isTimelineValid = !!(watchRegStart && watchRegEnd && watchIdeaStart && watchIdeaEnd && watchImplStart && watchImplEnd);
+  const isRulesValid = !!(watchRulesText?.length >= 10);
+
+  // Calculate completed section count
+  const completedCount = [
+    isGeneralValid,
+    isAccessValid,
+    isTeamValid,
+    isTimelineValid,
+    isRulesValid
+  ].filter(Boolean).length;
 
   const onSubmit = async (data: ContestFormOutput) => {
     setIsSubmitting(true);
@@ -153,8 +183,8 @@ export default function CreateContestPage() {
           {/* Two-Column Form Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Left Column (Width 7/12): Main Configurations */}
-            <div className="lg:col-span-7 space-y-8">
+            {/* Left Column (Width 8/12): Main Configurations */}
+            <div className="lg:col-span-8 space-y-8">
               
               {/* Section 1: General Info */}
               <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
@@ -194,6 +224,135 @@ export default function CreateContestPage() {
                     placeholder="https://example.com/cover-image.jpg"
                     error={errors.coverImageUrl?.message}
                     {...register("coverImageUrl")}
+                  />
+                </div>
+              </div>
+
+              {/* Section 2: Access & Privacy */}
+              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+                <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
+                  <Shield className="h-4 w-4" /> 02. Access & Security
+                </h2>
+
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 p-4 bg-secondary border border-border">
+                    <input
+                      type="checkbox"
+                      id="isPrivate"
+                      className="h-4 w-4 accent-accent cursor-pointer rounded-none"
+                      {...register("isPrivate")}
+                    />
+                    <label htmlFor="isPrivate" className="font-mono text-[0.68rem] uppercase tracking-wider text-foreground cursor-pointer select-none">
+                      Make this contest private (Invite only)
+                    </label>
+                  </div>
+
+                  {watchIsPrivate && (
+                    <div className="p-4 border border-dashed border-foreground/30 space-y-4">
+                      <Input
+                        label="Invitation / Invite Code"
+                        placeholder="e.g. PRIVATE-ARENA-2026"
+                        error={errors.inviteCode?.message}
+                        {...register("inviteCode")}
+                      />
+                      <p className="font-mono text-[0.55rem] text-muted-foreground lowercase normal-case">
+                        Contestants will need to enter this code to view or join the contest details.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Section 4: Team Setup */}
+              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+                <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
+                  <Users className="h-4 w-4" /> 04. Team Configurations
+                </h2>
+
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 p-4 bg-secondary border border-border">
+                    <input
+                      type="checkbox"
+                      id="isTeam"
+                      className="h-4 w-4 accent-accent cursor-pointer"
+                      {...register("isTeam")}
+                    />
+                    <label htmlFor="isTeam" className="font-mono text-[0.68rem] uppercase tracking-wider text-foreground cursor-pointer select-none">
+                      Enable Team Participation (Instead of Solo)
+                    </label>
+                  </div>
+
+                  {watchIsTeam && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-dashed border-foreground/30">
+                      <Input
+                        type="number"
+                        label="Minimum Members per Team"
+                        error={errors.minTeamSize?.message}
+                        {...register("minTeamSize")}
+                      />
+                      <Input
+                        type="number"
+                        label="Maximum Members per Team"
+                        error={errors.maxTeamSize?.message}
+                        {...register("maxTeamSize")}
+                      />
+                    </div>
+                  )}
+
+                  <Input
+                    type="number"
+                    label="Maximum Registered Teams/Solos Cap (Optional)"
+                    placeholder="e.g. 50"
+                    error={errors.maxParticipants?.message}
+                    {...register("maxParticipants")}
+                  />
+                </div>
+              </div>
+
+              {/* Section 3: Timeline Phases */}
+              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+                <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
+                  <Calendar className="h-4 w-4" /> 03. Timeline & Phases
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input
+                    type="datetime-local"
+                    label="Registration Open"
+                    error={errors.registrationStart?.message}
+                    {...register("registrationStart")}
+                  />
+                  <Input
+                    type="datetime-local"
+                    label="Registration Close"
+                    error={errors.registrationEnd?.message}
+                    {...register("registrationEnd")}
+                  />
+
+                  <Input
+                    type="datetime-local"
+                    label="Idea Phase Start"
+                    error={errors.ideaPhaseStart?.message}
+                    {...register("ideaPhaseStart")}
+                  />
+                  <Input
+                    type="datetime-local"
+                    label="Idea Phase End"
+                    error={errors.ideaPhaseEnd?.message}
+                    {...register("ideaPhaseEnd")}
+                  />
+
+                  <Input
+                    type="datetime-local"
+                    label="Coding/Impl Start"
+                    error={errors.implPhaseStart?.message}
+                    {...register("implPhaseStart")}
+                  />
+                  <Input
+                    type="datetime-local"
+                    label="Coding/Impl End"
+                    error={errors.implPhaseEnd?.message}
+                    {...register("implPhaseEnd")}
                   />
                 </div>
               </div>
@@ -282,159 +441,101 @@ export default function CreateContestPage() {
 
             </div>
 
-            {/* Right Column (Width 5/12): Controls & Timelines */}
-            <div className="lg:col-span-5 space-y-8">
+            {/* Right Column (Width 4/12): Sticky Progress HUD & Action Panel */}
+            <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
               
-              {/* Section 2: Access & Privacy */}
-              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
-                <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
-                  <Shield className="h-4 w-4" /> 02. Access & Security
-                </h2>
+              {/* Progress HUD Box */}
+              <div className="border-2 border-foreground bg-[#FAF8F5] p-5 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden">
+                {/* Visual grids inside HUD */}
+                <div className="absolute inset-1 border border-[#0E0E0D]/10 pointer-events-none" />
+                
+                <span className="font-mono text-[0.48rem] text-orange uppercase tracking-[0.25em] font-bold block mb-1">
+                  [PROGRESS REGISTER HUD]
+                </span>
+                <h3 className="font-display italic text-lg uppercase tracking-tight text-[#0E0E0D] border-b border-[#0E0E0D]/15 pb-2.5 mb-4">
+                  Arena Specifications
+                </h3>
 
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 p-4 bg-secondary border border-border">
-                    <input
-                      type="checkbox"
-                      id="isPrivate"
-                      className="h-4 w-4 accent-accent cursor-pointer rounded-none"
-                      {...register("isPrivate")}
-                    />
-                    <label htmlFor="isPrivate" className="font-mono text-[0.68rem] uppercase tracking-wider text-foreground cursor-pointer select-none">
-                      Make this contest private (Invite only)
-                    </label>
-                  </div>
+                {/* Section checklist */}
+                <ul className="space-y-3 font-mono text-[0.62rem] uppercase tracking-wider text-[#0E0E0D] mb-6">
+                  <li className="flex items-center justify-between gap-3">
+                    <span className={isGeneralValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                      01. GENERAL DETAILS
+                    </span>
+                    <span className={`font-bold shrink-0 ${isGeneralValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                      {isGeneralValid ? "[✓] DONE" : "[ ] PENDING"}
+                    </span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3">
+                    <span className={isAccessValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                      02. ACCESS SECURITY
+                    </span>
+                    <span className={`font-bold shrink-0 ${isAccessValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                      {isAccessValid ? "[✓] DONE" : "[ ] PENDING"}
+                    </span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3">
+                    <span className={isTeamValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                      03. TEAM LIMITS
+                    </span>
+                    <span className={`font-bold shrink-0 ${isTeamValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                      {isTeamValid ? "[✓] DONE" : "[ ] PENDING"}
+                    </span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3">
+                    <span className={isTimelineValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                      04. RUN TIMELINE
+                    </span>
+                    <span className={`font-bold shrink-0 ${isTimelineValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                      {isTimelineValid ? "[✓] DONE" : "[ ] PENDING"}
+                    </span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3">
+                    <span className={isRulesValid ? "line-through text-muted-foreground/60" : "font-bold"}>
+                      05. RULES & LAWS
+                    </span>
+                    <span className={`font-bold shrink-0 ${isRulesValid ? "text-orange" : "text-muted-foreground/40"}`}>
+                      {isRulesValid ? "[✓] DONE" : "[ ] PENDING"}
+                    </span>
+                  </li>
+                </ul>
 
-                  {watchIsPrivate && (
-                    <div className="p-4 border border-dashed border-foreground/30 space-y-4">
-                      <Input
-                        label="Invitation / Invite Code"
-                        placeholder="e.g. PRIVATE-ARENA-2026"
-                        error={errors.inviteCode?.message}
-                        {...register("inviteCode")}
-                      />
-                      <p className="font-mono text-[0.55rem] text-muted-foreground lowercase normal-case">
-                        Contestants will need to enter this code to view or join the contest details.
-                      </p>
-                    </div>
-                  )}
+                {/* Progress bar info */}
+                <div className="border-t border-[#0E0E0D]/15 pt-3.5 mt-4 flex justify-between items-center text-[0.55rem] font-mono font-bold tracking-widest text-[#0E0E0D]">
+                  <span>COMPLETION RATIO:</span>
+                  <span className="text-orange">{completedCount} / 5 SECS</span>
                 </div>
-              </div>
-
-              {/* Section 4: Team Setup */}
-              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
-                <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
-                  <Users className="h-4 w-4" /> 04. Team Configurations
-                </h2>
-
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 p-4 bg-secondary border border-border">
-                    <input
-                      type="checkbox"
-                      id="isTeam"
-                      className="h-4 w-4 accent-accent cursor-pointer"
-                      {...register("isTeam")}
-                    />
-                    <label htmlFor="isTeam" className="font-mono text-[0.68rem] uppercase tracking-wider text-foreground cursor-pointer select-none">
-                      Enable Team Participation (Instead of Solo)
-                    </label>
-                  </div>
-
-                  {watchIsTeam && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-dashed border-foreground/30">
-                      <Input
-                        type="number"
-                        label="Minimum Members per Team"
-                        error={errors.minTeamSize?.message}
-                        {...register("minTeamSize")}
-                      />
-                      <Input
-                        type="number"
-                        label="Maximum Members per Team"
-                        error={errors.maxTeamSize?.message}
-                        {...register("maxTeamSize")}
-                      />
-                    </div>
-                  )}
-
-                  <Input
-                    type="number"
-                    label="Maximum Registered Teams/Solos Cap (Optional)"
-                    placeholder="e.g. 50"
-                    error={errors.maxParticipants?.message}
-                    {...register("maxParticipants")}
+                <div className="w-full bg-[#0E0E0D]/10 h-1.5 border border-[#0E0E0D] mt-2 relative">
+                  <div
+                    className="bg-orange h-full transition-all duration-300"
+                    style={{ width: `${(completedCount / 5) * 100}%` }}
                   />
                 </div>
               </div>
 
-              {/* Section 3: Timeline Phases */}
-              <div className="border-2 border-foreground bg-card p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
-                <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
-                  <Calendar className="h-4 w-4" /> 03. Timeline & Phases
-                </h2>
-
-                <div className="space-y-5">
-                  <Input
-                    type="datetime-local"
-                    label="Registration Open"
-                    error={errors.registrationStart?.message}
-                    {...register("registrationStart")}
-                  />
-                  <Input
-                    type="datetime-local"
-                    label="Registration Close"
-                    error={errors.registrationEnd?.message}
-                    {...register("registrationEnd")}
-                  />
-
-                  <Input
-                    type="datetime-local"
-                    label="Idea Phase Start"
-                    error={errors.ideaPhaseStart?.message}
-                    {...register("ideaPhaseStart")}
-                  />
-                  <Input
-                    type="datetime-local"
-                    label="Idea Phase End"
-                    error={errors.ideaPhaseEnd?.message}
-                    {...register("ideaPhaseEnd")}
-                  />
-
-                  <Input
-                    type="datetime-local"
-                    label="Coding/Impl Start"
-                    error={errors.implPhaseStart?.message}
-                    {...register("implPhaseStart")}
-                  />
-                  <Input
-                    type="datetime-local"
-                    label="Coding/Impl End"
-                    error={errors.implPhaseEnd?.message}
-                    {...register("implPhaseEnd")}
-                  />
-                </div>
+              {/* Action Buttons Panel inside the HUD Column */}
+              <div className="border-2 border-[#0E0E0D] bg-[#FAF8F5] p-5 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden flex flex-col gap-3">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={isSubmitting}
+                  className="w-full py-3 bg-orange text-white hover:bg-transparent hover:text-[#0E0E0D] hover:border-[#0E0E0D] font-mono text-[0.62rem] font-bold tracking-[0.2em] uppercase border border-orange shadow-[2px_2px_0px_0px_rgba(14,14,13,1)] hover:shadow-none active:translate-y-0.5 transition-all duration-150"
+                >
+                  Create Arena <ArrowRight className="h-3.5 w-3.5 ml-1 inline-block align-middle" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 font-mono text-[0.58rem] font-bold tracking-wider uppercase border-2 border-[#0E0E0D] bg-[#FAF8F5] text-[#0E0E0D] hover:bg-[#0E0E0D] hover:text-[#FAF8F5] shadow-[2px_2px_0px_0px_rgba(14,14,13,1)] hover:shadow-none active:translate-y-0.5 transition-all duration-150"
+                >
+                  Cancel
+                </Button>
               </div>
 
             </div>
 
-          </div>
-
-          {/* Submit Actions */}
-          <div className="flex justify-end gap-4 pt-4 border-t border-border/20">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
-            >
-              Create Contest <ArrowRight className="h-3 w-3 ml-1" />
-            </Button>
           </div>
 
         </form>
