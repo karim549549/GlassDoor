@@ -12,60 +12,6 @@ type ContestWithTeamsAndMembers = Prisma.ContestGetPayload<{
   };
 }>;
 
-// Pre-seeded mock data to merge with database contests for a rich layout
-const MOCK_CONTESTS = [
-  {
-    id: "mock-contest-devops-2026",
-    title: "Alexandria DevOps Speedrun",
-    description: "Configure scaling load-balancers, sync replicas, and maintain high availability under massive socket traffic.",
-    coverImageUrl: null,
-    status: "REGISTRATION_OPEN",
-    isPrivate: true,
-    isTeam: false,
-    minTeamSize: 1,
-    maxTeamSize: 1,
-    maxParticipants: 30,
-    registrationStart: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
-    registrationEnd: new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString(),
-    ideaPhaseStart: new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString(),
-    ideaPhaseEnd: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(),
-    implPhaseStart: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(),
-    implPhaseEnd: new Date(Date.now() + 4 * 24 * 3600 * 1000).toISOString(),
-    requireGithubUrl: true,
-    requireFigmaUrl: false,
-    requireVideoUrl: true,
-    requireWriteup: false,
-    rulesText: "Deploy on AWS, submit repository link and demo video link.",
-    creatorId: "00000000-0000-0000-0000-000000000000",
-    teams: []
-  },
-  {
-    id: "mock-contest-database-2026",
-    title: "Red Sea Database Sync Sprint",
-    description: "Sync 10 million relational records into Postgres tables with absolute zero downtime and transaction integrity.",
-    coverImageUrl: null,
-    status: "COMPLETED",
-    isPrivate: false,
-    isTeam: true,
-    minTeamSize: 1,
-    maxTeamSize: 3,
-    maxParticipants: 100,
-    registrationStart: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
-    registrationEnd: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString(),
-    ideaPhaseStart: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString(),
-    ideaPhaseEnd: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
-    implPhaseStart: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
-    implPhaseEnd: new Date(Date.now() - 6 * 24 * 3600 * 1000).toISOString(),
-    requireGithubUrl: true,
-    requireFigmaUrl: false,
-    requireVideoUrl: false,
-    requireWriteup: true,
-    rulesText: "Submit full transaction logs, code repository, and performance profiles.",
-    creatorId: "00000000-0000-0000-0000-000000000000",
-    teams: []
-  }
-];
-
 export const dynamic = "force-dynamic";
 
 export default async function ContestsPage() {
@@ -118,8 +64,5 @@ export default async function ContestsPage() {
     })),
   }));
 
-  // Combine database contests with mock contests
-  const initialContests = [...formattedDbContests, ...MOCK_CONTESTS];
-
-  return <ContestsListClient initialContests={initialContests} />;
+  return <ContestsListClient initialContests={formattedDbContests} />;
 }
