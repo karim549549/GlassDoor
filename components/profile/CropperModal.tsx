@@ -151,7 +151,7 @@ export function CropperModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl p-6 bg-[#F1EFE9] border border-[#0E0E0D] rounded-none shadow-2xl font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-50">
+      <DialogContent className="w-[95vw] md:max-w-4xl lg:max-w-5xl p-6 bg-[#F1EFE9] border border-[#0E0E0D] rounded-none shadow-2xl font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-50">
         <div className="space-y-5">
           <div>
             <h3 className="font-display text-[1.1rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-[#0E0E0D]">
@@ -173,7 +173,7 @@ export function CropperModal({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleMouseUp}
             className={`w-full overflow-hidden relative border border-[#0E0E0D]/65 bg-[#0E0E0D]/10 cursor-move ${
-              aspectRatio === 1 ? "aspect-square max-w-[320px] mx-auto" : "aspect-[4/1]"
+              aspectRatio === 1 ? "aspect-square max-w-[320px] md:max-w-[450px] mx-auto" : "aspect-[4/1]"
             }`}
           >
             <Image
