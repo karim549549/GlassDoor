@@ -35,7 +35,7 @@ export function Nav() {
           : "bg-transparent text-[#0E0E0D]"
     }`}>
       <div className={`flex items-center justify-between h-11 transition-all duration-300 ${
-        isScrolled ? "px-40" : "px-6"
+        isScrolled ? "md:px-40 px-6" : "px-6"
       }`}>
         {/* Left Section: Branding */}
         <NavBrand isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
