@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Search, Trophy, Filter } from "lucide-react";
 import { useAuthStore } from "@/lib/client/useAuthStore";
@@ -42,108 +42,96 @@ interface ClientContest {
 
 interface ContestsListClientProps {
   initialContests: ClientContest[];
+  initialTotalPages: number;
+  initialTotalCount: number;
 }
 
-export function ContestsListClient({ initialContests }: ContestsListClientProps) {
+export function ContestsListClient({ 
+  initialContests, 
+  initialTotalPages,
+  initialTotalCount
+}: ContestsListClientProps) {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<"all" | "my">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   
-  // New Filter & Sort States
+  // Filter & Sort States
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "active" | "completed">("all");
   const [accessFilter, setAccessFilter] = useState<"all" | "public" | "private">("all");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title" | "teams">("newest");
-  
-  const itemsPerPage = 50; // Paginated registry items default 50
 
-  // 1. Identify today's active upcoming registered contest
+  // Dynamic state loaded via HTTP calls
+  const [contests, setContests] = useState<ClientContest[]>(initialContests);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
+  const [totalCount, setTotalCount] = useState(initialTotalCount);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+  // Sync API state updates when search queries or filters alter
+  useEffect(() => {
+    if (isFirstLoad) {
+      setIsFirstLoad(false);
+      return;
+    }
+
+    const fetcher = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        const queryParams = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: "50",
+          status: statusFilter,
+          access: accessFilter,
+          search: searchQuery,
+          sortBy: sortBy,
+          tab: activeTab
+        });
+
+        const res = await fetch(`/api/contest?${queryParams}`);
+        if (res.ok) {
+          const data = await res.json();
+          setContests(data.contests);
+          setTotalPages(data.totalPages);
+          setTotalCount(data.total);
+        }
+      } catch (err) {
+        console.error("API fetch error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 250); // debounce API calls for search query entries
+
+    return () => clearTimeout(fetcher);
+  }, [currentPage, statusFilter, accessFilter, searchQuery, sortBy, activeTab, isFirstLoad]);
+
+  // Reset page pagination back to 1 when filters alter
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, accessFilter, searchQuery, sortBy, activeTab]);
+
+  // Identify today's active upcoming registered contest
   const upcomingContest = useMemo(() => {
-    // If logged in, find the first active/upcoming contest they registered in
     if (user?.id) {
-      const registered = initialContests.find((c) => 
+      const registered = contests.find((c) => 
         (c.status === "IMPLEMENTATION_PHASE" || c.status === "IDEA_PHASE" || c.status === "REGISTRATION_OPEN") &&
         c.teams.some((team) => team.members.some((m) => m.userId === user.id))
       );
       if (registered) return registered;
     }
 
-    // Otherwise, return the first active/live contest
-    return initialContests.find(
+    return contests.find(
       (c) => c.status === "IMPLEMENTATION_PHASE" || c.status === "IDEA_PHASE"
     ) || null;
-  }, [initialContests, user]);
+  }, [contests, user]);
 
-  // 2. Filter & Sort Contests Pipeline
-  const filteredContests = useMemo(() => {
-    let result = [...initialContests];
-
-    // Tab Filter
-    if (activeTab === "my") {
-      if (!user?.id) return [];
-      result = result.filter(
-        (c) =>
-          c.creatorId === user.id ||
-          c.teams.some((team) => team.members.some((m) => m.userId === user.id))
-      );
-    }
-
-    // Status Filter
-    if (statusFilter === "open") {
-      result = result.filter((c) => c.status === "REGISTRATION_OPEN");
-    } else if (statusFilter === "active") {
-      result = result.filter((c) => c.status === "IDEA_PHASE" || c.status === "IMPLEMENTATION_PHASE");
-    } else if (statusFilter === "completed") {
-      result = result.filter((c) => c.status === "COMPLETED");
-    }
-
-    // Access Filter
-    if (accessFilter === "public") {
-      result = result.filter((c) => !c.isPrivate);
-    } else if (accessFilter === "private") {
-      result = result.filter((c) => c.isPrivate);
-    }
-
-    // Search query Filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.title.toLowerCase().includes(query) ||
-          c.description.toLowerCase().includes(query) ||
-          c.rulesText.toLowerCase().includes(query)
-      );
-    }
-
-    // Sorting
-    if (sortBy === "newest") {
-      result.sort((a, b) => new Date(b.registrationStart).getTime() - new Date(a.registrationStart).getTime());
-    } else if (sortBy === "oldest") {
-      result.sort((a, b) => new Date(a.registrationStart).getTime() - new Date(b.registrationStart).getTime());
-    } else if (sortBy === "title") {
-      result.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortBy === "teams") {
-      result.sort((a, b) => b.teams.length - a.teams.length);
-    }
-
-    return result;
-  }, [initialContests, activeTab, statusFilter, accessFilter, searchQuery, sortBy, user]);
-
-  // 3. Paginate Registry
-  const totalPages = Math.ceil(filteredContests.length / itemsPerPage);
-  const paginatedContests = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredContests.slice(start, start + itemsPerPage);
-  }, [filteredContests, currentPage]);
-
-  // 4. Billboard Contests (10 items teaser ranks)
+  // Billboard Contests (10 items teaser ranks based on initial data count)
   const billboardContests = useMemo(() => {
     return initialContests.map((c, idx) => ({
       id: c.id,
       title: c.title,
       isPrivate: c.isPrivate,
       status: c.status,
-      // Fallback participant count calculation
       participantCount: (c.teams.length * 3) + (idx * 4) + 12
     })).sort((a, b) => b.participantCount - a.participantCount);
   }, [initialContests]);
@@ -314,12 +302,12 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
             </div>
 
             {/* Right Column: Registry Listing Grid (Width 9/12 on large screens) */}
-            <div className="lg:col-span-9 space-y-6">
+            <div className="lg:col-span-9 space-y-6 relative">
               
               {/* Registry Toolbar Header (Results & Top-Right Pagination) */}
               <div className="flex items-center justify-between border-b border-[#0E0E0D]/10 pb-3.5">
                 <span className="font-mono text-[0.62rem] uppercase tracking-wider text-muted-foreground font-bold">
-                  Registry: {filteredContests.length} Arena(s) Found
+                  Registry: {totalCount} Arena(s) Found
                 </span>
                 
                 {totalPages > 1 && (
@@ -328,14 +316,14 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
                     <div className="flex gap-1.5">
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
+                        disabled={currentPage === 1 || isLoading}
                         className="px-2.5 py-1 border border-[#0E0E0D] bg-white text-[#0E0E0D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#0E0E0D] hover:text-white transition-colors text-[0.52rem] font-mono font-bold"
                       >
                         PREV
                       </button>
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
+                        disabled={currentPage === totalPages || isLoading}
                         className="px-2.5 py-1 border border-[#0E0E0D] bg-white text-[#0E0E0D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#0E0E0D] hover:text-white transition-colors text-[0.52rem] font-mono font-bold"
                       >
                         NEXT
@@ -345,55 +333,57 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
                 )}
               </div>
 
-              {/* Active Tab Contents */}
-              {activeTab === "my" && !user?.id ? (
-                <div className="border-2 border-dashed border-[#0E0E0D]/20 bg-white p-10 text-center space-y-3 shadow-[4px_4px_0px_0px_#0E0E0D]">
-                  <Trophy className="h-10 w-10 mx-auto text-muted-foreground/50 stroke-[1.25]" />
-                  <h4 className="font-mono text-xs uppercase tracking-widest font-bold">Authentication Required</h4>
-                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                    Sign in to view and track your registered arenas, created hackathons, and live team lobbies.
-                  </p>
-                </div>
-              ) : paginatedContests.length > 0 ? (
-                <div className="space-y-6">
-                  {/* Grid System for Listings: 3 Columns on largest screens (xl) */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {paginatedContests.map((contest) => (
-                      <ContestCard key={contest.id} contest={contest} />
-                    ))}
+              {/* Active Tab Contents with retro transition loading opacity overlay */}
+              <div className={`transition-opacity duration-200 ${isLoading ? "opacity-45 pointer-events-none" : "opacity-100"}`}>
+                {activeTab === "my" && !user?.id ? (
+                  <div className="border-2 border-dashed border-[#0E0E0D]/20 bg-white p-10 text-center space-y-3 shadow-[4px_4px_0px_0px_#0E0E0D]">
+                    <Trophy className="h-10 w-10 mx-auto text-muted-foreground/50 stroke-[1.25]" />
+                    <h4 className="font-mono text-xs uppercase tracking-widest font-bold">Authentication Required</h4>
+                    <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                      Sign in to view and track your registered arenas, created hackathons, and live team lobbies.
+                    </p>
                   </div>
-
-                  {/* Registry Pagination (Bottom Backup) */}
-                  {totalPages > 1 && (
-                    <div className="flex justify-between items-center pt-6 border-t border-dashed border-[#0E0E0D]/20 font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground mt-4">
-                      <span>Page {currentPage} of {totalPages} results</span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="px-3 py-1.5 border-2 border-[#0E0E0D] bg-white text-[#0E0E0D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#0E0E0D] hover:text-white transition-colors shadow-[2px_2px_0px_0px_#0E0E0D] active:translate-y-0.5 font-bold"
-                        >
-                          [PREV]
-                        </button>
-                        <button
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="px-3 py-1.5 border-2 border-[#0E0E0D] bg-white text-[#0E0E0D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#0E0E0D] hover:text-white transition-colors shadow-[2px_2px_0px_0px_#0E0E0D] active:translate-y-0.5 font-bold"
-                        >
-                          [NEXT]
-                        </button>
-                      </div>
+                ) : contests.length > 0 ? (
+                  <div className="space-y-6">
+                    {/* Grid System for Listings: 3 Columns on largest screens (xl) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {contests.map((contest) => (
+                        <ContestCard key={contest.id} contest={contest} />
+                      ))}
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-[#0E0E0D]/20 bg-white p-12 text-center space-y-2 shadow-[4px_4px_0px_0px_#0E0E0D]">
-                  <Trophy className="h-10 w-10 mx-auto text-muted-foreground/30 stroke-[1.25]" />
-                  <p className="font-mono text-[0.62rem] uppercase tracking-widest text-muted-foreground font-bold">
-                    No matching arenas found in this directory.
-                  </p>
-                </div>
-              )}
+
+                    {/* Registry Pagination (Bottom Backup) */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-between items-center pt-6 border-t border-dashed border-[#0E0E0D]/20 font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground mt-4">
+                        <span>Page {currentPage} of {totalPages} results</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1 || isLoading}
+                            className="px-3 py-1.5 border-2 border-[#0E0E0D] bg-white text-[#0E0E0D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#0E0E0D] hover:text-white transition-colors shadow-[2px_2px_0px_0px_#0E0E0D] active:translate-y-0.5 font-bold"
+                          >
+                            [PREV]
+                          </button>
+                          <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages || isLoading}
+                            className="px-3 py-1.5 border-2 border-[#0E0E0D] bg-white text-[#0E0E0D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#0E0E0D] hover:text-white transition-colors shadow-[2px_2px_0px_0px_#0E0E0D] active:translate-y-0.5 font-bold"
+                          >
+                            [NEXT]
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-[#0E0E0D]/20 bg-white p-12 text-center space-y-2 shadow-[4px_4px_0px_0px_#0E0E0D]">
+                    <Trophy className="h-10 w-10 mx-auto text-muted-foreground/30 stroke-[1.25]" />
+                    <p className="font-mono text-[0.62rem] uppercase tracking-widest text-muted-foreground font-bold">
+                      No matching arenas found in this directory.
+                    </p>
+                  </div>
+                )}
+              </div>
 
             </div>
 

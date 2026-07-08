@@ -111,3 +111,122 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "An unexpected database error occurred." }, { status: 500 });
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const status = searchParams.get("status") || "all";
+    const access = searchParams.get("access") || "all";
+    const search = searchParams.get("search") || "";
+    const sortBy = searchParams.get("sortBy") || "newest";
+    const tab = searchParams.get("tab") || "all";
+
+    const skip = (page - 1) * limit;
+    const take = limit;
+
+    const where: any = {};
+
+    // 1. Tab Scope Filter
+    if (tab === "my") {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return NextResponse.json({ error: "Unauthorized scope query." }, { status: 401 });
+      }
+      where.OR = [
+        { creatorId: user.id },
+        {
+          teams: {
+            some: {
+              members: {
+                some: {
+                  userId: user.id
+                }
+              }
+            }
+          }
+        }
+      ];
+    }
+
+    // 2. Status Filter
+    if (status === "open") {
+      where.status = "REGISTRATION_OPEN";
+    } else if (status === "active") {
+      where.status = { in: ["IDEA_PHASE", "IMPLEMENTATION_PHASE"] };
+    } else if (status === "completed") {
+      where.status = "COMPLETED";
+    }
+
+    // 3. Access Filter
+    if (access === "public") {
+      where.isPrivate = false;
+    } else if (access === "private") {
+      where.isPrivate = true;
+    }
+
+    // 4. Search Filter
+    if (search.trim()) {
+      // If we already have OR conditions (e.g. from tab='my'), wrap them logically
+      const searchConditions = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { rulesText: { contains: search, mode: "insensitive" } }
+      ];
+      
+      if (where.OR) {
+        where.AND = [
+          { OR: where.OR },
+          { OR: searchConditions }
+        ];
+        delete where.OR;
+      } else {
+        where.OR = searchConditions;
+      }
+    }
+
+    // 5. Sorting
+    let orderBy: any = {};
+    if (sortBy === "newest") {
+      orderBy = { registrationStart: "desc" };
+    } else if (sortBy === "oldest") {
+      orderBy = { registrationStart: "asc" };
+    } else if (sortBy === "title") {
+      orderBy = { title: "asc" };
+    } else if (sortBy === "teams") {
+      orderBy = { teams: { _count: "desc" } };
+    }
+
+    // 6. DB Queries
+    const [contests, total] = await Promise.all([
+      prisma.contest.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        include: {
+          teams: {
+            include: {
+              members: true
+            }
+          }
+        }
+      }),
+      prisma.contest.count({ where })
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return NextResponse.json({
+      contests,
+      total,
+      totalPages,
+      currentPage: page
+    });
+  } catch (error) {
+    console.error("Contest fetch API error:", error);
+    return NextResponse.json({ error: "Failed to fetch contests." }, { status: 500 });
+  }
+}

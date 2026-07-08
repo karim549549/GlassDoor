@@ -15,21 +15,28 @@ type ContestWithTeamsAndMembers = Prisma.ContestGetPayload<{
 export const dynamic = "force-dynamic";
 
 export default async function ContestsPage() {
-  // Fetch contests from the database with a graceful fallback to mock data
+  // Fetch contests from the database with initial page 1 (50 limit)
   let dbContests: ContestWithTeamsAndMembers[] = [];
+  let totalCount = 0;
   try {
-    dbContests = await prisma.contest.findMany({
-      include: {
-        teams: {
-          include: {
-            members: true,
+    const [contests, count] = await Promise.all([
+      prisma.contest.findMany({
+        take: 50,
+        include: {
+          teams: {
+            include: {
+              members: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { registrationStart: "desc" },
+      }),
+      prisma.contest.count()
+    ]);
+    dbContests = contests;
+    totalCount = count;
   } catch (error) {
-    console.error("Database query failed (possibly unmigrated schema). Falling back to mock data.", error);
+    console.error("Database query failed.", error);
   }
 
   // Map dates to ISO strings for client-side serialization
@@ -64,5 +71,13 @@ export default async function ContestsPage() {
     })),
   }));
 
-  return <ContestsListClient initialContests={formattedDbContests} />;
+  const initialTotalPages = Math.ceil(totalCount / 50);
+
+  return (
+    <ContestsListClient 
+      initialContests={formattedDbContests} 
+      initialTotalPages={initialTotalPages}
+      initialTotalCount={totalCount}
+    />
+  );
 }
