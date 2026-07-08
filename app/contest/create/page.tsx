@@ -254,8 +254,8 @@ export default function CreateContestPage() {
             </p>
           </div>
 
-          {/* Right Column: Floating Visual Live Preview Card */}
-          <div className="w-full lg:w-auto shrink-0 lg:max-w-md">
+          {/* Right Column: Floating Visual Live Preview Card with Fixed Desktop Width to Prevent CLS */}
+          <div className="w-full lg:w-[350px] shrink-0">
             <div className="border-2 border-dashed border-[#F1EFE9]/25 bg-[#F1EFE9]/5 p-4 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(241,239,233,0.06)]">
               <span className="font-mono text-[0.45rem] text-[#F1EFE9]/50 uppercase tracking-[0.25em] font-bold block mb-2">
                 [LIVE CARD PREVIEW]
