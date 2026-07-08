@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Trophy, Calendar, Users, Shield, Link2, FileText, ArrowRight, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { useToast } from "@/components/providers/ToastProvider";
+import { CropperModal } from "@/components/profile/CropperModal";
 import gsap from "gsap";
 
 // Form Validation Schema using Zod
@@ -78,6 +79,7 @@ export default function CreateContestPage() {
 
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+  const [cropTarget, setCropTarget] = useState<string | null>(null);
 
   const {
     register,
@@ -117,8 +119,8 @@ export default function CreateContestPage() {
   const watchImplEnd = watch("implPhaseEnd") as string;
   const watchRulesText = watch("rulesText") as string;
 
-  // File Upload Handler for Supabase
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Read selected file locally to target state
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -127,7 +129,19 @@ export default function CreateContestPage() {
       return;
     }
 
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCropTarget(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Upload cropped blob to Supabase
+  const handleCroppedUpload = async (blob: Blob) => {
     setIsUploading(true);
+    setCropTarget(null); // Close cropper modal
+
+    const file = new File([blob], "cover.jpg", { type: "image/jpeg" });
     const formData = new FormData();
     formData.append("file", file);
 
@@ -142,7 +156,7 @@ export default function CreateContestPage() {
         toast(data.error || "Failed to upload cover image.", "error");
       } else {
         setValue("coverImageUrl", data.url, { shouldValidate: true });
-        toast("Cover image uploaded successfully!", "success");
+        toast("Cover image cropped and uploaded successfully!", "success");
       }
     } catch (err) {
       console.error("Upload error:", err);
@@ -364,7 +378,7 @@ export default function CreateContestPage() {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={handleFileUpload}
+                        onChange={handleFileSelect}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         disabled={isUploading}
                       />
@@ -724,6 +738,16 @@ export default function CreateContestPage() {
 
         </form>
       </div>
+
+      {/* Cropper Modal for Event Cover Image */}
+      <CropperModal
+        isOpen={!!cropTarget}
+        onClose={() => setCropTarget(null)}
+        imageSrc={cropTarget}
+        aspectRatio={3} // 3 represents the cover crop ratio (4:1)
+        onCropComplete={handleCroppedUpload}
+        isLoading={isUploading}
+      />
     </div>
   );
 }
