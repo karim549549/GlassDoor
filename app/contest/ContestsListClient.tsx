@@ -49,7 +49,13 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
   const [activeTab, setActiveTab] = useState<"all" | "my">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4; // Paginated registry items
+  
+  // New Filter & Sort States
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "active" | "completed">("all");
+  const [accessFilter, setAccessFilter] = useState<"all" | "public" | "private">("all");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title" | "teams">("newest");
+  
+  const itemsPerPage = 50; // Paginated registry items default 50
 
   // 1. Identify today's active upcoming registered contest
   const upcomingContest = useMemo(() => {
@@ -68,39 +74,69 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
     ) || null;
   }, [initialContests, user]);
 
-  // 2. Filter Contests based on Active Tab
-  const tabContests = useMemo(() => {
+  // 2. Filter & Sort Contests Pipeline
+  const filteredContests = useMemo(() => {
+    let result = [...initialContests];
+
+    // Tab Filter
     if (activeTab === "my") {
       if (!user?.id) return [];
-      return initialContests.filter(
+      result = result.filter(
         (c) =>
           c.creatorId === user.id ||
           c.teams.some((team) => team.members.some((m) => m.userId === user.id))
       );
     }
-    return initialContests;
-  }, [initialContests, activeTab, user]);
 
-  // 3. Apply Search Filter
-  const filteredContests = useMemo(() => {
-    if (!searchQuery.trim()) return tabContests;
-    const query = searchQuery.toLowerCase();
-    return tabContests.filter(
-      (c) =>
-        c.title.toLowerCase().includes(query) ||
-        c.description.toLowerCase().includes(query) ||
-        c.rulesText.toLowerCase().includes(query)
-    );
-  }, [tabContests, searchQuery]);
+    // Status Filter
+    if (statusFilter === "open") {
+      result = result.filter((c) => c.status === "REGISTRATION_OPEN");
+    } else if (statusFilter === "active") {
+      result = result.filter((c) => c.status === "IDEA_PHASE" || c.status === "IMPLEMENTATION_PHASE");
+    } else if (statusFilter === "completed") {
+      result = result.filter((c) => c.status === "COMPLETED");
+    }
 
-  // 4. Paginate Registry
+    // Access Filter
+    if (accessFilter === "public") {
+      result = result.filter((c) => !c.isPrivate);
+    } else if (accessFilter === "private") {
+      result = result.filter((c) => c.isPrivate);
+    }
+
+    // Search query Filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.title.toLowerCase().includes(query) ||
+          c.description.toLowerCase().includes(query) ||
+          c.rulesText.toLowerCase().includes(query)
+      );
+    }
+
+    // Sorting
+    if (sortBy === "newest") {
+      result.sort((a, b) => new Date(b.registrationStart).getTime() - new Date(a.registrationStart).getTime());
+    } else if (sortBy === "oldest") {
+      result.sort((a, b) => new Date(a.registrationStart).getTime() - new Date(b.registrationStart).getTime());
+    } else if (sortBy === "title") {
+      result.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === "teams") {
+      result.sort((a, b) => b.teams.length - a.teams.length);
+    }
+
+    return result;
+  }, [initialContests, activeTab, statusFilter, accessFilter, searchQuery, sortBy, user]);
+
+  // 3. Paginate Registry
   const totalPages = Math.ceil(filteredContests.length / itemsPerPage);
   const paginatedContests = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredContests.slice(start, start + itemsPerPage);
   }, [filteredContests, currentPage]);
 
-  // 5. Billboard Contests (Simulated participant counts based on squads size or static mock counts)
+  // 4. Billboard Contests (10 items teaser ranks)
   const billboardContests = useMemo(() => {
     return initialContests.map((c, idx) => ({
       id: c.id,
@@ -163,11 +199,11 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 space-y-8">
-          {/* Two Column Layout: Billboard Left, Registry Right */}
+          {/* Two Column Layout: Billboard Left (Width 3/12), Registry Right (Width 9/12) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Left Column: Filters, Search, and Billboard (Width 4/12) */}
-            <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6 z-10">
+            {/* Left Column: Filters, Search, and Billboard (Width 3/12 on large screens) */}
+            <div className="lg:col-span-3 lg:sticky lg:top-24 space-y-6 z-10">
               
               {/* Neo-brutalist Search Box & Filter Controls */}
               <div className="border-2 border-[#0E0E0D] bg-white p-5 shadow-[4px_4px_0px_0px_#0E0E0D] space-y-4">
@@ -210,7 +246,60 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
                   />
                 </div>
 
-                <div className="pt-2">
+                {/* Status Filter */}
+                <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-[#0E0E0D]/10">
+                  <label className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value as any);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
+                  >
+                    <option value="all">ALL STATUSES</option>
+                    <option value="open">REGISTRATION OPEN</option>
+                    <option value="active">ACTIVE STAGES</option>
+                    <option value="completed">COMPLETED</option>
+                  </select>
+                </div>
+
+                {/* Access Filter */}
+                <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-[#0E0E0D]/10">
+                  <label className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Access</label>
+                  <select
+                    value={accessFilter}
+                    onChange={(e) => {
+                      setAccessFilter(e.target.value as any);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
+                  >
+                    <option value="all">ALL ACCESS</option>
+                    <option value="public">PUBLIC ONLY</option>
+                    <option value="private">INVITE ONLY</option>
+                  </select>
+                </div>
+
+                {/* Sorting Select Dropdown */}
+                <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-[#0E0E0D]/10">
+                  <label className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Sort By</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => {
+                      setSortBy(e.target.value as any);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
+                  >
+                    <option value="newest">NEWEST ADDED</option>
+                    <option value="oldest">OLDEST ADDED</option>
+                    <option value="title">ALPHABETICAL (A-Z)</option>
+                    <option value="teams">MOST TEAMS REGISTERED</option>
+                  </select>
+                </div>
+
+                <div className="pt-2 border-t border-dashed border-[#0E0E0D]/10">
                   <Link
                     href="/contest/create"
                     className="w-full py-2.5 bg-orange text-white border-2 border-[#0E0E0D] font-mono text-[0.58rem] font-bold tracking-widest uppercase hover:bg-transparent hover:text-[#0E0E0D] transition-all duration-150 shadow-[2px_2px_0px_0px_#0E0E0D] hover:shadow-none active:translate-y-0.5 flex items-center justify-center gap-1.5"
@@ -224,9 +313,38 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
               <CairoBillboard contests={billboardContests} />
             </div>
 
-            {/* Right Column: Registry Listing Grid (Width 8/12) */}
-            <div className="lg:col-span-8 space-y-6">
+            {/* Right Column: Registry Listing Grid (Width 9/12 on large screens) */}
+            <div className="lg:col-span-9 space-y-6">
               
+              {/* Registry Toolbar Header (Results & Top-Right Pagination) */}
+              <div className="flex items-center justify-between border-b border-[#0E0E0D]/10 pb-3.5">
+                <span className="font-mono text-[0.62rem] uppercase tracking-wider text-muted-foreground font-bold">
+                  Registry: {filteredContests.length} Arena(s) Found
+                </span>
+                
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-3 font-mono text-[0.55rem] uppercase tracking-wider text-[#0E0E0D]">
+                    <span>Page {currentPage} of {totalPages}</span>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-2.5 py-1 border border-[#0E0E0D] bg-white text-[#0E0E0D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#0E0E0D] hover:text-white transition-colors text-[0.52rem] font-mono font-bold"
+                      >
+                        PREV
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-2.5 py-1 border border-[#0E0E0D] bg-white text-[#0E0E0D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#0E0E0D] hover:text-white transition-colors text-[0.52rem] font-mono font-bold"
+                      >
+                        NEXT
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Active Tab Contents */}
               {activeTab === "my" && !user?.id ? (
                 <div className="border-2 border-dashed border-[#0E0E0D]/20 bg-white p-10 text-center space-y-3 shadow-[4px_4px_0px_0px_#0E0E0D]">
@@ -238,14 +356,14 @@ export function ContestsListClient({ initialContests }: ContestsListClientProps)
                 </div>
               ) : paginatedContests.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Grid System for Listings */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Grid System for Listings: 3 Columns on largest screens (xl) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {paginatedContests.map((contest) => (
                       <ContestCard key={contest.id} contest={contest} />
                     ))}
                   </div>
 
-                  {/* Registry Pagination */}
+                  {/* Registry Pagination (Bottom Backup) */}
                   {totalPages > 1 && (
                     <div className="flex justify-between items-center pt-6 border-t border-dashed border-[#0E0E0D]/20 font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground mt-4">
                       <span>Page {currentPage} of {totalPages} results</span>
