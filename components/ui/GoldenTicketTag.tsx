@@ -87,8 +87,7 @@ const SIZE_CONFIGS = {
 
 /**
  * Newspaper Classified Coupon Tag Component
- * Pixel-perfect match for the Cairo Editorial plan design (solid top/bottom borders,
- * dashed left/right perforation rules, pastel colorways, and structural monospace brackets).
+ * Non-interactive badge indicator without hover lifts or pointer cursors.
  */
 export function GoldenTicketTag({
   label,
@@ -111,16 +110,13 @@ export function GoldenTicketTag({
   const activeBorder = borderColor || defaultTheme.border;
   const sizeClass = SIZE_CONFIGS[size] || SIZE_CONFIGS.md;
 
+  const ContainerTag = onClick ? "button" : "div";
+
   return (
-    <button
-      type="button"
+    <ContainerTag
+      type={onClick ? "button" : undefined}
       onClick={onClick}
-      disabled={!onClick}
-      className={`relative inline-flex items-center justify-center font-mono uppercase font-bold transition-all duration-150 select-none ${
-        onClick
-          ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#0E0E0D] active:translate-y-0"
-          : "cursor-default"
-      } ${className}`}
+      className={`relative inline-flex items-center justify-center font-mono uppercase font-bold transition-none select-none cursor-default ${className}`}
     >
       {/* Newspaper Coupon Box: Solid Top/Bottom Rules, Dashed Left/Right Perforated Borders */}
       <div
@@ -139,7 +135,7 @@ export function GoldenTicketTag({
           <span className="ml-1.5 opacity-80 font-mono text-[0.88em]">({count})</span>
         )}
       </div>
-    </button>
+    </ContainerTag>
   );
 }
 
