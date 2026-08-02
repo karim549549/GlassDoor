@@ -1,8 +1,11 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Tag as TagIcon } from "lucide-react";
+import { Plus, Search, Tag as TagIcon, Filter, RotateCcw } from "lucide-react";
 import { ArenaTabs } from "@/components/arena/ArenaTabs";
 import { GoldenTicketTag } from "@/components/ui/GoldenTicketTag";
+import { AddTagsModal } from "@/components/arena/list/AddTagsModal";
 import type { ArenaStatusFilter, ArenaAccessFilter, ArenaSortOption } from "@/lib/arena/schema";
 
 interface TagFilterItem {
@@ -30,6 +33,28 @@ interface ArenasFilterSidebarProps {
   onTagChange?: (tagSlug: string) => void;
 }
 
+/**
+ * Skeleton Loader Component to preserve height and eliminate Cumulative Layout Shift (CLS)
+ * while fetching tag data from GET /api/arena/tags.
+ */
+function TagFilterSkeleton() {
+  return (
+    <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-[#0E0E0D]/10 min-h-[85px]">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+          <TagIcon className="h-3 w-3 text-orange" /> Golden Ticket Tags
+        </span>
+        <div className="h-3.5 w-12 bg-[#0E0E0D]/10 animate-pulse" />
+      </div>
+      <div className="flex flex-wrap gap-1.5 pt-1">
+        <div className="h-6 w-20 bg-[#0E0E0D]/10 border border-[#0E0E0D]/15 animate-pulse" />
+        <div className="h-6 w-24 bg-[#0E0E0D]/10 border border-[#0E0E0D]/15 animate-pulse" />
+        <div className="h-6 w-16 bg-[#0E0E0D]/10 border border-[#0E0E0D]/15 animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 /** Neo-brutalist search box, scope tabs, and filter/sort controls for the arena registry. */
 export function ArenasFilterSidebar({
   searchQuery,
@@ -48,9 +73,12 @@ export function ArenasFilterSidebar({
   onTagChange,
 }: ArenasFilterSidebarProps) {
   const [tags, setTags] = useState<TagFilterItem[]>([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
+      setIsLoadingTags(true);
       try {
         const res = await fetch("/api/arena/tags");
         if (res.ok) {
@@ -59,9 +87,17 @@ export function ArenasFilterSidebar({
         }
       } catch (err) {
         console.error("Failed to load sidebar tags:", err);
+      } finally {
+        setIsLoadingTags(false);
       }
     })();
   }, []);
+
+  const handleClearTags = () => {
+    if (onTagChange) {
+      onTagChange("");
+    }
+  };
 
   return (
     <div className="border-2 border-[#0E0E0D] bg-white p-5 shadow-[4px_4px_0px_0px_#0E0E0D] space-y-4">
@@ -85,40 +121,67 @@ export function ArenasFilterSidebar({
         <ArenaTabs activeTab={activeTab} setActiveTab={onTabChange} allCount={allCount} myCount={myCount} />
       </div>
 
-      {/* Golden Ticket Tag Filter Section */}
-      {tags.length > 0 && (
-        <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-[#0E0E0D]/10">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-              <TagIcon className="h-3 w-3 text-orange" /> Golden Ticket Tags
-            </span>
-            {selectedTag && onTagChange && (
-              <button
-                type="button"
-                onClick={() => onTagChange("")}
-                className="font-mono text-[0.48rem] text-orange uppercase font-bold hover:underline"
-              >
-                Clear Tag
-              </button>
-            )}
+      {/* Golden Ticket Tag Filter Section with Reserved Height Skeleton */}
+      {isLoadingTags ? (
+        <TagFilterSkeleton />
+      ) : (
+        tags.length > 0 && (
+          <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-[#0E0E0D]/10 min-h-[85px]">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <TagIcon className="h-3 w-3 text-orange" /> Golden Ticket Tags
+              </span>
+
+              {/* Action Icons: Filter (Add Tags) & Clear Tags */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  title="Add Tags"
+                  onClick={() => setIsModalOpen(true)}
+                  className="p-1 text-[#0E0E0D] hover:bg-[#0E0E0D]/10 border border-[#0E0E0D] transition-colors cursor-pointer"
+                >
+                  <Filter className="h-3 w-3 text-[#0E0E0D]" />
+                </button>
+                {selectedTag && (
+                  <button
+                    type="button"
+                    title="Clear Tags"
+                    onClick={handleClearTags}
+                    className="p-1 text-orange hover:bg-orange/10 border border-orange transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="h-3 w-3 text-orange" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {tags.map((t) => {
+                const isSelected = selectedTag.toLowerCase() === t.slug.toLowerCase();
+                return (
+                  <GoldenTicketTag
+                    key={t.id}
+                    label={t.name}
+                    count={t.count}
+                    size="sm"
+                    isSelected={isSelected}
+                    onClick={() => onTagChange && onTagChange(isSelected ? "" : t.slug)}
+                  />
+                );
+              })}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {tags.map((t) => {
-              const isSelected = selectedTag.toLowerCase() === t.slug.toLowerCase();
-              return (
-                <GoldenTicketTag
-                  key={t.id}
-                  label={t.name}
-                  count={t.count}
-                  size="sm"
-                  isSelected={isSelected}
-                  onClick={() => onTagChange && onTagChange(isSelected ? "" : t.slug)}
-                />
-              );
-            })}
-          </div>
-        </div>
+        )
       )}
+
+      {/* Add Tags Filter Modal Dialog */}
+      <AddTagsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        tags={tags}
+        selectedTag={selectedTag}
+        onSelectTag={(tagSlug) => onTagChange && onTagChange(tagSlug)}
+      />
 
       {/* Status Filter */}
       <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-[#0E0E0D]/10">
