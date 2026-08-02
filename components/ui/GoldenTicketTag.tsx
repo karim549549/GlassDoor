@@ -3,8 +3,8 @@
 import React from "react";
 
 export type GoldenTicketVariant =
-  | "coupon"
   | "golden"
+  | "coupon"
   | "emerald"
   | "cyan"
   | "purple"
@@ -25,89 +25,47 @@ export interface GoldenTicketTagProps {
   className?: string;
 }
 
-const SELECTED_THEME = {
-  bg: "bg-orange",
-  text: "text-white font-bold",
-  border: "#0E0E0D",
-  perforation: "stroke-white/80",
+// Unified Golden Color Theme (Identical to the Golden Ticket design)
+const UNIFIED_GOLDEN_THEME = {
+  bg: "bg-gradient-to-r from-[#F5E096] via-[#D4AF37] to-[#C5A059]",
+  text: "text-[#1C1604]",
+  border: "#1C1604",
+  perforation: "stroke-[#1C1604]/40",
 } as const;
 
-const VARIANT_STYLES: Record<
-  GoldenTicketVariant,
-  { bg: string; text: string; border: string; perforation: string }
-> = {
-  emerald: {
-    bg: "bg-[#E6F4EA]",
-    text: "text-[#0D522C]",
-    border: "#0D522C",
-    perforation: "stroke-[#0D522C]/40",
-  },
-  cyan: {
-    bg: "bg-[#E0F2FE]",
-    text: "text-[#0369A1]",
-    border: "#0369A1",
-    perforation: "stroke-[#0369A1]/40",
-  },
-  purple: {
-    bg: "bg-[#F3E8FF]",
-    text: "text-[#6B21A8]",
-    border: "#6B21A8",
-    perforation: "stroke-[#6B21A8]/40",
-  },
-  orange: {
-    bg: "bg-[#FFEDD5]",
-    text: "text-[#C2410C]",
-    border: "#C2410C",
-    perforation: "stroke-[#C2410C]/40",
-  },
-  ruby: {
-    bg: "bg-[#FFE4E6]",
-    text: "text-[#BE123C]",
-    border: "#BE123C",
-    perforation: "stroke-[#BE123C]/40",
-  },
-  golden: {
-    bg: "bg-[#FEF9C3]",
-    text: "text-[#854D0E]",
-    border: "#854D0E",
-    perforation: "stroke-[#854D0E]/40",
-  },
-  coupon: {
-    bg: "bg-[#FAF8F5]",
-    text: "text-[#0E0E0D]",
-    border: "#0E0E0D",
-    perforation: "stroke-[#0E0E0D]/40",
-  },
-  outline: {
-    bg: "bg-[#FAF8F5]",
-    text: "text-[#0E0E0D]",
-    border: "#0E0E0D",
-    perforation: "stroke-[#0E0E0D]/40",
-  },
-};
+const SELECTED_GOLDEN_THEME = {
+  bg: "bg-[#1C1604]",
+  text: "text-[#F5E096]",
+  border: "#F5E096",
+  perforation: "stroke-[#F5E096]/60",
+} as const;
 
-const SIZE_STYLES: Record<"sm" | "md" | "lg", { padding: string; text: string; notch: number }> = {
+// Scaled-up size configurations for enhanced legibility on larger screens
+const SIZE_CONFIGS = {
   sm: {
-    padding: "px-3 py-1",
-    text: "text-[0.52rem] tracking-wider",
-    notch: 4,
+    padding: "px-3.5 py-1 sm:px-4 sm:py-1.5",
+    text: "text-[0.62rem] sm:text-[0.68rem] tracking-wider",
+    notch: 6,
+    borderWidth: 2,
   },
   md: {
-    padding: "px-4 py-1.5",
-    text: "text-[0.6rem] tracking-wider",
-    notch: 5,
+    padding: "px-5 py-2 sm:px-6 sm:py-2.5",
+    text: "text-[0.72rem] sm:text-[0.82rem] tracking-wider",
+    notch: 7,
+    borderWidth: 2,
   },
   lg: {
-    padding: "px-5 py-2.5",
-    text: "text-[0.72rem] tracking-widest",
-    notch: 6,
+    padding: "px-6 py-3 sm:px-8 sm:py-3.5",
+    text: "text-[0.85rem] sm:text-[0.95rem] tracking-widest",
+    notch: 8,
+    borderWidth: 3,
   },
-};
+} as const;
 
 /**
- * Authentic Arcade Winner Coupon / Ticket Tag Component
- * Uses SVG radial semi-circle notch cutouts on the left & right edges
- * plus an inner dashed perforation line to create a real physical arcade ticket stub.
+ * Wonka Golden Ticket Tag Component
+ * Unified on the golden foil aesthetic with larger, high-visibility sizing for desktop screens,
+ * sharp radial ticket cutouts, and crisp monospace bracket typography.
  */
 export function GoldenTicketTag({
   label,
@@ -116,19 +74,16 @@ export function GoldenTicketTag({
   bgColor,
   textColor,
   borderColor,
-  variant = "coupon",
   isSelected = false,
   onClick,
   className = "",
 }: GoldenTicketTagProps) {
-  const defaultTheme = isSelected
-    ? SELECTED_THEME
-    : VARIANT_STYLES[variant] || VARIANT_STYLES.coupon;
+  const theme = isSelected ? SELECTED_GOLDEN_THEME : UNIFIED_GOLDEN_THEME;
 
-  const activeBg = bgColor || defaultTheme.bg;
-  const activeText = textColor || defaultTheme.text;
-  const activeBorderColor = borderColor || defaultTheme.border;
-  const sizeConfig = SIZE_STYLES[size] || SIZE_STYLES.md;
+  const activeBg = bgColor || theme.bg;
+  const activeText = textColor || theme.text;
+  const activeBorderColor = borderColor || theme.border;
+  const sizeConfig = SIZE_CONFIGS[size] || SIZE_CONFIGS.md;
 
   return (
     <button
@@ -137,16 +92,16 @@ export function GoldenTicketTag({
       disabled={!onClick}
       className={`relative inline-flex items-center justify-center font-mono uppercase font-bold transition-all duration-150 select-none ${
         onClick
-          ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#0E0E0D] active:translate-y-0"
+          ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1C1604] active:translate-y-0"
           : "cursor-default"
       } ${className}`}
     >
-      {/* Real Arcade Ticket Stub Container with Inward Radial Semi-Circle Cutouts */}
+      {/* Golden Ticket Stub Container with Inward Radial Semi-Circle Cutouts */}
       <div
         className={`relative flex items-center justify-center border-t-2 border-b-2 border-l-2 border-r-2 ${activeBg} ${activeText} ${sizeConfig.padding} ${sizeConfig.text}`}
         style={{
           borderColor: activeBorderColor,
-          // Radial gradient mask producing genuine inward semi-circle ticket notches on left & right edges
+          // Radial gradient mask producing sharp inward ticket notch cutouts on left & right edges
           maskImage: `
             radial-gradient(circle at left center, transparent ${sizeConfig.notch}px, black ${sizeConfig.notch + 0.5}px),
             radial-gradient(circle at right center, transparent ${sizeConfig.notch}px, black ${sizeConfig.notch + 0.5}px)
@@ -159,7 +114,7 @@ export function GoldenTicketTag({
           WebkitMaskComposite: "source-in",
         }}
       >
-        {/* Left & Right Notch Border Curve Overlays */}
+        {/* Curved Border Overlay on Left & Right Cutout Notches */}
         <div
           className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 bg-transparent pointer-events-none"
           style={{
@@ -177,15 +132,18 @@ export function GoldenTicketTag({
           }}
         />
 
-        {/* Inner Dashed Perforation Line Overlay */}
-        <div className="absolute inset-x-2 inset-y-1 border-t border-b border-dashed opacity-40 pointer-events-none" style={{ borderColor: activeBorderColor }} />
+        {/* Inner Ticket Perforation Line Overlay */}
+        <div
+          className="absolute inset-x-2.5 inset-y-1 border-t border-b border-dashed opacity-35 pointer-events-none"
+          style={{ borderColor: activeBorderColor }}
+        />
 
-        {/* Tag Label Text */}
-        <span className="relative z-10 truncate max-w-[220px]">
+        {/* Tag Content Label */}
+        <span className="relative z-10 truncate max-w-[300px] flex items-center gap-1">
           [ {label} ]
         </span>
         {count !== undefined && (
-          <span className="relative z-10 ml-1.5 opacity-80 text-[0.88em]">({count})</span>
+          <span className="relative z-10 ml-2 opacity-85 text-[0.88em]">({count})</span>
         )}
       </div>
     </button>
