@@ -9,6 +9,7 @@ import { ProfileFollowButton } from "./header/ProfileFollowButton";
 import { ProfileLinksBar } from "./header/ProfileLinksBar";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { useToast } from "@/components/providers/ToastProvider";
+import { logger } from "@/lib/client/logger";
 import { ACCEPTED_IMAGE_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/upload-constants";
 import type { UserProfile } from "./types";
 
@@ -123,7 +124,7 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
         alert(result.error || "Failed to upload image.");
       }
     } catch (err) {
-      console.error(err);
+      logger.error("Image upload failed", { error: err instanceof Error ? err.message : String(err) });
       alert("An unexpected error occurred during image upload.");
     } finally {
       setIsUploading(false);
@@ -171,7 +172,9 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
         toast(data.error || "Failed to update follow status.", "error");
       }
     } catch (err) {
-      console.error("Failed to toggle follow status:", err);
+      logger.error("Failed to toggle follow status", {
+        error: err instanceof Error ? err.message : String(err),
+      });
       // Rollback states
       setIsFollowing(previousIsFollowing);
       setFollowersCount(previousFollowersCount);

@@ -9,6 +9,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { upsertSavedAccount } from "@/lib/client/saved-accounts";
+import { logger } from "@/lib/client/logger";
 import { useAuthFormAnimation } from "@/components/login/shared/useAuthFormAnimation";
 import { AuthErrorBanner } from "@/components/login/shared/AuthErrorBanner";
 import { OAuthOptions } from "@/components/login/shared/OAuthOptions";
@@ -93,7 +94,10 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
         router.push(finalTarget);
         router.refresh();
       }
-    } catch {
+    } catch (err) {
+      logger.error("Login request failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
       setServerError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { removeSavedAccount } from "@/lib/client/saved-accounts";
+import { logger } from "@/lib/client/logger";
 import { NavMessagesMenu } from "./NavMessagesMenu";
 import { NavNotificationsMenu } from "./NavNotificationsMenu";
 import { NavProfileMenu } from "./NavProfileMenu";
@@ -29,8 +30,13 @@ export function NavUserMenu({ isDarkTheme }: NavUserMenuProps) {
 
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-    } catch {
-      // Ignore errors on sign out
+    } catch (err) {
+      // Best-effort - the client still clears local auth state and navigates
+      // away below regardless, but a server-side sign-out that keeps failing
+      // (stale cookie never cleared) is worth a minimal signal.
+      logger.warn("Server-side sign out failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       clearAuth();
       router.push("/");

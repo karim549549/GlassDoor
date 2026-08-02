@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/server/supabase/server";
 import type { Provider } from "@supabase/supabase-js";
+import { logger } from "@/lib/server/logger";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (error || !data.url) {
-    console.error("OAuth sign-in initiation failed:", error);
+    logger.error("OAuth sign-in initiation failed", { provider, error: error?.message });
     return NextResponse.redirect(
       new URL(`/login?error=${encodeURIComponent("OAuth initiation failed")}`, request.url)
     );

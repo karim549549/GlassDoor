@@ -7,6 +7,7 @@ import * as z from "zod";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
+import { logger } from "@/lib/client/logger";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -49,7 +50,10 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
       } else {
         setSuccess(body.message || "Reset link sent! Check your inbox.");
       }
-    } catch {
+    } catch (err) {
+      logger.error("Reset password request failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);

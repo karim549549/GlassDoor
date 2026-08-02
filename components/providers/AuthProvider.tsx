@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { upsertSavedAccount } from "@/lib/client/saved-accounts";
+import { logger } from "@/lib/client/logger";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setAuth, clearAuth, setLoading } = useAuthStore();
@@ -22,7 +23,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           clearAuth();
         }
-      } catch {
+      } catch (err) {
+        logger.error("Auth status check failed", {
+          error: err instanceof Error ? err.message : String(err),
+        });
         clearAuth();
       } finally {
         setLoading(false);

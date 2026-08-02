@@ -11,7 +11,9 @@ export function useRecentSearches() {
       try {
         setSearches(JSON.parse(saved));
       } catch {
-        // ignore
+        // Silent on purpose: a corrupted or stale-format localStorage value
+        // (e.g. left over from an older schema) is expected, not a bug -
+        // falls back to an empty recent-searches list, nothing to fail over.
       }
     }
   }, []);

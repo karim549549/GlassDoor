@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/server/supabase/server";
 import { syncUser } from "@/lib/server/auth/auth-service";
+import { logger } from "@/lib/server/logger";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !user) {
-    console.error("Code exchange failed:", error);
+    logger.error("Code exchange failed", { error: error?.message });
     return NextResponse.redirect(new URL("/login?error=Authentication+failed", request.url));
   }
 
@@ -34,7 +35,10 @@ export async function GET(request: NextRequest) {
       emailVerified: true,
     });
   } catch (syncError) {
-    console.error(`Profile sync failed on OAuth callback for user ${user.id}:`, syncError);
+    logger.error("Profile sync failed on OAuth callback", {
+      userId: user.id,
+      error: syncError instanceof Error ? syncError.message : String(syncError),
+    });
     return NextResponse.redirect(new URL("/login?error=Profile+sync+failed", request.url));
   }
 

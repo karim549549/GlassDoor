@@ -7,6 +7,7 @@ import * as z from "zod";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { KeyRound, CheckCircle } from "lucide-react";
+import { logger } from "@/lib/client/logger";
 
 const schema = z
   .object({
@@ -55,7 +56,10 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
       } else {
         setSuccess(body.message || "Password updated successfully!");
       }
-    } catch {
+    } catch (err) {
+      logger.error("Change password request failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
