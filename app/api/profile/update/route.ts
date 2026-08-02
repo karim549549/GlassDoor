@@ -1,19 +1,14 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/server/supabase/server";
 import { profileSchema } from "@/lib/profile/schema";
 import { updateUserProfile } from "@/lib/profile/service";
+import { requireUser } from "@/lib/server/auth/require-user";
+import { withApiErrorHandling } from "@/lib/server/api-route";
 
 export async function POST(req: Request) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  return withApiErrorHandling("Profile update failed", async () => {
+    const auth = await requireUser();
+    if ("response" in auth) return auth.response;
+    const { user } = auth;
 
     const rawBody = await req.json();
     const parsed = profileSchema.safeParse(rawBody);
@@ -31,9 +26,5 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, user: result.user });
-  } catch (error) {
-    console.error("Profile update failed:", error);
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  });
 }

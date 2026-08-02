@@ -1,18 +1,13 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/server/supabase/server";
 import { prisma } from "@/lib/server/prisma";
+import { requireUser } from "@/lib/server/auth/require-user";
+import { withApiErrorHandling } from "@/lib/server/api-route";
 
 export async function POST(req: Request) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  return withApiErrorHandling("Follow action failed", async () => {
+    const auth = await requireUser();
+    if ("response" in auth) return auth.response;
+    const { user } = auth;
 
     const body = await req.json();
     const { targetUserId } = body;
@@ -78,8 +73,5 @@ export async function POST(req: Request) {
       following: isFollowing,
       followersCount,
     });
-  } catch (error: any) {
-    console.error("Follow action failed:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
-  }
+  });
 }

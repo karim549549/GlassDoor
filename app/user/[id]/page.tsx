@@ -1,7 +1,13 @@
 import { notFound } from "next/navigation";
 import { fetchInternalApi } from "@/lib/server/api-client";
 import { ProfileView } from "@/components/profile/ProfileView";
-import type { UserProfileByIdResult } from "@/lib/user/service";
+import type { UserProfileDto } from "@/lib/user/dto";
+
+/** NextResponse.json() serializes Date fields to ISO strings before this ever reaches the client. */
+type SerializedUserProfileDto = Omit<UserProfileDto, "createdAt" | "lastActiveAt"> & {
+  createdAt: string;
+  lastActiveAt: string | null;
+};
 
 interface UserPageProps {
   params: Promise<{ id: string }>;
@@ -19,7 +25,7 @@ export default async function UserPage({ params }: UserPageProps) {
     throw new Error("Failed to load user profile.");
   }
 
-  const profile: UserProfileByIdResult = await res.json();
+  const profile: SerializedUserProfileDto = await res.json();
   const { isOwner, ...profileData } = profile;
 
   return (

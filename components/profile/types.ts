@@ -1,13 +1,11 @@
 export interface UserSkillEntry {
-  userId?: string;
-  skillId?: string;
-  skill?: { id: string; name: string };
+  id: string;
+  name: string;
 }
 
 export interface UserJobTypeEntry {
-  userId?: string;
-  jobTypeId?: string;
-  jobType?: { id: string; name: string };
+  id: string;
+  name: string;
 }
 
 export interface UserProfile {

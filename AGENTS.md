@@ -10,11 +10,25 @@ Established during the 2026-08 refactor (see `docs/superpowers/plans/2026-08-02-
 
 ## Domain-scoped data layer
 
-Each feature domain (`contest`, `profile`, `companies`, etc.) keeps its data layer in `lib/<domain>/`:
+Each feature domain (`arena`, `profile`, `companies`, `user`, etc.) keeps its data layer in `lib/<domain>/`:
 
 - **`schema.ts`** — zod schema(s); the single source of truth for validation rules *and* any enum/option-list values. Both the client form and the API route import from here. Never hardcode an enum's values (e.g. status/seniority options) directly in a component's `<option>` list or in a route handler's local consts — that's exactly the drift bug this refactor fixed in the profile module (see `lib/profile/schema.ts`).
-- **`service.ts`** — Prisma/DB logic. API route handlers stay thin: auth check → `schema.safeParse(body)` → call the service function → respond. Reference: `lib/contest/service.ts`, `lib/profile/service.ts`, `app/api/contest/route.ts`.
+- **`service.ts`** — Prisma/DB logic, returning the *raw* Prisma shape. API route handlers stay thin: `requireUser()`/`getOptionalUser()` for auth → `schema.safeParse(body)` → call the service function → transform through `dto.ts` if the shape has relations → respond, all inside `withApiErrorHandling`. Reference: `lib/arena/service.ts`, `lib/profile/service.ts`, `lib/user/service.ts` + `app/api/arena/route.ts`.
+- **`dto.ts`** — for domains whose Prisma shape includes a many-to-many or other relation that shouldn't leak its join-table wrapper into the API response (e.g. `skills: { skill: { id, name } }[]` should become `skills: { id, name }[]`), a zod-validated transform function from the raw service shape to the public response shape. Reference: `lib/user/dto.ts`'s `toUserProfileDto`. Not every domain needs one — only add it where there's a real relation to flatten.
 - **`types.ts`** / **`constants.ts`** — shared types and static data (option lists, mock data), never inline in a component.
+
+## Route handler infrastructure — don't hand-roll auth checks or try/catch
+
+Every protected route used to repeat the same `createClient()` → `getUser()` → 401-if-missing sequence, and every route repeated its own `try/catch` → `console.error` → 500 JSON response. Both are now shared:
+
+- **`requireUser()`** / **`getOptionalUser()`** (`lib/server/auth/require-user.ts`) — the former returns `{ user }` or `{ response }` (a ready-to-return 401); the latter returns `User | null` for routes where auth is optional. Both reuse the same per-request Supabase client instead of constructing a new one.
+- **`withApiErrorHandling(label, fn, errorMessage?)`** (`lib/server/api-route.ts`) — wraps a route handler's body, catching unhandled exceptions and logging+responding consistently. `label` is what gets logged, `errorMessage` is what the caller sees.
+- **Supabase clients are memoized, not reconstructed per call**: `lib/server/supabase/server.ts`'s `createClient` is wrapped in React's `cache()` so multiple calls within one request share an instance; `lib/server/supabase/admin.ts`'s `createAdminClient()` is a true module-level singleton since it carries no request-scoped state.
+- Reference implementation: `app/api/arena/route.ts`.
+
+## Logging — see `.agents/rules/logging.md` for the full policy
+
+`lib/server/logger.ts` (server) and `lib/client/logger.ts` (client) — `error`/`warn` only, nothing on the success path. `withApiErrorHandling` and `requireUser()` already log through these; don't add a duplicate log around a call to either.
 
 ## Frontend/backend boundary — pages never touch Prisma or Supabase directly for data
 
@@ -25,7 +39,7 @@ This app is one Next.js codebase today but is intentionally being kept ready to 
 - If a client component crosses ~200–250 lines or mixes more than one concern (form validation + upload logic + animation + layout), split it.
 - Form sections take `register`/`errors` (react-hook-form + zod) as explicit typed props, plus specific watched values by name as their own props — never the whole form object, never context, for this.
 - Extract non-trivial `useEffect`/state logic (animations, upload flows, GSAP timelines) into a dedicated hook.
-- Reference: `app/contest/create/page.tsx` + `components/contest/create/*`, `components/profile/EditProfileModal.tsx` + `components/profile/edit/*`.
+- Reference: `app/arena/create/page.tsx` + `components/arena/create/*`, `components/profile/EditProfileModal.tsx` + `components/profile/edit/*`.
 
 ## Performance (apply where it's a real win, not reflexively)
 

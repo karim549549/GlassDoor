@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/server/supabase/server";
 import { getUserRoles } from "@/lib/server/auth/auth-service";
 import { prisma } from "@/lib/server/prisma";
+import { logger } from "@/lib/server/logger";
 
 export async function GET() {
   try {
@@ -45,7 +46,9 @@ export async function GET() {
         where: { id: user.id },
         data: { lastActiveAt: new Date() },
       }).catch(() => {
-        // Best-effort - don't fail the whole request over a presence timestamp.
+        // Best-effort - don't fail the whole request over a presence timestamp,
+        // but a write that keeps failing is worth a minimal signal.
+        logger.warn("lastActiveAt update failed", { userId: user.id });
       });
     }
 
@@ -64,7 +67,9 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Auth status query failed (Supabase or database unconfigured/down):", error);
+    logger.error("Auth status query failed (Supabase or database unconfigured/down)", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({
       authenticated: false,
       user: null,

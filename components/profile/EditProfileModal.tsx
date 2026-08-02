@@ -86,15 +86,11 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
           ? `${user.firstName} ${user.lastName}`
           : user.firstName || user.lastName || "");
 
-      const skillIds = user.skills
-        ? user.skills.map((s) => s.skillId || s.skill?.id).filter((id): id is string => Boolean(id))
-        : [];
+      const skillIds = user.skills ? user.skills.map((s) => s.id) : [];
 
       // Only one job type is supported today.
       const jobTypeId =
-        user.jobTypes && user.jobTypes.length > 0
-          ? user.jobTypes[0].jobTypeId || user.jobTypes[0].jobType?.id
-          : undefined;
+        user.jobTypes && user.jobTypes.length > 0 ? user.jobTypes[0].id : undefined;
 
       reset({
         fullName: dbFullName,

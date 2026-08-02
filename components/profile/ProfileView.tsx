@@ -28,9 +28,9 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
 
   const isDefined = (value: string | undefined): value is string => Boolean(value);
   // Pre-formatted skills
-  const skillsList = profile.skills?.map((s) => s.skill?.name).filter(isDefined) || [];
+  const skillsList = profile.skills?.map((s) => s.name).filter(isDefined) || [];
   // Pre-formatted job types (specialties)
-  const specialties = profile.jobTypes?.map((j) => j.jobType?.name).filter(isDefined) || [];
+  const specialties = profile.jobTypes?.map((j) => j.name).filter(isDefined) || [];
 
   const isEditRoute = pathname === `/user/${profile.id}/edit`;
 

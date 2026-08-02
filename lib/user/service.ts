@@ -1,7 +1,8 @@
 import "server-only";
 import prisma from "@/lib/server/prisma";
 
-export interface UserProfileByIdResult {
+/** Raw Prisma shape — internal only. API responses go through toUserProfileDto() in dto.ts. */
+export interface RawUserProfile {
   id: string;
   fullName: string | null;
   firstName: string | null;
@@ -36,7 +37,7 @@ export interface UserProfileByIdResult {
 export async function getUserProfileById(
   id: string,
   viewerId: string | null
-): Promise<UserProfileByIdResult | null> {
+): Promise<RawUserProfile | null> {
   const [dbUser, followersCount, followRow] = await Promise.all([
     prisma.user.findUnique({
       where: { id },
