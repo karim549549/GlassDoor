@@ -15,3 +15,20 @@ export interface Company {
   reviews: number;
   roles: Role[];
 }
+
+export interface CommentRatings {
+  salary: number;
+  learning: number;
+  vibes: number;
+}
+
+export interface Comment {
+  id: string;
+  author: string;
+  content: string;
+  date: string;
+  role?: string;
+  seniority?: string;
+  ratings?: CommentRatings;
+  replies: Comment[];
+}
