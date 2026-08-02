@@ -4,6 +4,12 @@ import { Footer } from "@/components/home/Footer";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Suspense } from "react";
 
+// The homepage renders no per-request or per-user data server-side (Billboard,
+// Hero, and Arenas content are all static marketing copy; auth/user state and
+// the auth modal are resolved client-side via useAuthStore/useSearchParams).
+// Safe to serve from the ISR cache instead of rendering on every request.
+export const revalidate = 3600;
+
 export default async function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden">

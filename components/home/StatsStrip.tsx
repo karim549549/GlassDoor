@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
