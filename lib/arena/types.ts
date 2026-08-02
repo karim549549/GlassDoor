@@ -39,6 +39,19 @@ export const ARENA_LIST_SELECT = {
       },
     },
   },
+  tags: {
+    select: {
+      tag: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          color: true,
+          category: true,
+        },
+      },
+    },
+  },
 } satisfies Prisma.ArenaSelect;
 
 export type ArenaListItem = Prisma.ArenaGetPayload<{ select: typeof ARENA_LIST_SELECT }>;

@@ -1,9 +1,17 @@
-"use client";
-
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Tag as TagIcon } from "lucide-react";
 import { ArenaTabs } from "@/components/arena/ArenaTabs";
+import { GoldenTicketTag } from "@/components/ui/GoldenTicketTag";
 import type { ArenaStatusFilter, ArenaAccessFilter, ArenaSortOption } from "@/lib/arena/schema";
+
+interface TagFilterItem {
+  id: string;
+  name: string;
+  slug: string;
+  color: string;
+  count: number;
+}
 
 interface ArenasFilterSidebarProps {
   searchQuery: string;
@@ -18,6 +26,8 @@ interface ArenasFilterSidebarProps {
   onAccessChange: (access: ArenaAccessFilter) => void;
   sortBy: ArenaSortOption;
   onSortChange: (sort: ArenaSortOption) => void;
+  selectedTag?: string;
+  onTagChange?: (tagSlug: string) => void;
 }
 
 /** Neo-brutalist search box, scope tabs, and filter/sort controls for the arena registry. */
@@ -34,7 +44,25 @@ export function ArenasFilterSidebar({
   onAccessChange,
   sortBy,
   onSortChange,
+  selectedTag = "",
+  onTagChange,
 }: ArenasFilterSidebarProps) {
+  const [tags, setTags] = useState<TagFilterItem[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/arena/tags");
+        if (res.ok) {
+          const data = await res.json();
+          setTags(data.tags || []);
+        }
+      } catch (err) {
+        console.error("Failed to load sidebar tags:", err);
+      }
+    })();
+  }, []);
+
   return (
     <div className="border-2 border-[#0E0E0D] bg-white p-5 shadow-[4px_4px_0px_0px_#0E0E0D] space-y-4">
       <span className="font-mono text-[0.48rem] text-orange uppercase tracking-[0.25em] font-bold block">
@@ -56,6 +84,42 @@ export function ArenasFilterSidebar({
         <span className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Scope</span>
         <ArenaTabs activeTab={activeTab} setActiveTab={onTabChange} allCount={allCount} myCount={myCount} />
       </div>
+
+      {/* Golden Ticket Tag Filter Section */}
+      {tags.length > 0 && (
+        <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-[#0E0E0D]/10">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+              <TagIcon className="h-3 w-3 text-orange" /> Golden Ticket Tags
+            </span>
+            {selectedTag && onTagChange && (
+              <button
+                type="button"
+                onClick={() => onTagChange("")}
+                className="font-mono text-[0.48rem] text-orange uppercase font-bold hover:underline"
+              >
+                Clear Tag
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {tags.map((t) => {
+              const isSelected = selectedTag.toLowerCase() === t.slug.toLowerCase();
+              return (
+                <GoldenTicketTag
+                  key={t.id}
+                  label={t.name}
+                  count={t.count}
+                  variant={(t.color as "golden" | "emerald" | "cyan" | "purple" | "orange" | "ruby" | "outline") || "golden"}
+                  size="sm"
+                  isSelected={isSelected}
+                  onClick={() => onTagChange && onTagChange(isSelected ? "" : t.slug)}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Status Filter */}
       <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-[#0E0E0D]/10">

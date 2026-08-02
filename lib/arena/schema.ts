@@ -33,6 +33,9 @@ export const arenaBaseSchema = z.object({
   requireVideoUrl: z.boolean().default(false),
   requireWriteup: z.boolean().default(true),
   rulesText: z.string().min(10, "Please provide some rules for the arena"),
+
+  // Tags (IDs or Slugs)
+  tags: z.array(z.string()).default([]),
 });
 
 /**
@@ -71,6 +74,7 @@ export const arenaListQuerySchema = z.object({
   sortBy: z.enum(ARENA_SORT_OPTIONS).default("newest"),
   tab: z.enum(ARENA_TAB_SCOPES).default("all"),
   search: z.string().trim().default(""),
+  tag: z.string().optional(),
 });
 
 export type ArenaListQuery = z.output<typeof arenaListQuerySchema>;

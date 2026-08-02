@@ -51,6 +51,7 @@ model Arena {
   // Relations
   invitations            ArenaInvitation[]
   teams                  ArenaTeam[]
+  tags                   TagOnArena[]
 
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt

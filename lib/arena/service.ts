@@ -23,7 +23,7 @@ export interface ListArenasResult {
 }
 
 export async function listArenas(params: ListArenasParams): Promise<ListArenasResult> {
-  const { page, limit, status, access, search, sortBy, tab, userId } = params;
+  const { page, limit, status, access, search, sortBy, tab, userId, tag } = params;
   const skip = (page - 1) * limit;
 
   const where: Prisma.ArenaWhereInput = {};
@@ -50,6 +50,19 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
     where.isPrivate = false;
   } else if (access === "private") {
     where.isPrivate = true;
+  }
+
+  if (tag && tag.trim()) {
+    where.tags = {
+      some: {
+        tag: {
+          OR: [
+            { slug: tag.toLowerCase() },
+            { name: { equals: tag, mode: "insensitive" } },
+          ],
+        },
+      },
+    };
   }
 
   if (search.trim()) {
@@ -133,6 +146,18 @@ export async function createArena(
     }
   }
 
+  // Connect tags if provided
+  const tagCreateInput =
+    data.tags && data.tags.length > 0
+      ? {
+          create: data.tags.map((tagIdOrName) => ({
+            tag: {
+              connect: { id: tagIdOrName },
+            },
+          })),
+        }
+      : undefined;
+
   const arena = await prisma.arena.create({
     data: {
       title: data.title,
@@ -157,8 +182,53 @@ export async function createArena(
       rulesText: data.rulesText,
       creatorId: data.creatorId,
       status: "REGISTRATION_OPEN",
+      tags: tagCreateInput,
     },
   });
 
   return { id: arena.id };
+}
+
+/** Fetches all available tags with total count of associated arenas. */
+export async function getAllTags() {
+  const tags = await prisma.tag.findMany({
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      color: true,
+      category: true,
+      description: true,
+      _count: {
+        select: { arenas: true },
+      },
+    },
+  });
+
+  return tags.map((t) => ({
+    id: t.id,
+    name: t.name,
+    slug: t.slug,
+    color: t.color || "golden",
+    category: t.category || "General",
+    description: t.description || "",
+    count: t._count.arenas,
+  }));
+}
+
+/**
+ * Placeholder hook for RAG (Retrieval-Augmented Generation) & AI Tag Extraction.
+ * On-the-fly analyzes arena title and description to auto-suggest relevant tags.
+ */
+export async function extractAndSuggestTags(title: string, description: string) {
+  const allTags = await getAllTags();
+  const textContent = `${title} ${description}`.toLowerCase();
+
+  // Keyword match ranking for auto-suggestions
+  const suggestedTags = allTags.filter((tag) =>
+    textContent.includes(tag.name.toLowerCase()) || textContent.includes(tag.slug.toLowerCase())
+  );
+
+  return suggestedTags;
 }

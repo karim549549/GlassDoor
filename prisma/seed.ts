@@ -26,6 +26,51 @@ const JOB_TYPES = [
   "Mobile Developer", "DevOps Engineer", "Data Scientist", "QA Engineer", "UI/UX Designer"
 ];
 
+const PRESET_TAGS = [
+  {
+    name: "AI / ML",
+    slug: "ai-ml",
+    category: "AI",
+    color: "golden",
+    description: "Artificial Intelligence, LLMs, Neural Networks, Computer Vision, and RAG architectures.",
+  },
+  {
+    name: "Web3 & Crypto",
+    slug: "web3",
+    category: "Blockchain",
+    color: "emerald",
+    description: "Smart contracts, decentralized finance, zero-knowledge proofs, and Cairo/Starknet.",
+  },
+  {
+    name: "Frontend",
+    slug: "frontend",
+    category: "Web",
+    color: "cyan",
+    description: "React, Next.js, WebGL, CSS design systems, dynamic UI animation, and client performance.",
+  },
+  {
+    name: "Backend & Cloud",
+    slug: "backend",
+    category: "Infrastructure",
+    color: "purple",
+    description: "Distributed systems, microservices, NestJS, Go APIs, PostgreSQL, and streaming pipelines.",
+  },
+  {
+    name: "DevOps & Mesh",
+    slug: "devops",
+    category: "Infrastructure",
+    color: "orange",
+    description: "Kubernetes, Docker, CI/CD, Terraform, observability, and container orchestration.",
+  },
+  {
+    name: "Systems & C++",
+    slug: "systems",
+    category: "Systems",
+    color: "ruby",
+    description: "Low-level memory management, Rust sync engines, kernel optimizations, and high-frequency algorithms.",
+  },
+];
+
 async function main() {
   console.log("Start seeding database roles...");
   for (const role of ROLES) {
@@ -58,6 +103,29 @@ async function main() {
       create: { name: jtName },
     });
     console.log(`Upserted job type: ${upsertedJT.name}`);
+  }
+
+  console.log("Seeding preset Golden Ticket tags for RAG...");
+  const createdTags = [];
+  for (const tag of PRESET_TAGS) {
+    const t = await prisma.tag.upsert({
+      where: { slug: tag.slug },
+      update: {
+        name: tag.name,
+        category: tag.category,
+        color: tag.color,
+        description: tag.description,
+      },
+      create: {
+        name: tag.name,
+        slug: tag.slug,
+        category: tag.category,
+        color: tag.color,
+        description: tag.description,
+      },
+    });
+    createdTags.push(t);
+    console.log(`Upserted Golden Ticket Tag: ${t.name}`);
   }
 
   console.log("Seeding 102 mock arenas...");
@@ -146,6 +214,12 @@ async function main() {
     const isPrivate = i % 5 === 0;
     const isTeam = i % 2 === 0;
 
+    // Pick 1-2 random tags from createdTags
+    const assignedTags = [
+      createdTags[i % createdTags.length],
+      createdTags[(i + 2) % createdTags.length],
+    ];
+
     await prisma.arena.create({
       data: {
         title,
@@ -169,7 +243,12 @@ async function main() {
         requireFigmaUrl: i % 3 === 0,
         requireVideoUrl: i % 2 === 0,
         requireWriteup: true,
-        rulesText: "Ensure valid commits, write documentation, respect time constraints, and obey submission deliverable types."
+        rulesText: "Ensure valid commits, write documentation, respect time constraints, and obey submission deliverable types.",
+        tags: {
+          create: assignedTags.map((tag) => ({
+            tag: { connect: { id: tag.id } },
+          })),
+        },
       }
     });
   }

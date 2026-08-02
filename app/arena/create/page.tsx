@@ -18,6 +18,7 @@ import { TeamSection } from "@/components/arena/create/TeamSection";
 import { TimelineSection } from "@/components/arena/create/TimelineSection";
 import { RulesSection } from "@/components/arena/create/RulesSection";
 import { ProgressHud } from "@/components/arena/create/ProgressHud";
+import { TagSelectionSection } from "@/components/arena/create/TagSelectionSection";
 import gsap from "gsap";
 
 const generalSectionSchema = arenaBaseSchema.pick({ title: true, description: true, coverImageUrl: true });
@@ -194,6 +195,8 @@ export default function CreateArenaPage() {
                 setValue={setValue}
                 watchCoverImageUrl={watchCoverImageUrl}
               />
+
+              <TagSelectionSection setValue={setValue} watch={watch} />
 
               <AccessSection register={register} errors={errors} watchIsPrivate={watchIsPrivate} />
 

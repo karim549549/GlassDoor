@@ -32,6 +32,7 @@ export function ArenasListClient({
   const [statusFilter, setStatusFilter] = useState<ArenaStatusFilter>("all");
   const [accessFilter, setAccessFilter] = useState<ArenaAccessFilter>("all");
   const [sortBy, setSortBy] = useState<ArenaSortOption>("newest");
+  const [selectedTag, setSelectedTag] = useState<string>("");
 
   // Dynamic state loaded via HTTP calls
   const [arenas, setArenas] = useState<SerializedArenaListItem[]>(initialArenas);
@@ -63,7 +64,8 @@ export function ArenasListClient({
           access: accessFilter,
           search: debouncedSearch,
           sortBy: sortBy,
-          tab: activeTab
+          tab: activeTab,
+          ...(selectedTag ? { tag: selectedTag } : {}),
         });
 
         const res = await fetch(`/api/arena?${queryParams}`);
@@ -83,7 +85,7 @@ export function ArenasListClient({
     return () => {
       cancelled = true;
     };
-  }, [currentPage, statusFilter, accessFilter, debouncedSearch, sortBy, activeTab]);
+  }, [currentPage, statusFilter, accessFilter, debouncedSearch, sortBy, activeTab, selectedTag]);
 
   // Billboard Arenas (10 items teaser ranks based on initial data count)
   const billboardArenas = useMemo(() => {
@@ -136,6 +138,11 @@ export function ArenasListClient({
     setCurrentPage(1);
   };
 
+  const handleTagChange = (tagSlug: string) => {
+    setSelectedTag(tagSlug);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0">
       {/* 1. Reusable Dark Masthead Header */}
@@ -169,6 +176,8 @@ export function ArenasListClient({
                 onAccessChange={handleAccessChange}
                 sortBy={sortBy}
                 onSortChange={handleSortChange}
+                selectedTag={selectedTag}
+                onTagChange={handleTagChange}
               />
 
               {/* CairoBillboard Rankings */}

@@ -1,0 +1,25 @@
+model Tag {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @unique
+  slug        String       @unique
+  description String?      @db.Text // RAG Semantic Text Embedding description
+  category    String?      // e.g. AI, Web3, Systems, Frontend, DevOps
+  color       String?      // Metallic colorway variant: golden, emerald, cyan, purple, orange, ruby
+  metadata    Json?        // RAG vector similarity weights & AI tags
+  arenas      TagOnArena[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("tags")
+}
+
+model TagOnArena {
+  arenaId String @db.Uuid
+  arena   Arena  @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  tagId   String @db.Uuid
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([arenaId, tagId])
+  @@map("arena_tags_on_arenas")
+}

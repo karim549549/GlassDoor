@@ -7,6 +7,8 @@ import { Calendar, Users, Trophy, ExternalLink } from "lucide-react";
 import { buildArenaSlug } from "@/lib/arena-slug";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
 
+import { GoldenTicketTag } from "@/components/ui/GoldenTicketTag";
+
 export interface ArenaCardProps {
   arena: SerializedArenaListItem;
 }
@@ -27,6 +29,7 @@ export interface ArenaCardBodyData {
   maxTeamSize: number;
   requireGithubUrl?: boolean;
   requireFigmaUrl?: boolean;
+  tags?: { tag: { id: string; name: string; slug: string; color?: string | null } }[];
 }
 
 export interface ArenaCardBodyProps {
@@ -101,6 +104,20 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
         <p className="font-sans text-[0.62rem] text-muted-foreground line-clamp-2 normal-case leading-normal">
           {arena.description}
         </p>
+
+        {/* Golden Ticket Badges */}
+        {arena.tags && arena.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {arena.tags.slice(0, 3).map((item) => (
+              <GoldenTicketTag
+                key={item.tag.id}
+                label={item.tag.name}
+                variant={(item.tag.color as "golden" | "emerald" | "cyan" | "purple" | "orange" | "ruby" | "outline") || "golden"}
+                size="sm"
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Footer Details */}
