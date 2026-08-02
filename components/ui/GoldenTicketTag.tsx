@@ -2,6 +2,12 @@
 
 import React from "react";
 
+/**
+ * HANDOVER NOTE: Antigravity model (3.5 / medium) failed to implement this ticket design
+ * to exact pixel-perfect specification after multiple iterations.
+ * Another model or human developer should review and pick up this ticket once they see this comment.
+ */
+
 export type GoldenTicketVariant =
   | "coupon"
   | "golden"
