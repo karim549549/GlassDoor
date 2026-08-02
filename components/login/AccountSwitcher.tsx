@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/client/useAuthStore";
-import { Trash2, Key, Loader2 } from "lucide-react";
+import { Key } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { AccountListItem } from "./AccountListItem";
 import {
   getSavedAccounts,
   removeSavedAccount,
@@ -28,13 +29,14 @@ export function AccountSwitcher({
   const redirectTo = searchParams.get("redirectTo") || "/";
   const { setAuth } = useAuthStore();
 
-  const [accounts, setAccounts] = useState<SavedAccount[]>([]);
+  // Lazy-initialized (not an effect) since localStorage is only available on
+  // the client, and this is a "use client" component - the initializer never
+  // runs during SSR.
+  const [accounts, setAccounts] = useState<SavedAccount[]>(() =>
+    typeof window === "undefined" ? [] : getSavedAccounts()
+  );
   const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setAccounts(getSavedAccounts());
-  }, []);
 
   const handleRemove = (email: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -113,48 +115,15 @@ export function AccountSwitcher({
         )}
 
         <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
-          {accounts.map((account) => {
-            const initials = account.name
-              ? account.name.slice(0, 2).toUpperCase()
-              : account.email.slice(0, 2).toUpperCase();
-            const isLoading = loadingEmail === account.email;
-
-            return (
-              <div
-                key={account.email}
-                onClick={() => !isLoading && handleAccountClick(account)}
-                className={`group flex items-center justify-between p-4 border border-border/80 bg-card hover:border-foreground transition-all duration-150 relative ${
-                  isLoading ? "cursor-wait opacity-80" : "cursor-pointer"
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="h-9 w-9 flex items-center justify-center bg-foreground text-background font-mono text-[0.75rem] font-bold">
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-background" />
-                    ) : (
-                      initials
-                    )}
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="font-mono text-[0.8rem] font-semibold text-foreground leading-tight">
-                      {account.name}
-                    </span>
-                    <span className="font-mono text-[0.65rem] text-muted-foreground">
-                      {account.email}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={(e) => handleRemove(account.email, e)}
-                  disabled={isLoading}
-                  className="p-2 text-muted-foreground hover:text-accent cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Remove account"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            );
-          })}
+          {accounts.map((account) => (
+            <AccountListItem
+              key={account.email}
+              account={account}
+              isLoading={loadingEmail === account.email}
+              onSelect={handleAccountClick}
+              onRemove={handleRemove}
+            />
+          ))}
         </div>
       </div>
 
