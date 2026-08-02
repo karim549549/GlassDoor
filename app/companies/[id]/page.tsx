@@ -4,6 +4,10 @@ import { getCompanyById } from "@/lib/companies/service";
 import { Footer } from "@/components/home/Footer";
 import { CompanyDetailView } from "@/components/companies/CompanyDetailView";
 
+// Company data is public, static mock data (see lib/companies/data.ts) with no
+// per-request or per-user logic gating this page - safe to serve as ISR.
+export const revalidate = 3600;
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
