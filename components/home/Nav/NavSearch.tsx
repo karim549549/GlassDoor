@@ -1,35 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useRecentSearches } from "@/lib/client/useRecentSearches";
 import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
-
-// Mock data as requested (no backend yet)
-const MOCK_USERS = [
-  { id: "usr1", name: "Anwar Moustafa", handle: "anwar_m", email: "anwar@devsarena.com" },
-  { id: "usr2", name: "Karim Hassan", handle: "karim_h", email: "karim@devsarena.com" },
-  { id: "usr3", name: "Moustafa Ali", handle: "moustafa_a", email: "moustafa@devsarena.com" },
-  { id: "usr4", name: "Salma Mahmoud", handle: "salma_m", email: "salma@devsarena.com" },
-  { id: "usr5", name: "Hassan Ibrahim", handle: "hassan_i", email: "hassan@devsarena.com" },
-];
-
-const MOCK_COMPANIES = [
-  { id: 1, name: "Vodafone Egypt", sector: "Telecom" },
-  { id: 2, name: "Raya Contact", sector: "BPO / Tech" },
-  { id: 3, name: "Instabug", sector: "Product / SaaS" },
-  { id: 4, name: "Amazon Egypt", sector: "Big Tech" },
-  { id: 5, name: "Paymob", sector: "Fintech" },
-  { id: 6, name: "Swvl", sector: "Transport Tech" },
-];
-
-const MOCK_CONTEXT = [
-  { id: "rules", title: "Community Guidelines & Rules", description: "Rules profile and salary sharing policies.", url: "/context" },
-  { id: "spec", title: "Salary Dataset Specifications", description: "Learn about calculations and verification.", url: "/context" },
-  { id: "privacy", title: "Anonymity & Privacy Policy", description: "How we protect developer identity.", url: "/context" },
-];
+import { MOCK_USERS, MOCK_COMPANIES, MOCK_CONTEXT } from "./nav-search-mock-data";
+import { NavSearchRecent } from "./NavSearchRecent";
+import { NavSearchResults } from "./NavSearchResults";
 
 interface NavSearchProps {
   isDarkTheme: boolean;
@@ -42,21 +21,13 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  
-  const { searches, addSearch, clearSearches } = useRecentSearches();
 
-  // Populate from URL on mount/open
-  useEffect(() => {
-    if (isOpen) {
-      const searchUrl = searchParams.get("search") || "";
-      setQuery(searchUrl);
-    }
-  }, [isOpen, searchParams]);
+  const { searches, addSearch, clearSearches } = useRecentSearches();
 
   // Sync query to URL history state
   useEffect(() => {
     if (isOpen) {
-      const url = debouncedQuery 
+      const url = debouncedQuery
         ? `${pathname}?search=${encodeURIComponent(debouncedQuery)}`
         : pathname;
       window.history.replaceState(null, "", url);
@@ -65,7 +36,7 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
 
   // Filter search items client-side
   const trimmed = debouncedQuery.trim().toLowerCase();
-  
+
   const matchedUsers = trimmed
     ? MOCK_USERS.filter(
         (u) =>
@@ -109,8 +80,20 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
     window.history.replaceState(null, "", pathname);
   };
 
+  // Seed the input from the URL's search param at the moment the dialog opens,
+  // rather than reacting to isOpen in an effect (avoids a setState-in-effect
+  // cascade for what is really an open-time initialization).
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      setQuery(searchParams.get("search") || "");
+      setIsOpen(true);
+    } else {
+      handleClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); else setIsOpen(open); }}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           <button
@@ -126,7 +109,7 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
         }
       />
 
-      <DialogContent 
+      <DialogContent
         showCloseButton={false}
         className="w-full max-w-3xl p-0 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-[100] overflow-hidden"
       >
@@ -153,120 +136,18 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
         <div className="max-h-[350px] overflow-y-auto p-4 space-y-5">
           {/* 1. Recent Searches (shown if query is empty) */}
           {!query.trim() && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between border-b border-[#0E0E0D]/10 pb-1.5">
-                <span className="font-bold text-[#0E0E0D]/60">Recent Searches</span>
-                {searches.length > 0 && (
-                  <button
-                    onClick={clearSearches}
-                    className="text-[0.55rem] text-orange hover:underline cursor-pointer border-none bg-transparent p-0"
-                  >
-                    Clear history
-                  </button>
-                )}
-              </div>
-              {searches.length === 0 ? (
-                <div className="text-[0.6rem] text-muted-foreground/60 italic lowercase normal-case py-1">
-                  No recent searches.
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {searches.map((term, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleRecentClick(term)}
-                      className="px-2 py-1 bg-[#FAF8F5] border border-[#0E0E0D] text-[#0E0E0D] hover:bg-[#0E0E0D] hover:text-[#FAF8F5] transition-colors cursor-pointer text-[0.58rem]"
-                    >
-                      {term}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <NavSearchRecent searches={searches} onClear={clearSearches} onSelect={handleRecentClick} />
           )}
 
           {/* 2. Search Results Categories */}
           {query.trim() && (
-            <div className="space-y-4">
-              {/* Category: People */}
-              {matchedUsers.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="font-bold text-[#0E0E0D]/60 border-b border-[#0E0E0D]/10 pb-1">
-                    People / Users ({matchedUsers.length})
-                  </div>
-                  <div className="divide-y divide-[#0E0E0D]/5">
-                    {matchedUsers.map((u) => (
-                      <div
-                        key={u.id}
-                        onClick={() => handleResultClick(`/user/${u.id}`)}
-                        className="py-2 px-2 hover:bg-[#0E0E0D]/5 cursor-pointer flex items-center justify-between transition-colors"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-bold text-[#0E0E0D]">{u.name}</span>
-                          <span className="text-[0.58rem] text-orange lowercase">@{u.handle}</span>
-                        </div>
-                        <span className="text-[0.55rem] opacity-40">Profile →</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Category: Companies */}
-              {matchedCompanies.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="font-bold text-[#0E0E0D]/60 border-b border-[#0E0E0D]/10 pb-1">
-                    Companies ({matchedCompanies.length})
-                  </div>
-                  <div className="divide-y divide-[#0E0E0D]/5">
-                    {matchedCompanies.map((c) => (
-                      <div
-                        key={c.id}
-                        onClick={() => handleResultClick(`/companies/${c.id}`)}
-                        className="py-2 px-2 hover:bg-[#0E0E0D]/5 cursor-pointer flex items-center justify-between transition-colors"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-bold text-[#0E0E0D]">{c.name}</span>
-                          <span className="text-[0.58rem] text-muted-foreground">{c.sector}</span>
-                        </div>
-                        <span className="text-[0.55rem] opacity-40">Salaries & Reviews →</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Category: Context */}
-              {matchedContext.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="font-bold text-[#0E0E0D]/60 border-b border-[#0E0E0D]/10 pb-1">
-                    Context / Guides ({matchedContext.length})
-                  </div>
-                  <div className="divide-y divide-[#0E0E0D]/5">
-                    {matchedContext.map((co) => (
-                      <div
-                        key={co.id}
-                        onClick={() => handleResultClick(co.url)}
-                        className="py-2 px-2 hover:bg-[#0E0E0D]/5 cursor-pointer flex items-center justify-between transition-colors"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-bold text-[#0E0E0D]">{co.title}</span>
-                          <span className="text-[0.58rem] text-muted-foreground lowercase normal-case">{co.description}</span>
-                        </div>
-                        <span className="text-[0.55rem] opacity-40">View →</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Empty state */}
-              {matchedUsers.length === 0 && matchedCompanies.length === 0 && matchedContext.length === 0 && (
-                <div className="text-center py-6 text-muted-foreground lowercase normal-case italic">
-                  No matching results found for "{query}".
-                </div>
-              )}
-            </div>
+            <NavSearchResults
+              query={query}
+              matchedUsers={matchedUsers}
+              matchedCompanies={matchedCompanies}
+              matchedContext={matchedContext}
+              onResultClick={handleResultClick}
+            />
           )}
         </div>
       </DialogContent>
