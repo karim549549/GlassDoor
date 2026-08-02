@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
@@ -29,14 +29,16 @@ export function CropperModal({
   const viewportRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [imgLayout, setImgLayout] = useState({ width: 0, height: 0 });
+  const [lastResetImageSrc, setLastResetImageSrc] = useState<string | null>(null);
 
-  // Reset states on image source change
-  useEffect(() => {
-    if (isOpen) {
-      setZoom(1);
-      setOffset({ x: 0, y: 0 });
-    }
-  }, [imageSrc, isOpen]);
+  // Reset crop position/zoom whenever a new image is loaded into the cropper.
+  // Adjusted during render (not via useEffect) per React's guidance for
+  // resetting state in response to a prop change - avoids an extra render pass.
+  if (isOpen && imageSrc !== lastResetImageSrc) {
+    setLastResetImageSrc(imageSrc);
+    setZoom(1);
+    setOffset({ x: 0, y: 0 });
+  }
 
   if (!imageSrc) return null;
 

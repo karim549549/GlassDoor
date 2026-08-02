@@ -8,7 +8,7 @@ export async function GET() {
       prisma.jobType.findMany({ orderBy: { name: "asc" } }),
     ]);
     return NextResponse.json({ skills, jobTypes });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Metadata fetch failed:", error);
     return NextResponse.json({ error: "Failed to fetch options metadata" }, { status: 500 });
   }
