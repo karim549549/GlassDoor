@@ -16,6 +16,10 @@ Each feature domain (`contest`, `profile`, `companies`, etc.) keeps its data lay
 - **`service.ts`** — Prisma/DB logic. API route handlers stay thin: auth check → `schema.safeParse(body)` → call the service function → respond. Reference: `lib/contest/service.ts`, `lib/profile/service.ts`, `app/api/contest/route.ts`.
 - **`types.ts`** / **`constants.ts`** — shared types and static data (option lists, mock data), never inline in a component.
 
+## Frontend/backend boundary — pages never touch Prisma or Supabase directly for data
+
+This app is one Next.js codebase today but is intentionally being kept ready to split into a separately-deployed backend later. So `app/api/**` is treated as if it already were a different service: pages and components (including Server Components) fetch it over HTTP via `fetchInternalApi` in `lib/server/api-client.ts` — they don't import `prisma`, construct a Supabase client, or call a `lib/<domain>/service.ts` function directly for business data. If the route doesn't exist yet, create it instead of taking the direct-call shortcut. See `.agents/rules/architecture.md` for the full rule, including the one confirmed exception (statically-generated/ISR pages can't self-fetch at build time — verified by an actual failed build — so they call the service function directly, same as the API route does).
+
 ## Component decomposition
 
 - If a client component crosses ~200–250 lines or mixes more than one concern (form validation + upload logic + animation + layout), split it.

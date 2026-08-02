@@ -1,8 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { extractUuidFromSlug } from "@/lib/contest-slug";
-import { getContestDetail } from "@/lib/contest/service";
-import { createClient } from "@/lib/server/supabase/server";
+import { fetchInternalApi } from "@/lib/server/api-client";
 import { ContestHeader } from "@/components/contest/ContestHeader";
 import { ContestContainer } from "@/components/contest/ContestContainer";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
@@ -15,16 +14,16 @@ export default async function ContestDetailPage({ params }: PageProps) {
   const { id: slugParam } = await params;
   const uuid = extractUuidFromSlug(decodeURIComponent(slugParam));
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const res = await fetchInternalApi(`/api/contest/${uuid}`, { cache: "no-store" });
 
-  const result = await getContestDetail(uuid, user?.id ?? null);
-
-  if (!result) {
+  if (res.status === 404) {
     notFound();
   }
+  if (!res.ok) {
+    throw new Error("Failed to load contest.");
+  }
 
-  const { contest } = result;
+  const { contest } = await res.json();
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0">

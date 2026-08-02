@@ -1,6 +1,17 @@
 # Architecture: domain-scoped data layer + component decomposition
 
-Applies to: `lib/**`, `app/api/**`, `components/**`
+Applies to: `lib/**`, `app/api/**`, `app/**/page.tsx`, `components/**`
+
+## Frontend/backend boundary — pages never touch Prisma or Supabase directly for data
+
+This project is built as one Next.js app today, but with an explicit intent to eventually split into a separately-deployed backend for scalability. To keep that split possible without a rewrite, treat `app/api/**` as if it were already a different service: **pages and components (including Server Components) fetch it over HTTP — they never import `prisma`, construct a Supabase client, or call a `lib/<domain>/service.ts` function directly to read/write business data.**
+
+- **Dynamic pages** (anything that already depends on the current viewer — auth-gated content, per-request data): fetch the API route with `fetchInternalApi` from `lib/server/api-client.ts`, which forwards the request's cookies so the route's own auth check sees the same session. Reference: `app/user/[id]/page.tsx` → `GET /api/user/[id]`, `app/contest/[id]/page.tsx` → `GET /api/contest/[id]`.
+- **If the API route a page needs doesn't exist yet, create it** — don't reach for the service function as a shortcut. Move any inline Prisma logic you find in a page into `lib/<domain>/service.ts` and wrap it with a real route handler, the way `lib/user/service.ts` + `app/api/user/[id]/route.ts` were added for what used to be raw Prisma calls inside `app/user/[id]/page.tsx`.
+- **The one confirmed exception: statically-generated / ISR pages** (`export const revalidate = N` with no per-request dependency). A build-time prerender has no live server to self-fetch against — this was verified by an actual failed `next build` (`fetch failed` / `ECONNREFUSED`) when `app/contest/page.tsx`'s ISR'd listing page was pointed at a self-fetch. These pages call their domain's service function directly instead (see the comment in `app/contest/page.tsx` for the full reasoning) — the API route calls that same function, so there's still exactly one place the query logic lives, even though the page doesn't reach it over HTTP.
+- A plain `supabase.auth.getUser()` call to identify the current request's viewer (not to read business data) is infrastructure, not a boundary violation — every dynamic page and API route needs to know who's asking.
+
+If you're unsure which case a new page falls into: does it need `export const revalidate` (or is it otherwise safe to statically generate) — if yes, direct service call; if it's inherently per-request, HTTP fetch through `fetchInternalApi`.
 
 ## Domain-scoped data layer
 
