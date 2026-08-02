@@ -20,8 +20,8 @@ export function Nav() {
   }, []);
 
   const isCoverPage = pathname.startsWith("/user/") || pathname.startsWith("/companies/");
-  const isContestPage = pathname.startsWith("/contest");
-  const forceDarkNavbar = isScrolled || isContestPage;
+  const isArenaPage = pathname.startsWith("/arena");
+  const forceDarkNavbar = isScrolled || isArenaPage;
 
   // isDarkTheme = true means navbar text should be light (#F1EFE9), suitable for dark backgrounds
   const isDarkTheme = forceDarkNavbar || isCoverPage;

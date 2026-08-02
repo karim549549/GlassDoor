@@ -60,7 +60,7 @@ async function main() {
     console.log(`Upserted job type: ${upsertedJT.name}`);
   }
 
-  console.log("Seeding 102 mock contests...");
+  console.log("Seeding 102 mock arenas...");
   
   // Find creator
   let creator = await prisma.user.findFirst();
@@ -79,13 +79,13 @@ async function main() {
     });
   }
 
-  // Find cover image from any existing contest
-  const existingContest = await prisma.contest.findFirst({
+  // Find cover image from any existing arena
+  const existingArena = await prisma.arena.findFirst({
     where: {
       coverImageUrl: { not: null }
     }
   });
-  const defaultCover = existingContest?.coverImageUrl || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80";
+  const defaultCover = existingArena?.coverImageUrl || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80";
 
   const cities = ["Cairo", "Giza", "Alexandria", "Suez", "Mansoura", "Luxor", "Aswan", "Tanta", "Asyut", "Red Sea"];
   const topics = ["React", "Next.js", "Node.js", "Python", "Go API", "Rust Sync", "DevOps scaling", "Database Sync", "Kubernetes Mesh", "Web3 Cairo"];
@@ -146,7 +146,7 @@ async function main() {
     const isPrivate = i % 5 === 0;
     const isTeam = i % 2 === 0;
 
-    await prisma.contest.create({
+    await prisma.arena.create({
       data: {
         title,
         description,

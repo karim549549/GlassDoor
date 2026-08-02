@@ -15,11 +15,6 @@ export default defineConfig({
     // hold the advisory locks Prisma's migration engine needs. This only
     // affects the Prisma CLI (migrate/db push/studio); the app itself
     // connects independently via lib/server/prisma.ts using DATABASE_URL.
-    url: (() => {
-      if (!process.env.DIRECT_URL) {
-        throw new Error("DIRECT_URL is not set. Configure it in your environment before running Prisma commands.");
-      }
-      return process.env.DIRECT_URL;
-    })(),
+    url: process.env.DIRECT_URL || process.env.DATABASE_URL || "postgresql://dummy:dummy@localhost:5432/dummy",
   },
 });

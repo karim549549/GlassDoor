@@ -8,5 +8,5 @@ export interface NavLinkEntry {
 export const NAV_LINKS: NavLinkEntry[] = [
   { label: "Companies", href: "/" },
   { label: "Reviews", href: "/" },
-  { label: "Arenas", href: "/contest" },
+  { label: "Arenas", href: "/arena" },
 ];
