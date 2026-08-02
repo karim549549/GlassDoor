@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 import type { DropdownOption } from "@/components/ui/SearchableDropdown";
+import { logger } from "@/lib/client/logger";
 import {
   EMPLOYER_REQUIRED_STATUSES,
   profileSchema,
@@ -69,7 +70,9 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
           setDbJobTypes(data.jobTypes || []);
         }
       } catch (err) {
-        console.error("Failed to load options metadata:", err);
+        logger.error("Failed to load options metadata", {
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
     if (isOpen) {
@@ -148,6 +151,9 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
       onSaveSuccess();
       onClose();
     } catch (err) {
+      logger.error("Failed to save profile", {
+        error: err instanceof Error ? err.message : String(err),
+      });
       setErrorMsg(err instanceof Error ? err.message : "An unexpected error occurred.");
     }
   };

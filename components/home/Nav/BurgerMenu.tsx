@@ -7,6 +7,7 @@ import { Menu, X, LogOut } from "lucide-react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { removeSavedAccount } from "@/lib/client/saved-accounts";
+import { logger } from "@/lib/client/logger";
 import { NavSearch } from "./NavSearch";
 import { NAV_LINKS } from "./nav-links-data";
 import { BurgerMenuUserPanel } from "./BurgerMenuUserPanel";
@@ -35,8 +36,13 @@ export function BurgerMenu({ isDarkTheme }: BurgerMenuProps) {
     }
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-    } catch {
-      // ignore
+    } catch (err) {
+      // Best-effort - the client still clears local auth state and navigates
+      // away below regardless, but a server-side sign-out that keeps failing
+      // (stale cookie never cleared) is worth a minimal signal.
+      logger.warn("Server-side sign out failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       clearAuth();
       router.push("/");

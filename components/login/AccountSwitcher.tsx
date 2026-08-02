@@ -12,6 +12,7 @@ import {
   upsertSavedAccount,
   type SavedAccount,
 } from "@/lib/client/saved-accounts";
+import { logger } from "@/lib/client/logger";
 
 interface AccountSwitcherProps {
   onSelectAccount: (email: string) => void;
@@ -90,7 +91,7 @@ export function AccountSwitcher({
         onSelectAccount(account.email);
       }
     } catch (err) {
-      console.error("Auto-login error:", err);
+      logger.error("Auto-login error", { error: err instanceof Error ? err.message : String(err) });
       // Network error -> fallback to credentials form
       onSelectAccount(account.email);
     } finally {

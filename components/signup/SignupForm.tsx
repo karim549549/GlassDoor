@@ -7,6 +7,7 @@ import * as z from "zod";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { upsertSavedAccount } from "@/lib/client/saved-accounts";
+import { logger } from "@/lib/client/logger";
 import { useAuthFormAnimation } from "@/components/login/shared/useAuthFormAnimation";
 import { AuthErrorBanner } from "@/components/login/shared/AuthErrorBanner";
 import { OAuthOptions } from "@/components/login/shared/OAuthOptions";
@@ -88,7 +89,10 @@ export default function SignupForm() {
         setIsSuccess(true);
         setIsLoading(false);
       }
-    } catch {
+    } catch (err) {
+      logger.error("Signup request failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
       setServerError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
