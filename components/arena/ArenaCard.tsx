@@ -112,7 +112,6 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
               <GoldenTicketTag
                 key={item.tag.id}
                 label={item.tag.name}
-                variant={(item.tag.color as "golden" | "emerald" | "cyan" | "purple" | "orange" | "ruby" | "outline") || "golden"}
                 size="sm"
               />
             ))}

@@ -110,7 +110,6 @@ export function ArenasFilterSidebar({
                   key={t.id}
                   label={t.name}
                   count={t.count}
-                  variant={(t.color as "golden" | "emerald" | "cyan" | "purple" | "orange" | "ruby" | "outline") || "golden"}
                   size="sm"
                   isSelected={isSelected}
                   onClick={() => onTagChange && onTagChange(isSelected ? "" : t.slug)}

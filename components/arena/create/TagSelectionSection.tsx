@@ -83,7 +83,6 @@ export function TagSelectionSection({ setValue, watch }: TagSelectionSectionProp
                 <GoldenTicketTag
                   key={t.id}
                   label={t.name}
-                  variant={(t.color as "golden" | "emerald" | "cyan" | "purple" | "orange" | "ruby" | "outline") || "golden"}
                   size="md"
                   isSelected={isSelected}
                   onClick={() => toggleTag(t.id)}
