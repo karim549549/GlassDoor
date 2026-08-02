@@ -1,30 +1,43 @@
 import "server-only";
+import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/server/prisma";
 
+/**
+ * Explicit field allow-list — only what toUserProfileDto() in dto.ts
+ * actually maps to a response field. Excludes emailVerified and updatedAt
+ * (User has no auth secrets to worry about here since Supabase Auth owns
+ * credentials, but the discipline of not fetching unused columns applies
+ * regardless — same pattern as ARENA_LIST_SELECT in lib/arena/types.ts).
+ */
+export const USER_PROFILE_SELECT = {
+  id: true,
+  fullName: true,
+  firstName: true,
+  lastName: true,
+  handle: true,
+  email: true,
+  avatarUrl: true,
+  coverUrl: true,
+  bio: true,
+  employmentStatus: true,
+  currentEmployer: true,
+  seniority: true,
+  education: true,
+  location: true,
+  githubUrl: true,
+  linkedinUrl: true,
+  portfolioUrl: true,
+  rating: true,
+  createdAt: true,
+  lastActiveAt: true,
+  skills: { select: { skill: { select: { id: true, name: true } } } },
+  jobTypes: { select: { jobType: { select: { id: true, name: true } } } },
+} satisfies Prisma.UserSelect;
+
+type UserProfileRow = Prisma.UserGetPayload<{ select: typeof USER_PROFILE_SELECT }>;
+
 /** Raw Prisma shape — internal only. API responses go through toUserProfileDto() in dto.ts. */
-export interface RawUserProfile {
-  id: string;
-  fullName: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  handle: string | null;
-  email: string;
-  avatarUrl: string | null;
-  coverUrl: string | null;
-  bio: string | null;
-  employmentStatus: string | null;
-  currentEmployer: string | null;
-  seniority: string | null;
-  education: string | null;
-  location: string | null;
-  githubUrl: string | null;
-  linkedinUrl: string | null;
-  portfolioUrl: string | null;
-  rating: number;
-  createdAt: Date;
-  lastActiveAt: Date | null;
-  skills: { skill: { id: string; name: string } }[];
-  jobTypes: { jobType: { id: string; name: string } }[];
+export interface RawUserProfile extends UserProfileRow {
   followersCount: number;
   isFollowing: boolean;
   isOwner: boolean;
@@ -41,10 +54,7 @@ export async function getUserProfileById(
   const [dbUser, followersCount, followRow] = await Promise.all([
     prisma.user.findUnique({
       where: { id },
-      include: {
-        skills: { include: { skill: true } },
-        jobTypes: { include: { jobType: true } },
-      },
+      select: USER_PROFILE_SELECT,
     }),
     prisma.follows.count({ where: { followingId: id } }),
     viewerId
@@ -59,28 +69,7 @@ export async function getUserProfileById(
   }
 
   return {
-    id: dbUser.id,
-    fullName: dbUser.fullName,
-    firstName: dbUser.firstName,
-    lastName: dbUser.lastName,
-    handle: dbUser.handle,
-    email: dbUser.email,
-    avatarUrl: dbUser.avatarUrl,
-    coverUrl: dbUser.coverUrl,
-    bio: dbUser.bio,
-    employmentStatus: dbUser.employmentStatus,
-    currentEmployer: dbUser.currentEmployer,
-    seniority: dbUser.seniority,
-    education: dbUser.education,
-    location: dbUser.location,
-    githubUrl: dbUser.githubUrl,
-    linkedinUrl: dbUser.linkedinUrl,
-    portfolioUrl: dbUser.portfolioUrl,
-    rating: dbUser.rating,
-    createdAt: dbUser.createdAt,
-    lastActiveAt: dbUser.lastActiveAt,
-    skills: dbUser.skills,
-    jobTypes: dbUser.jobTypes,
+    ...dbUser,
     followersCount,
     isFollowing: !!followRow,
     isOwner: viewerId === id,
