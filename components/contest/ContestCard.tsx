@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Calendar, Users, Trophy, ExternalLink } from "lucide-react";
 import { buildContestSlug } from "@/lib/contest-slug";
 import type { SerializedContestListItem } from "@/lib/contest/types";
@@ -58,11 +59,12 @@ export function ContestCardBody({ contest, timeLeft, footerDate }: ContestCardBo
       {/* Cover Image Block (Enforced 4:1 crop ratio for layout parity) */}
       <div className="w-full aspect-[4/1] relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
         {contest.coverImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={contest.coverImageUrl}
             alt={contest.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="flex flex-col items-center justify-center p-2 text-center select-none text-[#0E0E0D]/20">
@@ -133,7 +135,7 @@ export function ContestCardBody({ contest, timeLeft, footerDate }: ContestCardBo
   );
 }
 
-export function ContestCard({ contest }: ContestCardProps) {
+function ContestCardImpl({ contest }: ContestCardProps) {
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
@@ -184,6 +186,10 @@ export function ContestCard({ contest }: ContestCardProps) {
     </Link>
   );
 }
+
+/** Memoized: re-rendering every card on unrelated list-state changes (search input, filters
+ * still loading) is wasted work once the underlying contest data hasn't changed. */
+export const ContestCard = React.memo(ContestCardImpl);
 
 export function ContestCardSkeleton() {
   return (
