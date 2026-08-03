@@ -4,7 +4,7 @@ import React from "react";
 import { CheckSquare, FileText, Code2, Video, Layers, ShieldAlert } from "lucide-react";
 
 interface ArenaOverviewTabProps {
-  description: string;
+  description?: string;
   rulesText: string;
   requireGithubUrl: boolean;
   requireFigmaUrl: boolean;
@@ -13,7 +13,6 @@ interface ArenaOverviewTabProps {
 }
 
 export function ArenaOverviewTab({
-  description,
   rulesText,
   requireGithubUrl,
   requireFigmaUrl,
@@ -49,17 +48,6 @@ export function ArenaOverviewTab({
 
   return (
     <div className="space-y-8">
-      {/* Description Section */}
-      <div className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-6 space-y-4">
-        <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-orange font-bold border-b border-[#0E0E0D]/10 pb-3">
-          <FileText className="w-4 h-4" />
-          <span>PROBLEM STATEMENT & ARENA OVERVIEW</span>
-        </div>
-        <div className="prose prose-neutral max-w-none font-sans text-sm text-[#0E0E0D] leading-relaxed whitespace-pre-line">
-          {description}
-        </div>
-      </div>
-
       {/* Submission Requirements Checklist */}
       <div className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-6 space-y-4">
         <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-orange font-bold border-b border-[#0E0E0D]/10 pb-3">

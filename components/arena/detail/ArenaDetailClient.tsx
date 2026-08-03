@@ -271,10 +271,10 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         <BackgroundGrid opacity={0.05} />
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10">
-          {/* CRITICAL DIRECT SEO CONTENT: Overview, Problem Statement, Deliverables, & Rules */}
+          {/* CRITICAL DIRECT SEO CONTENT: Deliverables & Official Rules */}
           <section className="space-y-4">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
-              ARENA OVERVIEW, DELIVERABLES & RULES
+              REQUIRED DELIVERABLES & OFFICIAL RULES
             </h2>
             <ArenaOverviewTab
               description={arena.description}
