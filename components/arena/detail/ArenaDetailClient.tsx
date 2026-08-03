@@ -11,6 +11,7 @@ import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
 import { ArenaCommentsSection } from "./ArenaCommentsSection";
 import { Footer } from "@/components/home/Footer";
 import { CheckCircle2, Users, Upload, Trophy } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface ArenaDetailClientProps {
   arena: {
@@ -263,15 +264,23 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         <BackgroundGrid opacity={0.05} />
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10">
-          {/* SECTION: Full Arena Description (server-rendered, SEO-indexed, no CLS) */}
-          <section className="space-y-3">
+          {/* SECTION: Full Arena Description — Markdown rendered, scroll target from hero "Read More" */}
+          <section id="arena-description" className="space-y-3 scroll-mt-8">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
               ABOUT THIS ARENA
             </h2>
             <div className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-6">
-              <p className="font-sans text-sm text-[#0E0E0D]/85 leading-[1.9] whitespace-pre-line">
-                {arena.description}
-              </p>
+              <div className="prose prose-sm prose-neutral max-w-none text-[#0E0E0D]/85 leading-[1.9]
+                prose-headings:font-mono prose-headings:uppercase prose-headings:tracking-widest prose-headings:text-[#0E0E0D] prose-headings:font-bold
+                prose-h1:text-base prose-h2:text-sm prose-h3:text-xs
+                prose-strong:text-[#0E0E0D] prose-strong:font-bold
+                prose-code:bg-[#0E0E0D]/5 prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:text-xs prose-code:text-[#0E0E0D]
+                prose-ul:list-disc prose-ul:pl-5 prose-ol:list-decimal prose-ol:pl-5
+                prose-li:font-sans prose-li:text-sm prose-li:text-[#0E0E0D]/85
+                prose-a:text-orange prose-a:no-underline hover:prose-a:underline
+                prose-blockquote:border-l-4 prose-blockquote:border-orange prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-[#0E0E0D]/60">
+                <ReactMarkdown>{arena.description}</ReactMarkdown>
+              </div>
             </div>
           </section>
 

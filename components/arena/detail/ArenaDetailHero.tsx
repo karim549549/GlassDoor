@@ -180,13 +180,18 @@ export function ArenaDetailHero({
               {title}
             </h1>
 
-            {/* Description — fixed 3-line clamp, no in-flow expansion (avoids CLS) */}
-            <div className="relative max-w-2xl overflow-hidden">
-              <p className="font-mono text-xs text-[#F1EFE9]/75 leading-relaxed line-clamp-3">
+            {/* Description — 2-line clamp. "Read More" scrolls to full description below. No CLS. */}
+            <div className="relative max-w-2xl">
+              <p className="font-mono text-xs text-[#F1EFE9]/75 leading-relaxed line-clamp-2">
                 {description}
               </p>
-              {/* Gradient mask hints at more content below — no JS, no layout shift */}
-              <div className="absolute bottom-0 left-0 right-0 h-5 bg-gradient-to-t from-[#0E0E0D] to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[#0E0E0D] to-transparent pointer-events-none" />
+              <a
+                href="#arena-description"
+                className="mt-1.5 inline-block font-mono text-[0.55rem] uppercase tracking-widest font-bold text-orange hover:text-orange/70 transition-colors cursor-pointer"
+              >
+                READ MORE ↓
+              </a>
             </div>
 
             {/* Sleek 1-Line Organizer Metadata Pill */}
