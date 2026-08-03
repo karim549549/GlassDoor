@@ -41,15 +41,17 @@ interface ArenaDetailHeroProps {
     };
   }[];
 
+  mode?: "details" | "matchmaking";
+
   // Actor & Action props
-  isGuest: boolean;
-  isJoined: boolean;
-  isHost: boolean;
-  onJoin: () => void;
-  onQuit: () => void;
-  onResign: () => void;
-  onLoginRedirect: () => void;
-  onRequestPrivateJoin: (code?: string) => void;
+  isGuest?: boolean;
+  isJoined?: boolean;
+  isHost?: boolean;
+  onJoin?: () => void;
+  onQuit?: () => void;
+  onResign?: () => void;
+  onLoginRedirect?: () => void;
+  onRequestPrivateJoin?: (code?: string) => void;
   onEditCoverClick?: () => void;
 }
 
@@ -72,14 +74,15 @@ export function ArenaDetailHero({
   googleMapsUrl = "https://maps.google.com/?q=Cairo+Tech+Hub",
   creator,
   tags,
-  isGuest,
-  isJoined,
-  isHost,
-  onJoin,
-  onQuit,
-  onResign,
-  onLoginRedirect,
-  onRequestPrivateJoin,
+  mode = "details",
+  isGuest = false,
+  isJoined = false,
+  isHost = false,
+  onJoin = () => {},
+  onQuit = () => {},
+  onResign = () => {},
+  onLoginRedirect = () => {},
+  onRequestPrivateJoin = () => {},
   onEditCoverClick,
 }: ArenaDetailHeroProps) {
   const isFull = maxParticipants !== null && totalParticipants >= maxParticipants;
@@ -131,7 +134,17 @@ export function ArenaDetailHero({
               ARENAS
             </Link>
             <span className="text-white/40">&gt;</span>
-            <span className="text-[#F1EFE9] truncate max-w-xs">{title}</span>
+            {mode === "matchmaking" ? (
+              <>
+                <Link href={`/arena/${id}`} className="hover:underline hover:text-orange/80 transition-colors cursor-pointer">
+                  {title}
+                </Link>
+                <span className="text-white/40">&gt;</span>
+                <span className="text-[#F1EFE9]">MATCHMAKING & SQUAD LOBBIES</span>
+              </>
+            ) : (
+              <span className="text-[#F1EFE9] truncate max-w-xs">{title}</span>
+            )}
           </nav>
 
           {/* Header Badges Row (No Emojis) */}
@@ -254,33 +267,61 @@ export function ArenaDetailHero({
             </div>
           </div>
 
-          {/* Right Column (5/12 = 42%): Additional Images Carousel + Single Clean Action Button */}
+          {/* Right Column (5/12 = 42%): Mode-Dependent Action & Navigation Card */}
           <div className="lg:col-span-5 space-y-4">
-            {/* Additional Screenshots Auto-Playing Carousel */}
-            {additionalImages.length > 0 && (
-              <ArenaCarousel images={additionalImages} title={title} />
-            )}
+            {mode === "matchmaking" ? (
+              <div className="bg-[#0E0E0D]/90 border-2 border-white/25 p-5 space-y-4 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)]">
+                <div className="space-y-1 border-b border-white/15 pb-3">
+                  <span className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-orange font-bold block">
+                    🎮 SQUAD MATCHMAKING ACTIVE
+                  </span>
+                  <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
+                    MATCHMAKING HUB
+                  </h3>
+                </div>
 
-            {/* SINGLE CLEAN THEME-CONSISTENT ACTION BUTTON DIRECTLY UNDER CAROUSEL */}
-            <div className="w-full">
-              <ArenaActionButtons
-                isGuest={isGuest}
-                isJoined={isJoined}
-                isHost={isHost}
-                isFull={isFull}
-                isCompleted={isCompleted}
-                isRegistrationPhase={isRegistrationPhase}
-                isPrivate={isPrivate}
-                isTeam={isTeam}
-                arenaSlug={id}
-                inviteCode={inviteCode}
-                onJoin={onJoin}
-                onQuit={onQuit}
-                onResign={onResign}
-                onLoginRedirect={onLoginRedirect}
-                onRequestPrivateJoin={onRequestPrivateJoin}
-              />
-            </div>
+                <p className="font-mono text-xs text-[#F1EFE9]/70 leading-relaxed">
+                  You are currently in the dedicated squad lobbies &amp; free agent recruitment view.
+                </p>
+
+                <div className="pt-2">
+                  <Link
+                    href={`/arena/${id}`}
+                    className="w-full py-3 px-4 bg-white text-[#0E0E0D] hover:bg-[#0E0E0D] hover:text-[#F1EFE9] font-mono text-[0.65rem] uppercase tracking-[0.2em] font-bold border-2 border-white transition-all flex items-center justify-center gap-2 shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)] cursor-pointer"
+                  >
+                    <span>← ROLLBACK TO ARENA DETAILS &amp; RULES</span>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Additional Screenshots Auto-Playing Carousel */}
+                {additionalImages.length > 0 && (
+                  <ArenaCarousel images={additionalImages} title={title} />
+                )}
+
+                {/* SINGLE CLEAN THEME-CONSISTENT ACTION BUTTON DIRECTLY UNDER CAROUSEL */}
+                <div className="w-full">
+                  <ArenaActionButtons
+                    isGuest={isGuest}
+                    isJoined={isJoined}
+                    isHost={isHost}
+                    isFull={isFull}
+                    isCompleted={isCompleted}
+                    isRegistrationPhase={isRegistrationPhase}
+                    isPrivate={isPrivate}
+                    isTeam={isTeam}
+                    arenaSlug={id}
+                    inviteCode={inviteCode}
+                    onJoin={onJoin}
+                    onQuit={onQuit}
+                    onResign={onResign}
+                    onLoginRedirect={onLoginRedirect}
+                    onRequestPrivateJoin={onRequestPrivateJoin}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
