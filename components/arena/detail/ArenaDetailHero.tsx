@@ -3,10 +3,10 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Globe, Lock, Users, Calendar, ShieldCheck, Tag as TagIcon } from "lucide-react";
+import { Users, Calendar, ShieldCheck, Tag as TagIcon } from "lucide-react";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ArenaCoverGallery } from "./ArenaCoverGallery";
-import { ArenaActionCard, PrototypeUserRole } from "./ArenaActionCard";
+import { ArenaActionCard } from "./ArenaActionCard";
 
 interface ArenaDetailHeroProps {
   id: string;
@@ -39,14 +39,15 @@ interface ArenaDetailHeroProps {
     };
   }[];
 
-  // Prototype state props
-  currentUserRole: PrototypeUserRole;
-  onChangeUserRole: (role: PrototypeUserRole) => void;
-  onJoinSolo: () => void;
-  onOpenTeamModal: () => void;
-  onRequestPrivateJoin: (code?: string) => void;
-  onGoToSubmission: () => void;
+  // Actor & Action props
+  isGuest: boolean;
+  isJoined: boolean;
+  isHost: boolean;
+  onJoin: () => void;
+  onQuit: () => void;
+  onResign: () => void;
   onLoginRedirect: () => void;
+  onRequestPrivateJoin: (code?: string) => void;
 }
 
 export function ArenaDetailHero({
@@ -65,13 +66,14 @@ export function ArenaDetailHero({
   inviteCode,
   creator,
   tags,
-  currentUserRole,
-  onChangeUserRole,
-  onJoinSolo,
-  onOpenTeamModal,
-  onRequestPrivateJoin,
-  onGoToSubmission,
+  isGuest,
+  isJoined,
+  isHost,
+  onJoin,
+  onQuit,
+  onResign,
   onLoginRedirect,
+  onRequestPrivateJoin,
 }: ArenaDetailHeroProps) {
   const formatDate = (dateStr: string) => {
     try {
@@ -86,12 +88,11 @@ export function ArenaDetailHero({
   };
 
   return (
-    <div className="w-full bg-[#0E0E0D] text-[#F1EFE9] border-b-4 border-double border-[#F1EFE9]/25 pt-20 pb-12 px-6 md:px-12 relative overflow-hidden">
-      {/* Blueprint grid background effect */}
+    <div className="w-full bg-[#0E0E0D] text-[#F1EFE9] border-b-4 border-double border-[#F1EFE9]/25 pt-20 pb-10 px-6 md:px-12 relative overflow-hidden">
       <BackgroundGrid opacity={0.06} patternSize={28} />
 
-      <div className="max-w-7xl mx-auto relative z-10 space-y-8">
-        {/* Top Breadcrumb & Status Bar */}
+      <div className="max-w-7xl mx-auto relative z-10 space-y-6">
+        {/* Top Breadcrumb & Badges */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F1EFE9]/10 pb-4">
           <span className="font-mono text-[0.58rem] text-orange tracking-widest uppercase font-bold">
             Home &gt; Arenas &gt; <span className="text-[#F1EFE9]">{title}</span>
@@ -118,124 +119,81 @@ export function ArenaDetailHero({
           </div>
         </div>
 
-        {/* 2-Column Showcase Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column (7/12 = 58%): Title & Rich Metadata */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Title */}
-            <h1 className="font-display italic text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-[#F1EFE9] leading-[1.05]">
-              {title}
-            </h1>
+        {/* Title & Compact Organizer Line */}
+        <div className="space-y-3">
+          <h1 className="font-display italic text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-[#F1EFE9] leading-[1.05]">
+            {title}
+          </h1>
 
-            {/* Description */}
-            <p className="font-mono text-xs sm:text-sm text-[#F1EFE9]/70 leading-relaxed max-w-2xl">
-              {description}
-            </p>
+          <p className="font-mono text-xs text-[#F1EFE9]/70 max-w-3xl leading-relaxed">
+            {description}
+          </p>
 
-            {/* RICH METADATA ROW DIRECTLY UNDER TITLE */}
-            <div className="p-4 bg-white/5 border-2 border-white/15 space-y-4">
-              {/* Host Profile */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-full border border-orange overflow-hidden bg-[#0E0E0D]">
-                    {creator.avatarUrl ? (
-                      <Image
-                        src={creator.avatarUrl}
-                        alt={creator.handle}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center font-mono text-xs font-bold text-orange">
-                        {creator.handle.substring(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-mono text-xs font-bold text-[#F1EFE9]">
-                        {creator.fullName || `@${creator.handle}`}
-                      </span>
-                      <ShieldCheck className="w-3.5 h-3.5 text-orange" />
-                    </div>
-                    <span className="font-mono text-[0.52rem] uppercase tracking-widest text-[#F1EFE9]/50 block">
-                      ARENA ORGANIZER & HOST
-                    </span>
-                  </div>
-                </div>
-
-                <Link
-                  href={`/profile/${creator.handle}`}
-                  className="font-mono text-[0.55rem] uppercase tracking-wider text-orange hover:underline font-bold"
-                >
-                  View Host Profile &rarr;
-                </Link>
+          {/* SLEEK 1-LINE ORGANIZER METADATA PILL (De-emphasized Host) */}
+          <div className="flex flex-wrap items-center gap-3 font-mono text-[0.62rem] text-[#F1EFE9]/70 pt-1">
+            <div className="flex items-center gap-1.5 bg-white/5 border border-white/15 px-2.5 py-1">
+              <span className="text-[#F1EFE9]/50">Organized by</span>
+              <div className="relative w-4 h-4 rounded-full overflow-hidden bg-orange/20 border border-orange">
+                {creator.avatarUrl ? (
+                  <Image src={creator.avatarUrl} alt={creator.handle} fill className="object-cover" />
+                ) : (
+                  <span className="w-full h-full flex items-center justify-center font-bold text-[0.4rem]">
+                    {creator.handle.substring(0, 1).toUpperCase()}
+                  </span>
+                )}
               </div>
+              <Link
+                href={`/profile/${creator.handle}`}
+                className="font-bold text-orange hover:underline flex items-center gap-0.5"
+              >
+                <span>@{creator.handle}</span>
+                <ShieldCheck className="w-3 h-3 text-orange" />
+              </Link>
+            </div>
 
-              {/* Specs Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-[0.58rem]">
-                <div className="space-y-0.5">
-                  <span className="text-[#F1EFE9]/40 uppercase tracking-widest block text-[0.5rem]">
-                    REGISTRATION DEADLINE
-                  </span>
-                  <span className="text-[#F1EFE9] font-bold flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-orange" />
-                    {formatDate(registrationEnd)}
-                  </span>
-                </div>
+            <span className="text-white/20">•</span>
 
-                <div className="space-y-0.5">
-                  <span className="text-[#F1EFE9]/40 uppercase tracking-widest block text-[0.5rem]">
-                    PLACES & PARTICIPANTS
-                  </span>
-                  <span className="text-[#F1EFE9] font-bold flex items-center gap-1">
-                    <Users className="w-3 h-3 text-emerald-400" />
-                    {totalParticipants} / {maxParticipants ?? "∞"} Joined
-                  </span>
-                </div>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-3 h-3 text-orange" />
+              <span>Closes {formatDate(registrationEnd)}</span>
+            </div>
 
-                <div className="space-y-0.5 col-span-2 sm:col-span-1">
-                  <span className="text-[#F1EFE9]/40 uppercase tracking-widest block text-[0.5rem]">
-                    ACCESS VISIBILITY
-                  </span>
-                  <span className="text-[#F1EFE9] font-bold flex items-center gap-1">
-                    {isPrivate ? (
-                      <Lock className="w-3 h-3 text-amber-400" />
-                    ) : (
-                      <Globe className="w-3 h-3 text-emerald-400" />
-                    )}
-                    {isPrivate ? "INVITE ONLY" : "OPEN TO ALL"}
-                  </span>
-                </div>
-              </div>
+            <span className="text-white/20">•</span>
 
-              {/* Tags Badges Row */}
-              {tags.length > 0 && (
-                <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-1.5">
-                  <TagIcon className="w-3 h-3 text-orange shrink-0" />
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3 h-3 text-emerald-400" />
+              <span>{totalParticipants} / {maxParticipants ?? "∞"} Places Joined</span>
+            </div>
+
+            {tags.length > 0 && (
+              <>
+                <span className="text-white/20">•</span>
+                <div className="flex items-center gap-1">
+                  <TagIcon className="w-3 h-3 text-orange" />
                   {tags.map((t) => (
-                    <span
-                      key={t.tag.id}
-                      className="font-mono text-[0.52rem] uppercase tracking-wider px-2 py-0.5 bg-white/10 border border-white/15 text-[#F1EFE9]"
-                    >
+                    <span key={t.tag.id} className="text-[#F1EFE9]/80 font-bold uppercase">
                       #{t.tag.name}
                     </span>
                   ))}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
+        </div>
 
-          {/* Right Column (5/12 = 42%): Cover Image Frame & Action Card */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* Cover Image & Media Showcase */}
+        {/* Hero Showcase Split Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
+          {/* Left Column (8/12 = 66%): Cover Image Frame */}
+          <div className="lg:col-span-8">
             <ArenaCoverGallery
               coverImageUrl={coverImageUrl}
               additionalImages={additionalImages}
               title={title}
             />
+          </div>
 
-            {/* Action Box CTA */}
+          {/* Right Column (4/12 = 34%): Compact Action Card */}
+          <div className="lg:col-span-4">
             <ArenaActionCard
               isPrivate={isPrivate}
               isTeam={isTeam}
@@ -245,13 +203,14 @@ export function ArenaDetailHero({
               totalParticipants={totalParticipants}
               status={status}
               inviteCode={inviteCode}
-              currentUserRole={currentUserRole}
-              onChangeUserRole={onChangeUserRole}
-              onJoinSolo={onJoinSolo}
-              onOpenTeamModal={onOpenTeamModal}
-              onRequestPrivateJoin={onRequestPrivateJoin}
-              onGoToSubmission={onGoToSubmission}
+              isGuest={isGuest}
+              isJoined={isJoined}
+              isHost={isHost}
+              onJoin={onJoin}
+              onQuit={onQuit}
+              onResign={onResign}
               onLoginRedirect={onLoginRedirect}
+              onRequestPrivateJoin={onRequestPrivateJoin}
             />
           </div>
         </div>

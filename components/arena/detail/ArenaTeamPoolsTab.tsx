@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Users, Plus, UserPlus, Search, Shield } from "lucide-react";
-import { PrototypeUserRole } from "./ArenaActionCard";
+
+export type PrototypeUserRole = "guest" | "user_not_joined" | "participant" | "host";
 
 export interface PrototypeTeam {
   id: string;
