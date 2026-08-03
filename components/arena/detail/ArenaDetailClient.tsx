@@ -19,6 +19,7 @@ interface ArenaDetailClientProps {
     title: string;
     description: string;
     coverImageUrl?: string | null;
+    additionalImages?: string[];
     status: string;
     isPrivate: boolean;
     inviteCode?: string | null;
@@ -59,30 +60,59 @@ interface ArenaDetailClientProps {
   };
 }
 
-// Prototype initial mock team pools
+// Prototype initial mock team pools with real Unsplash avatars
 const INITIAL_MOCK_TEAMS: PrototypeTeam[] = [
   {
     id: "team-1",
     name: "Cyber_Warriors",
     members: [
-      { userId: "u1", fullName: "Alex River", handle: "alex_dev", avatarUrl: null, isLeader: true },
-      { userId: "u2", fullName: "Sarah Connor", handle: "sarah_c", avatarUrl: null, isLeader: false },
+      {
+        userId: "u1",
+        fullName: "Alex River",
+        handle: "alex_dev",
+        avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+        isLeader: true,
+      },
+      {
+        userId: "u2",
+        fullName: "Sarah Connor",
+        handle: "sarah_c",
+        avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+        isLeader: false,
+      },
     ],
   },
   {
     id: "team-2",
     name: "Algo_Titans",
     members: [
-      { userId: "u3", fullName: "John Hack", handle: "john_hacks", avatarUrl: null, isLeader: true },
+      {
+        userId: "u3",
+        fullName: "John Hack",
+        handle: "john_hacks",
+        avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+        isLeader: true,
+      },
     ],
   },
   {
     id: "team-3",
     name: "Prisma_Pirates",
     members: [
-      { userId: "u4", fullName: "Dave Code", handle: "dev_dave", avatarUrl: null, isLeader: true },
-      { userId: "u5", fullName: "Emma Watson", handle: "emma_ui", avatarUrl: null, isLeader: false },
-      { userId: "u6", fullName: "Rob Tech", handle: "rob_t", avatarUrl: null, isLeader: false },
+      {
+        userId: "u4",
+        fullName: "Dave Code",
+        handle: "dev_dave",
+        avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+        isLeader: true,
+      },
+      {
+        userId: "u5",
+        fullName: "Emma Watson",
+        handle: "emma_ui",
+        avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80",
+        isLeader: false,
+      },
     ],
   },
 ];
@@ -192,7 +222,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         title={arena.title}
         description={arena.description}
         coverImageUrl={arena.coverImageUrl}
-        additionalImages={[]}
+        additionalImages={arena.additionalImages || []}
         isPrivate={arena.isPrivate}
         isTeam={arena.isTeam}
         minTeamSize={arena.minTeamSize}

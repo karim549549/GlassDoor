@@ -13,32 +13,19 @@ export default async function ArenaDetailPage({ params }: PageProps) {
   const decodedSlug = decodeURIComponent(slugParam);
   const uuid = extractUuidFromSlug(decodedSlug);
 
-  /* 
-    API & DB Integration commented out for pure UI prototyping phase.
-    Uncomment when backend models & seed data are ready.
-    
-    let arenaData: Record<string, unknown> | null = null;
-    let metaData: Record<string, unknown> | null = null;
-    try {
-      const res = await fetchInternalApi(`/api/arena/${uuid}`, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        arenaData = data.arena;
-        metaData = data.meta;
-      }
-    } catch (e) {
-      console.warn("API fetch error:", e);
-    }
-  */
-
-  // Pure Prototype Mock Data — Ensures page loads instantly for any URL
+  // Pure Prototype Mock Data with direct public Unsplash image URLs
   const arenaData = {
     id: uuid || "prototype-arena-1",
     title: "CYBERPUNK ALGORITHM BATTLE 2026",
     description:
       "Architect and implement high-throughput real-time distributed systems under simulated cyber-threat scenarios. Compete in teams or solo to build resilient microservices with Next.js, Prisma, and WebSockets.",
     coverImageUrl:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
+    additionalImages: [
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+    ],
     status: "IDEA_PHASE",
     isPrivate: false,
     inviteCode: "CYBER-2026-X",
@@ -61,7 +48,8 @@ export default async function ArenaDetailPage({ params }: PageProps) {
       id: "creator-uuid",
       fullName: "Alex River",
       handle: "alex_dev",
-      avatarUrl: null,
+      avatarUrl:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
     },
     tags: [
       { tag: { id: "t1", name: "Next.js", slug: "nextjs", color: "golden" } },
