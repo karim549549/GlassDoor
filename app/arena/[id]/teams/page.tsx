@@ -61,41 +61,43 @@ export default async function ArenaTeamsPage({ params }: PageProps) {
   const arenaId = uuid || slugParam;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0 pb-20 space-y-0">
-      {/* REUSED HERO COMPONENT: Same cover image, title, tags, badges, location & rollback breadcrumbs */}
-      <ArenaDetailHero
-        mode="matchmaking"
-        id={slugParam}
-        title={MOCK_ARENA_DATA.title}
-        description={MOCK_ARENA_DATA.description}
-        coverImageUrl={MOCK_ARENA_DATA.coverImageUrl}
-        additionalImages={MOCK_ARENA_DATA.additionalImages}
-        isPrivate={MOCK_ARENA_DATA.isPrivate}
-        isTeam={MOCK_ARENA_DATA.isTeam}
-        minTeamSize={MOCK_ARENA_DATA.minTeamSize}
-        maxTeamSize={MOCK_ARENA_DATA.maxTeamSize}
-        maxParticipants={MOCK_ARENA_DATA.maxParticipants}
-        totalParticipants={MOCK_ARENA_DATA.totalParticipants}
-        status={MOCK_ARENA_DATA.status}
-        registrationStart={MOCK_ARENA_DATA.registrationStart}
-        registrationEnd={MOCK_ARENA_DATA.registrationEnd}
-        creator={MOCK_ARENA_DATA.creator}
-        tags={MOCK_ARENA_DATA.tags}
-      />
+    <div className="min-h-screen flex flex-col justify-between bg-background text-foreground font-sans relative overflow-x-hidden pt-0 pb-0">
+      <main className="flex-1">
+        {/* REUSED HERO COMPONENT: Same cover image, title, tags, badges, location & rollback breadcrumbs */}
+        <ArenaDetailHero
+          mode="matchmaking"
+          id={slugParam}
+          title={MOCK_ARENA_DATA.title}
+          description={MOCK_ARENA_DATA.description}
+          coverImageUrl={MOCK_ARENA_DATA.coverImageUrl}
+          additionalImages={MOCK_ARENA_DATA.additionalImages}
+          isPrivate={MOCK_ARENA_DATA.isPrivate}
+          isTeam={MOCK_ARENA_DATA.isTeam}
+          minTeamSize={MOCK_ARENA_DATA.minTeamSize}
+          maxTeamSize={MOCK_ARENA_DATA.maxTeamSize}
+          maxParticipants={MOCK_ARENA_DATA.maxParticipants}
+          totalParticipants={MOCK_ARENA_DATA.totalParticipants}
+          status={MOCK_ARENA_DATA.status}
+          registrationStart={MOCK_ARENA_DATA.registrationStart}
+          registrationEnd={MOCK_ARENA_DATA.registrationEnd}
+          creator={MOCK_ARENA_DATA.creator}
+          tags={MOCK_ARENA_DATA.tags}
+        />
 
-      {/* Dedicated Matchmaking Hub Content */}
-      <ArenaContainer className="py-10">
-        <BackgroundGrid opacity={0.05} />
-        <div className="relative z-10 max-w-5xl mx-auto">
-          <ArenaTeamMatchmakingClient
-            arenaId={arenaId}
-            arenaTitle={MOCK_ARENA_DATA.title}
-            minTeamSize={MOCK_ARENA_DATA.minTeamSize}
-            maxTeamSize={MOCK_ARENA_DATA.maxTeamSize}
-            slugParam={slugParam}
-          />
-        </div>
-      </ArenaContainer>
+        {/* Dedicated Matchmaking Hub Content */}
+        <ArenaContainer className="py-10">
+          <BackgroundGrid opacity={0.05} />
+          <div className="relative z-10 max-w-5xl mx-auto">
+            <ArenaTeamMatchmakingClient
+              arenaId={arenaId}
+              arenaTitle={MOCK_ARENA_DATA.title}
+              minTeamSize={MOCK_ARENA_DATA.minTeamSize}
+              maxTeamSize={MOCK_ARENA_DATA.maxTeamSize}
+              slugParam={slugParam}
+            />
+          </div>
+        </ArenaContainer>
+      </main>
 
       <Footer />
     </div>

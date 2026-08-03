@@ -118,6 +118,16 @@ export function ArenaLeaderboardTab() {
           </div>
         ))}
       </div>
+
+      {/* LOAD MORE PAGINATION BUTTON */}
+      <div className="pt-2">
+        <button
+          type="button"
+          className="w-full py-2.5 bg-[#0E0E0D] hover:bg-orange text-white font-mono text-[0.62rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D] transition-colors cursor-pointer"
+        >
+          LOAD MORE STANDINGS ↓
+        </button>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Gamepad2, Plus, Search, Shield, Lock, AlertTriangle, UserCheck, UserPlus, Filter, User } from "lucide-react";
+import { Plus, UserPlus, Search, Shield, Lock, AlertTriangle, Gamepad2, UserCheck, Filter } from "lucide-react";
 import { PrototypeTeam } from "./ArenaTeamPoolsTab";
 
 interface ArenaTeamMatchmakingClientProps {
@@ -69,48 +69,13 @@ const INITIAL_TEAMS: PrototypeTeam[] = [
   },
 ];
 
-interface FreeAgent {
-  id: string;
-  handle: string;
-  fullName: string;
-  role: string;
-  avatarUrl: string;
-  bio: string;
-}
 
-const INITIAL_FREE_AGENTS: FreeAgent[] = [
-  {
-    id: "fa-1",
-    handle: "marcus_ai",
-    fullName: "Marcus Vance",
-    role: "AI / ML Engineer",
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-    bio: "Specialized in PyTorch, ONNX runtime optimization, and high-concurrency microservices.",
-  },
-  {
-    id: "fa-2",
-    handle: "elena_ui",
-    fullName: "Elena Rostova",
-    role: "UI / UX & Frontend",
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-    bio: "Next.js 15, Tailwind v4, brutalist design systems, animations.",
-  },
-  {
-    id: "fa-3",
-    handle: "vector_dev",
-    fullName: "Vector Chen",
-    role: "Distributed Systems",
-    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-    bio: "Kafka, gRPC, Go, Rust. Looking for a competitive team targeting 1st place.",
-  },
-];
 
 export function ArenaTeamMatchmakingClient({
   maxTeamSize,
   minTeamSize,
 }: ArenaTeamMatchmakingClientProps) {
   const [teams, setTeams] = useState<PrototypeTeam[]>(INITIAL_TEAMS);
-  const [freeAgents] = useState<FreeAgent[]>(INITIAL_FREE_AGENTS);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
@@ -438,48 +403,7 @@ export function ArenaTeamMatchmakingClient({
         </div>
       </div>
 
-      {/* Free Agent Pool Section */}
-      <section className="space-y-4 pt-6 border-t-2 border-[#0E0E0D]">
-        <div className="flex items-center justify-between border-b-2 border-[#0E0E0D] pb-3">
-          <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-orange font-bold">
-            <User className="w-4 h-4 text-orange" />
-            <span>FREE AGENTS & UNASSIGNED PARTICIPANTS ({freeAgents.length})</span>
-          </div>
-          <span className="font-mono text-[0.5rem] uppercase tracking-widest text-[#0E0E0D]/50 font-bold">
-            AVAILABLE FOR RECRUITMENT
-          </span>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {freeAgents.map((agent) => (
-            <div
-              key={agent.id}
-              className="bg-white border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D] p-4 space-y-3 flex flex-col justify-between"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden bg-[#0E0E0D] shrink-0 border border-[#0E0E0D]">
-                    <Image src={agent.avatarUrl} alt={agent.handle} fill className="object-cover" />
-                  </div>
-                  <div>
-                    <h5 className="font-mono text-xs font-bold text-[#0E0E0D]">@{agent.handle}</h5>
-                    <span className="font-mono text-[0.5rem] uppercase tracking-wider text-orange font-bold block">
-                      {agent.role}
-                    </span>
-                  </div>
-                </div>
-                <p className="font-mono text-[0.55rem] text-[#0E0E0D]/70 leading-relaxed">
-                  {agent.bio}
-                </p>
-              </div>
-
-              <button className="w-full py-1.5 bg-[#0E0E0D] hover:bg-orange text-[#F1EFE9] font-mono text-[0.55rem] uppercase tracking-widest font-bold border border-[#0E0E0D] transition-colors cursor-pointer">
-                RECRUIT TO SQUAD →
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* CONFIRM JOIN MODAL */}
       {pendingJoinTeam && (
