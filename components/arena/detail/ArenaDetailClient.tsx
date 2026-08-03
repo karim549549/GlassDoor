@@ -314,6 +314,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
             onJoinTeamPool={handleJoinTeamPool}
             onLeaveTeamPool={handleLeaveTeamPool}
             onCreateNewTeamPool={handleCreateNewTeamPool}
+            onLoginRedirect={handleLoginRedirect}
           />
 
           {/* Discussion & Comments Tree */}

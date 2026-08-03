@@ -27,6 +27,7 @@ interface ArenaTeamPoolsTabProps {
   onJoinTeamPool: (teamId: string, teamName: string) => void;
   onLeaveTeamPool?: (teamId: string, teamName: string) => void;
   onCreateNewTeamPool: (teamName: string) => void;
+  onLoginRedirect?: () => void;
 }
 
 export function ArenaTeamPoolsTab({
@@ -38,6 +39,7 @@ export function ArenaTeamPoolsTab({
   onJoinTeamPool,
   onLeaveTeamPool = () => {},
   onCreateNewTeamPool,
+  onLoginRedirect = () => {},
 }: ArenaTeamPoolsTabProps) {
   const isGuest = currentUserRole === "guest";
   const [searchTerm, setSearchTerm] = useState("");
@@ -126,12 +128,12 @@ export function ArenaTeamPoolsTab({
           </div>
 
           <button
-            disabled={isInAnyTeam}
-            onClick={() => !isInAnyTeam && setIsCreateModalOpen(true)}
-            className={`px-3 py-1.5 font-mono text-[0.58rem] font-bold uppercase tracking-wider border border-[#0E0E0D] flex items-center gap-1 shrink-0 ${
-              isInAnyTeam
+            disabled={!isGuest && isInAnyTeam}
+            onClick={() => (isGuest ? onLoginRedirect() : !isInAnyTeam && setIsCreateModalOpen(true))}
+            className={`px-3 py-1.5 font-mono text-[0.58rem] font-bold uppercase tracking-wider border border-[#0E0E0D] flex items-center gap-1 shrink-0 cursor-pointer ${
+              !isGuest && isInAnyTeam
                 ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
-                : "bg-orange hover:bg-orange/90 text-white shadow-[2px_2px_0px_0px_#0E0E0D] cursor-pointer"
+                : "bg-orange hover:bg-orange/90 text-white shadow-[2px_2px_0px_0px_#0E0E0D]"
             }`}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -280,7 +282,7 @@ export function ArenaTeamPoolsTab({
                     </button>
                   ) : (
                     <button
-                      onClick={() => setPendingJoinTeam({ id: team.id, name: team.name })}
+                      onClick={() => (isGuest ? onLoginRedirect() : setPendingJoinTeam({ id: team.id, name: team.name }))}
                       className="w-full py-2 bg-[#0E0E0D] hover:bg-orange hover:text-white text-[#F1EFE9] font-mono text-[0.58rem] uppercase tracking-widest font-bold border border-[#0E0E0D] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <UserPlus className="w-3.5 h-3.5 text-orange" />

@@ -23,6 +23,7 @@ interface ArenaInteractiveTabsProps {
   onJoinTeamPool: (teamId: string, teamName: string) => void;
   onLeaveTeamPool: (teamId: string, teamName: string) => void;
   onCreateNewTeamPool: (teamName: string) => void;
+  onLoginRedirect: () => void;
 }
 
 export function ArenaInteractiveTabs({
@@ -33,6 +34,7 @@ export function ArenaInteractiveTabs({
   onJoinTeamPool,
   onLeaveTeamPool,
   onCreateNewTeamPool,
+  onLoginRedirect,
 }: ArenaInteractiveTabsProps) {
   const [activeTab, setActiveTab] = useState<"teams" | "leaderboard">(
     arena.isTeam ? "teams" : "leaderboard"
@@ -80,6 +82,7 @@ export function ArenaInteractiveTabs({
           onJoinTeamPool={onJoinTeamPool}
           onLeaveTeamPool={onLeaveTeamPool}
           onCreateNewTeamPool={onCreateNewTeamPool}
+          onLoginRedirect={onLoginRedirect}
         />
       )}
 
