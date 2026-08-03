@@ -17,6 +17,11 @@ const MOCK_ARENA_DATA = {
     `Architect and implement **high-throughput real-time distributed systems** under simulated cyber-threat scenarios. Compete in teams or solo to build resilient microservices with Next.js, Prisma, and WebSockets.`,
   coverImageUrl:
     "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
+  additionalImages: [
+    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+  ],
   status: "REGISTRATION_OPEN",
   isPrivate: false,
   inviteCode: "CYBER-2026-X",
@@ -64,6 +69,7 @@ export default async function ArenaTeamsPage({ params }: PageProps) {
         title={MOCK_ARENA_DATA.title}
         description={MOCK_ARENA_DATA.description}
         coverImageUrl={MOCK_ARENA_DATA.coverImageUrl}
+        additionalImages={MOCK_ARENA_DATA.additionalImages}
         isPrivate={MOCK_ARENA_DATA.isPrivate}
         isTeam={MOCK_ARENA_DATA.isTeam}
         minTeamSize={MOCK_ARENA_DATA.minTeamSize}
