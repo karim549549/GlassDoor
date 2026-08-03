@@ -82,6 +82,7 @@ export function ArenaDetailHero({
 }: ArenaDetailHeroProps) {
   const [inputCode, setInputCode] = useState("");
   const [codeError, setCodeError] = useState("");
+  const [descExpanded, setDescExpanded] = useState(false);
 
   const isFull = maxParticipants !== null && totalParticipants >= maxParticipants;
   const isCompleted = status === "COMPLETED";
@@ -180,9 +181,26 @@ export function ArenaDetailHero({
               {title}
             </h1>
 
-            <p className="font-mono text-xs text-[#F1EFE9]/75 max-w-2xl leading-relaxed">
-              {description}
-            </p>
+            {/* Description — Clamped to 3 lines with gradient fade-out + inline Read More toggle */}
+            <div className="relative max-w-2xl">
+              <p
+                className={`font-mono text-xs text-[#F1EFE9]/75 leading-relaxed transition-[max-height] duration-400 ease-in-out overflow-hidden ${
+                  descExpanded ? "max-h-[600px]" : "max-h-[4.5rem]"
+                }`}
+              >
+                {description}
+              </p>
+              {/* Gradient fade-out — only visible when clamped */}
+              {!descExpanded && (
+                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-[#0E0E0D] to-transparent pointer-events-none" />
+              )}
+              <button
+                onClick={() => setDescExpanded((prev) => !prev)}
+                className="mt-1.5 font-mono text-[0.55rem] uppercase tracking-widest font-bold text-orange hover:text-orange/70 transition-colors cursor-pointer"
+              >
+                {descExpanded ? "[ SHOW LESS ]" : "[ READ MORE ]"}
+              </button>
+            </div>
 
             {/* Sleek 1-Line Organizer Metadata Pill */}
             <div className="flex flex-wrap items-center gap-3 font-mono text-[0.62rem] text-[#F1EFE9]/70 pt-1">

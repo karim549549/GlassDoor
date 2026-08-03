@@ -137,12 +137,15 @@ export function ArenaCommentNode({
         </div>
       </div>
 
-      {/* Inline Reply Form */}
-      {showReplyForm && !isGuest && (
+      {/* Inline Reply Form — CSS height transition */}
+      <div
+        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+          showReplyForm && !isGuest ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
         <div className="mt-2 ml-4">
           <form onSubmit={handleReplySubmit} className="flex gap-2">
             <input
-              autoFocus
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder={`Replying to @${comment.author.handle}...`}
@@ -158,11 +161,15 @@ export function ArenaCommentNode({
             </button>
           </form>
         </div>
-      )}
+      </div>
 
-      {/* Nested Replies */}
-      {showReplies && comment.replies.length > 0 && (
-        <div className="mt-2 space-y-2">
+      {/* Nested Replies — CSS max-height transition */}
+      {comment.replies.length > 0 && (
+        <div
+          className={`mt-2 space-y-2 overflow-hidden transition-[max-height,opacity] duration-350 ease-in-out ${
+            showReplies ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
           {comment.replies.map((reply) => (
             <ArenaCommentNode
               key={reply.id}
