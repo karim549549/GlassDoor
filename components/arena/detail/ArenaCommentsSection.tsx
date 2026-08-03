@@ -86,18 +86,27 @@ const PAGE_SIZE = 3;
 interface ArenaCommentsSectionProps {
   isGuest?: boolean;
   onLoginRedirect?: () => void;
+  limit?: number;
+  startIndex?: number;
+  showInput?: boolean;
+  hideHeader?: boolean;
 }
 
 export function ArenaCommentsSection({
   isGuest = false,
   onLoginRedirect = () => {},
+  limit,
+  startIndex = 0,
+  showInput = true,
+  hideHeader = false,
 }: ArenaCommentsSectionProps) {
   const [comments, setComments] = useState<CommentType[]>(MOCK_COMMENTS);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [visibleCount, setVisibleCount] = useState(limit ?? PAGE_SIZE);
   const [newCommentText, setNewCommentText] = useState("");
 
-  const visibleComments = comments.slice(0, visibleCount);
-  const hasMore = visibleCount < comments.length;
+  const slicedComments = comments.slice(startIndex);
+  const visibleComments = slicedComments.slice(0, visibleCount);
+  const hasMore = visibleCount < slicedComments.length;
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -154,54 +163,58 @@ export function ArenaCommentsSection({
   return (
     <div className="space-y-6">
       {/* Section Header */}
-      <div className="flex items-center justify-between border-b-2 border-[#0E0E0D] pb-3">
-        <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-orange font-bold">
-          <MessageSquare className="w-4 h-4" />
-          <span>DISCUSSION & COMMENTS</span>
-        </div>
-        <span className="font-mono text-[0.5rem] uppercase tracking-widest text-[#0E0E0D]/50 font-bold">
-          {comments.length} COMMENTS
-        </span>
-      </div>
-
-      {/* New Top-Level Comment Form */}
-      {isGuest ? (
-        <div
-          onClick={onLoginRedirect}
-          className="p-4 bg-white border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D] flex items-center gap-3 cursor-pointer hover:bg-[#0E0E0D]/5 transition-colors"
-        >
-          <div className="w-7 h-7 rounded-full bg-[#0E0E0D]/10 border-2 border-dashed border-[#0E0E0D]/30 flex items-center justify-center shrink-0">
-            <span className="font-mono text-[0.5rem] text-[#0E0E0D]/50 font-bold">?</span>
+      {!hideHeader && (
+        <div className="flex items-center justify-between border-b-2 border-[#0E0E0D] pb-3">
+          <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-orange font-bold">
+            <MessageSquare className="w-4 h-4" />
+            <span>DISCUSSION &amp; COMMENTS</span>
           </div>
-          <span className="font-mono text-[0.62rem] uppercase tracking-widest text-[#0E0E0D]/50 font-bold">
-            LOG IN TO JOIN THE DISCUSSION
+          <span className="font-mono text-[0.5rem] uppercase tracking-widest text-[#0E0E0D]/50 font-bold">
+            {comments.length} COMMENTS
           </span>
         </div>
-      ) : (
-        <form onSubmit={handleAddTopLevelComment} className="flex gap-2 items-start">
-          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-orange/20 border-2 border-orange shrink-0 mt-0.5">
-            <span className="w-full h-full flex items-center justify-center font-mono font-bold text-[0.5rem] text-orange">
-              YOU
+      )}
+
+      {/* New Top-Level Comment Form */}
+      {showInput && (
+        isGuest ? (
+          <div
+            onClick={onLoginRedirect}
+            className="p-4 bg-white border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D] flex items-center gap-3 cursor-pointer hover:bg-[#0E0E0D]/5 transition-colors"
+          >
+            <div className="w-7 h-7 rounded-full bg-[#0E0E0D]/10 border-2 border-dashed border-[#0E0E0D]/30 flex items-center justify-center shrink-0">
+              <span className="font-mono text-[0.5rem] text-[#0E0E0D]/50 font-bold">?</span>
+            </div>
+            <span className="font-mono text-[0.62rem] uppercase tracking-widest text-[#0E0E0D]/50 font-bold">
+              LOG IN TO JOIN THE DISCUSSION
             </span>
           </div>
-          <div className="flex-1 flex gap-2">
-            <textarea
-              value={newCommentText}
-              onChange={(e) => setNewCommentText(e.target.value)}
-              placeholder="ADD A COMMENT TO THIS ARENA..."
-              rows={2}
-              className="flex-1 px-3 py-2 border-2 border-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D] font-mono text-xs bg-white focus:outline-none focus:ring-2 focus:ring-orange resize-none"
-              aria-label="New comment"
-            />
-            <button
-              type="submit"
-              disabled={!newCommentText.trim()}
-              className="self-end px-3 py-2.5 bg-orange text-white border-2 border-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-orange/90 transition-colors"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-        </form>
+        ) : (
+          <form onSubmit={handleAddTopLevelComment} className="flex gap-2 items-start">
+            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-orange/20 border-2 border-orange shrink-0 mt-0.5">
+              <span className="w-full h-full flex items-center justify-center font-mono font-bold text-[0.5rem] text-orange">
+                YOU
+              </span>
+            </div>
+            <div className="flex-1 flex gap-2">
+              <textarea
+                value={newCommentText}
+                onChange={(e) => setNewCommentText(e.target.value)}
+                placeholder="ADD A COMMENT TO THIS ARENA..."
+                rows={2}
+                className="flex-1 px-3 py-2 border-2 border-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D] font-mono text-xs bg-white focus:outline-none focus:ring-2 focus:ring-orange resize-none"
+                aria-label="New comment"
+              />
+              <button
+                type="submit"
+                disabled={!newCommentText.trim()}
+                className="self-end px-3 py-2.5 bg-orange text-white border-2 border-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-orange/90 transition-colors"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </form>
+        )
       )}
 
       {/* Comment Tree */}
