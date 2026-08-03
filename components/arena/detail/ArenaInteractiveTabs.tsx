@@ -7,6 +7,7 @@ import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
 
 interface ArenaInteractiveTabsProps {
   arena: {
+    status?: string;
     isTeam: boolean;
     minTeamSize: number;
     maxTeamSize: number;
@@ -20,6 +21,7 @@ interface ArenaInteractiveTabsProps {
   isJoined: boolean;
   isHost: boolean;
   onJoinTeamPool: (teamId: string, teamName: string) => void;
+  onLeaveTeamPool: (teamId: string, teamName: string) => void;
   onCreateNewTeamPool: (teamName: string) => void;
 }
 
@@ -29,6 +31,7 @@ export function ArenaInteractiveTabs({
   isGuest,
   isJoined,
   onJoinTeamPool,
+  onLeaveTeamPool,
   onCreateNewTeamPool,
 }: ArenaInteractiveTabsProps) {
   const [activeTab, setActiveTab] = useState<"teams" | "leaderboard">(
@@ -72,8 +75,10 @@ export function ArenaInteractiveTabs({
           teams={teams}
           maxTeamSize={arena.maxTeamSize}
           minTeamSize={arena.minTeamSize}
+          status={arena.status}
           currentUserRole={isGuest ? "guest" : isJoined ? "participant" : "user_not_joined"}
           onJoinTeamPool={onJoinTeamPool}
+          onLeaveTeamPool={onLeaveTeamPool}
           onCreateNewTeamPool={onCreateNewTeamPool}
         />
       )}
