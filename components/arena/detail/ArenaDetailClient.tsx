@@ -10,7 +10,7 @@ import { ArenaTeamPoolsTab, PrototypeTeam } from "./ArenaTeamPoolsTab";
 import { ArenaSubmissionTab } from "./ArenaSubmissionTab";
 import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
 import { ArenaLocationSection } from "./ArenaLocationSection";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Users, MapPin, Upload, Trophy } from "lucide-react";
 
 interface ArenaDetailClientProps {
   arena: {
@@ -122,6 +122,11 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
   const [isJoined, setIsJoined] = useState<boolean>(meta.isRegistered);
   const isHost = meta.isOwner;
 
+  // Active module tab state
+  const [activeTab, setActiveTab] = useState<"teams" | "location" | "submission" | "leaderboard">(
+    arena.isTeam ? "teams" : "location"
+  );
+
   // Dynamic team pools & capacity
   const [teams, setTeams] = useState<PrototypeTeam[]>(INITIAL_MOCK_TEAMS);
   const [totalParticipants, setTotalParticipants] = useState<number>(
@@ -221,7 +226,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         </div>
       )}
 
-      {/* Hero Showcase with Cover Gallery & Compact Action Card */}
+      {/* Hero Showcase with Cover Background & Compact Action Card */}
       <ArenaDetailHero
         id={arena.id}
         title={arena.title}
@@ -261,15 +266,15 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         implPhaseEnd={arena.implPhaseEnd}
       />
 
-      {/* Main Content Body (SEO-First Server Rendered Content Stream) */}
+      {/* Main Content Body */}
       <ArenaContainer className="py-10">
         <BackgroundGrid opacity={0.05} />
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10">
-          {/* SECTION 1: Overview & Problem Statement (HTML Server Rendered for SEO) */}
+          {/* CRITICAL DIRECT SEO CONTENT: Overview, Problem Statement, Deliverables, & Rules */}
           <section className="space-y-4">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
-              ARENA OVERVIEW & PROBLEM STATEMENT
+              ARENA OVERVIEW, DELIVERABLES & RULES
             </h2>
             <ArenaOverviewTab
               description={arena.description}
@@ -281,29 +286,63 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
             />
           </section>
 
-          {/* SECTION 2: Venue & Location (Google Maps for In-Person / Hybrid or Online Stage) */}
-          <section className="space-y-4 pt-4 border-t border-[#0E0E0D]/10">
-            <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
-              ARENA LOCATION & VENUE DETAILS
-            </h2>
-            <ArenaLocationSection
-              locationType={((arena as unknown) as Record<string, unknown>).locationType as "IN_PERSON" || "IN_PERSON"}
-              venueName={((arena as unknown) as Record<string, unknown>).venueName as string || "Cairo Tech Innovation Hub"}
-              address={((arena as unknown) as Record<string, unknown>).address as string || "124 El-Tahrir Square, Downtown"}
-              city={((arena as unknown) as Record<string, unknown>).city as string || "Cairo"}
-              country={((arena as unknown) as Record<string, unknown>).country as string || "Egypt"}
-              googleMapsUrl={((arena as unknown) as Record<string, unknown>).googleMapsUrl as string}
-              googleMapsEmbedUrl={((arena as unknown) as Record<string, unknown>).googleMapsEmbedUrl as string}
-              onlineJoinUrl={((arena as unknown) as Record<string, unknown>).onlineJoinUrl as string}
-            />
-          </section>
+          {/* INTERACTIVE MODULES TABBED CONTAINER */}
+          <section className="space-y-6 pt-6 border-t-2 border-[#0E0E0D]">
+            {/* Tab Header Bar */}
+            <div className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-2 flex flex-wrap gap-2">
+              {arena.isTeam && (
+                <button
+                  onClick={() => setActiveTab("teams")}
+                  className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
+                    activeTab === "teams"
+                      ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#FF5722]"
+                      : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
+                  }`}
+                >
+                  <Users className="w-3.5 h-3.5 text-orange" />
+                  <span>TEAM POOLS ({teams.length})</span>
+                </button>
+              )}
 
-          {/* SECTION 2: Team Pools & Open Slots (For Team Arenas) */}
-          {arena.isTeam && (
-            <section className="space-y-4 pt-4 border-t border-[#0E0E0D]/10">
-              <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
-                TEAM POOLS & AVAILABLE SLOTS
-              </h2>
+              <button
+                onClick={() => setActiveTab("location")}
+                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
+                  activeTab === "location"
+                    ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#FF5722]"
+                    : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
+                }`}
+              >
+                <MapPin className="w-3.5 h-3.5 text-orange" />
+                <span>LOCATION & VENUE</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("submission")}
+                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
+                  activeTab === "submission"
+                    ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#10B981]"
+                    : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                <span>SUBMISSION PORTAL</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("leaderboard")}
+                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
+                  activeTab === "leaderboard"
+                    ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#F59E0B]"
+                    : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
+                }`}
+              >
+                <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                <span>LEADERBOARD</span>
+              </button>
+            </div>
+
+            {/* Active Tab Panel Content */}
+            {activeTab === "teams" && arena.isTeam && (
               <ArenaTeamPoolsTab
                 teams={teams}
                 maxTeamSize={arena.maxTeamSize}
@@ -312,29 +351,31 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
                 onJoinTeamPool={handleJoinTeamPool}
                 onCreateNewTeamPool={handleCreateNewTeamPool}
               />
-            </section>
-          )}
+            )}
 
-          {/* SECTION 3: Submission Portal (Visible to Registered Participants) */}
-          <section className="space-y-4 pt-4 border-t border-[#0E0E0D]/10">
-            <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-emerald-600 font-bold border-b border-[#0E0E0D]/15 pb-2">
-              PROJECT SUBMISSION PORTAL
-            </h2>
-            <ArenaSubmissionTab
-              requireGithubUrl={arena.requireGithubUrl}
-              requireFigmaUrl={arena.requireFigmaUrl}
-              requireVideoUrl={arena.requireVideoUrl}
-              requireWriteup={arena.requireWriteup}
-              isRegistered={isJoined || isHost}
-            />
-          </section>
+            {activeTab === "location" && (
+              <ArenaLocationSection
+                locationType={((arena as unknown) as Record<string, unknown>).locationType as "IN_PERSON" || "IN_PERSON"}
+                venueName={((arena as unknown) as Record<string, unknown>).venueName as string || "Cairo Tech Innovation Hub"}
+                address={((arena as unknown) as Record<string, unknown>).address as string || "124 El-Tahrir Square, Downtown"}
+                city={((arena as unknown) as Record<string, unknown>).city as string || "Cairo"}
+                country={((arena as unknown) as Record<string, unknown>).country as string || "Egypt"}
+                googleMapsUrl={((arena as unknown) as Record<string, unknown>).googleMapsUrl as string}
+                onlineJoinUrl={((arena as unknown) as Record<string, unknown>).onlineJoinUrl as string}
+              />
+            )}
 
-          {/* SECTION 4: Leaderboard & Results */}
-          <section className="space-y-4 pt-4 border-t border-[#0E0E0D]/10">
-            <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-amber-600 font-bold border-b border-[#0E0E0D]/15 pb-2">
-              ARENA LEADERBOARD & RESULTS
-            </h2>
-            <ArenaLeaderboardTab />
+            {activeTab === "submission" && (
+              <ArenaSubmissionTab
+                requireGithubUrl={arena.requireGithubUrl}
+                requireFigmaUrl={arena.requireFigmaUrl}
+                requireVideoUrl={arena.requireVideoUrl}
+                requireWriteup={arena.requireWriteup}
+                isRegistered={isJoined || isHost}
+              />
+            )}
+
+            {activeTab === "leaderboard" && <ArenaLeaderboardTab />}
           </section>
         </div>
       </ArenaContainer>
