@@ -188,19 +188,19 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
               />
             </section>
 
-            {/* Authentic Editorial L-Shape Layout: Leaderboard floats right on desktop, single unified comment stream flows beside it and expands 100% full width below */}
-            <div className="pt-6 border-t-2 border-[#0E0E0D] flow-root">
-              {/* Leaderboard Floated Card (32% width on desktop, smooth height expansion) */}
-              <div className="lg:float-right lg:w-[32%] lg:ml-8 lg:mb-8 mb-6 transition-all duration-300 ease-in-out">
-                <ArenaLeaderboardTab />
-              </div>
-
-              {/* Single Unified Discussion & Comments Stream */}
-              <div className="space-y-4">
+            {/* Side-by-Side 2-Column Grid: Discussion (2/3 width = 8 cols) vs Leaderboard (1/3 width = 4 cols) */}
+            <div className="pt-6 border-t-2 border-[#0E0E0D] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column (8/12 = 66.67%): Community Discussion &amp; Q&amp;A */}
+              <div className="lg:col-span-8 space-y-4">
                 <ArenaCommentsSection
                   isGuest={isGuest}
                   onLoginRedirect={handleLoginRedirect}
                 />
+              </div>
+
+              {/* Right Column (4/12 = 33.33%): Leaderboard Standings */}
+              <div className="lg:col-span-4 space-y-4">
+                <ArenaLeaderboardTab />
               </div>
             </div>
           </div>
