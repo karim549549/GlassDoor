@@ -117,7 +117,18 @@ export function ArenaTeamMatchmakingClient({
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
+  const [accessibilityMode, setAccessibilityMode] = useState<"PUBLIC" | "REQUEST" | "PRIVATE">("PUBLIC");
+  const [invitedMembers, setInvitedMembers] = useState<string[]>([]);
+  const [inviteInput, setInviteInput] = useState("");
+  const [showInviteDropdown, setShowInviteDropdown] = useState(false);
   const [pendingJoinTeam, setPendingJoinTeam] = useState<{ id: string; name: string } | null>(null);
+
+  const SUGGESTED_INVITES = [
+    { handle: "marcus_ai", name: "Marcus Vance", role: "AI / ML Engineer" },
+    { handle: "elena_ui", name: "Elena Rostova", role: "UI / UX Designer" },
+    { handle: "vector_dev", name: "Vector Chen", role: "Backend Developer" },
+    { handle: "sarah_c", name: "Sarah Connor", role: "DevOps / Infrastructure" },
+  ];
 
   // Single slot check
   const currentUserId = "current-user-id";
@@ -136,21 +147,33 @@ export function ArenaTeamMatchmakingClient({
     e.preventDefault();
     if (!newTeamName.trim() || isInAnyTeam) return;
 
+    const initialMembers = [
+      {
+        userId: currentUserId,
+        fullName: "You (Leader)",
+        handle: currentUserHandle,
+        avatarUrl: null,
+        isLeader: true,
+      },
+      ...invitedMembers.map((handle, idx) => ({
+        userId: `invited-${idx}-${Date.now()}`,
+        fullName: `@${handle}`,
+        handle: handle,
+        avatarUrl: null,
+        isLeader: false,
+      })),
+    ];
+
     const newTeam: PrototypeTeam = {
       id: `team-${Date.now()}`,
       name: newTeamName.trim(),
-      members: [
-        {
-          userId: currentUserId,
-          fullName: "You (Leader)",
-          handle: currentUserHandle,
-          avatarUrl: null,
-          isLeader: true,
-        },
-      ],
+      members: initialMembers,
     };
     setTeams((prev) => [newTeam, ...prev]);
     setNewTeamName("");
+    setInvitedMembers([]);
+    setInviteInput("");
+    setAccessibilityMode("PUBLIC");
     setIsCreateModalOpen(false);
   };
 
@@ -499,55 +522,202 @@ export function ArenaTeamMatchmakingClient({
         </div>
       )}
 
-      {/* CREATE NEW LOBBY MODAL */}
+      {/* CREATE NEW SQUAD MODAL (Spacious max-w-2xl layout) */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center">
-          <div className="bg-white text-[#0E0E0D] border-2 border-[#0E0E0D] shadow-[8px_8px_0px_0px_#0E0E0D] max-w-md w-full p-6 space-y-4">
-            <div className="flex justify-between items-center border-b border-[#0E0E0D]/10 pb-3">
-              <h3 className="font-mono text-sm font-bold uppercase tracking-wider">
-                HOST A NEW SQUAD LOBBY
-              </h3>
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center overflow-y-auto">
+          <div className="bg-white text-[#0E0E0D] border-2 border-[#0E0E0D] shadow-[10px_10px_0px_0px_#0E0E0D] max-w-2xl w-full p-6 sm:p-8 space-y-6 my-8">
+            <div className="flex justify-between items-start border-b-2 border-[#0E0E0D] pb-4">
+              <div>
+                <span className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-orange font-bold block">
+                  ⚡ CREATE &amp; CONFIGURE SQUAD
+                </span>
+                <h3 className="font-mono text-xl font-bold uppercase tracking-wider text-[#0E0E0D]">
+                  HOST A NEW SQUAD
+                </h3>
+              </div>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="font-mono text-xs font-bold text-[#0E0E0D]/60 hover:text-[#0E0E0D]"
+                className="px-2 py-1 bg-[#0E0E0D] text-white font-mono text-xs font-bold hover:bg-orange transition-colors cursor-pointer"
               >
                 [X]
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="block font-mono text-[0.6rem] uppercase tracking-wider font-bold">
-                  SQUAD LOBBY NAME:
-                </label>
+            <form onSubmit={handleCreateSubmit} className="space-y-6">
+              {/* 1. SQUAD NAME */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="block font-mono text-xs uppercase tracking-wider font-bold text-[#0E0E0D]">
+                    SQUAD NAME <span className="text-orange">*</span>
+                  </label>
+                  <span className="font-mono text-[0.52rem] uppercase font-bold text-[#0E0E0D]/50">
+                    MUST BE UNIQUE PER ARENA
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
                   value={newTeamName}
                   onChange={(e) => setNewTeamName(e.target.value)}
                   placeholder="e.g. CYBER_WARRIORS_2026"
-                  className="w-full px-3 py-2 border-2 border-[#0E0E0D] font-mono text-xs uppercase focus:outline-none focus:ring-2 focus:ring-orange"
+                  className="w-full px-4 py-2.5 border-2 border-[#0E0E0D] font-mono text-sm uppercase focus:outline-none focus:ring-2 focus:ring-orange bg-white"
                 />
               </div>
 
-              <div className="p-3 bg-[#0E0E0D]/5 border border-[#0E0E0D]/15 font-mono text-[0.55rem] uppercase tracking-wider space-y-1 text-[#0E0E0D]/70">
-                <p>• You will automatically occupy Slot P1 as Squad Leader.</p>
-                <p>• Up to {maxTeamSize - 1} other participants can claim open slots in your lobby.</p>
+              {/* 2. INVITE TEAMMATES WITH AUTO-RECOMMENDATION DROPDOWN */}
+              <div className="space-y-2 relative">
+                <label className="block font-mono text-xs uppercase tracking-wider font-bold text-[#0E0E0D]">
+                  INVITE TEAMMATES (OPTIONAL)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={inviteInput}
+                    onFocus={() => setShowInviteDropdown(true)}
+                    onChange={(e) => {
+                      setInviteInput(e.target.value);
+                      setShowInviteDropdown(true);
+                    }}
+                    placeholder="TYPE HANDLE OR SELECT RECENT PARTICIPANTS BELOW..."
+                    className="w-full px-4 py-2 border-2 border-[#0E0E0D] font-mono text-xs uppercase focus:outline-none focus:border-orange bg-white"
+                  />
+                  {showInviteDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] z-30 max-h-48 overflow-y-auto divide-y divide-[#0E0E0D]/10">
+                      <div className="p-2 bg-[#0E0E0D]/5 font-mono text-[0.52rem] uppercase font-bold text-[#0E0E0D]/60">
+                        RECOMMENDED &amp; RECENT PARTICIPANTS:
+                      </div>
+                      {SUGGESTED_INVITES.filter(
+                        (s) =>
+                          !invitedMembers.includes(s.handle) &&
+                          (s.handle.toLowerCase().includes(inviteInput.toLowerCase()) ||
+                            s.name.toLowerCase().includes(inviteInput.toLowerCase()))
+                      ).map((s) => (
+                        <button
+                          key={s.handle}
+                          type="button"
+                          onClick={() => {
+                            setInvitedMembers((prev) => [...prev, s.handle]);
+                            setInviteInput("");
+                            setShowInviteDropdown(false);
+                          }}
+                          className="w-full p-2.5 text-left hover:bg-orange/10 flex items-center justify-between font-mono text-xs transition-colors cursor-pointer"
+                        >
+                          <div>
+                            <span className="font-bold text-[#0E0E0D]">@{s.handle}</span>
+                            <span className="text-[0.55rem] text-[#0E0E0D]/60 block">{s.name} • {s.role}</span>
+                          </div>
+                          <span className="text-[0.55rem] font-bold uppercase text-orange">+ INVITE</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Member Pills */}
+                {invitedMembers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {invitedMembers.map((handle) => (
+                      <span
+                        key={handle}
+                        className="px-3 py-1 bg-[#0E0E0D] text-white font-mono text-[0.58rem] font-bold uppercase tracking-wider flex items-center gap-1.5 border border-[#0E0E0D]"
+                      >
+                        <span>@{handle}</span>
+                        <button
+                          type="button"
+                          onClick={() => setInvitedMembers((prev) => prev.filter((h) => h !== handle))}
+                          className="text-orange hover:text-white font-bold"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              {/* 3. SQUAD ACCESSIBILITY / JOINING MODE SETTINGS */}
+              <div className="space-y-2">
+                <label className="block font-mono text-xs uppercase tracking-wider font-bold text-[#0E0E0D]">
+                  SQUAD ACCESSIBILITY MODE:
+                </label>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* PUBLIC */}
+                  <button
+                    type="button"
+                    onClick={() => setAccessibilityMode("PUBLIC")}
+                    className={`p-3 border-2 text-left font-mono transition-all cursor-pointer ${
+                      accessibilityMode === "PUBLIC"
+                        ? "border-emerald-600 bg-emerald-500/10 shadow-[3px_3px_0px_0px_#059669]"
+                        : "border-[#0E0E0D]/20 bg-white hover:border-[#0E0E0D]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase text-emerald-800">🟢 PUBLIC</span>
+                    </div>
+                    <p className="text-[0.52rem] text-[#0E0E0D]/70 uppercase mt-1 leading-tight">
+                      ANY PARTICIPANT CAN CLAIM SLOTS INSTANTLY.
+                    </p>
+                  </button>
+
+                  {/* REQUEST ONLY */}
+                  <button
+                    type="button"
+                    onClick={() => setAccessibilityMode("REQUEST")}
+                    className={`p-3 border-2 text-left font-mono transition-all cursor-pointer ${
+                      accessibilityMode === "REQUEST"
+                        ? "border-amber-600 bg-amber-500/10 shadow-[3px_3px_0px_0px_#D97706]"
+                        : "border-[#0E0E0D]/20 bg-white hover:border-[#0E0E0D]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase text-amber-800">🟡 REQUEST ONLY</span>
+                    </div>
+                    <p className="text-[0.52rem] text-[#0E0E0D]/70 uppercase mt-1 leading-tight">
+                      REQUIRES LEADER APPROVAL TO JOIN.
+                    </p>
+                  </button>
+
+                  {/* PRIVATE */}
+                  <button
+                    type="button"
+                    onClick={() => setAccessibilityMode("PRIVATE")}
+                    className={`p-3 border-2 text-left font-mono transition-all cursor-pointer ${
+                      accessibilityMode === "PRIVATE"
+                        ? "border-red-600 bg-red-500/10 shadow-[3px_3px_0px_0px_#DC2626]"
+                        : "border-[#0E0E0D]/20 bg-white hover:border-[#0E0E0D]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase text-red-800">🔴 PRIVATE</span>
+                    </div>
+                    <p className="text-[0.52rem] text-[#0E0E0D]/70 uppercase mt-1 leading-tight">
+                      CLOSED LOBBY. REQUIRES INVITE CODE.
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Notice Banner */}
+              <div className="p-3 bg-[#0E0E0D]/5 border border-[#0E0E0D]/20 font-mono text-[0.58rem] uppercase tracking-wider space-y-1 text-[#0E0E0D]/80">
+                <p>• You will automatically occupy Slot P1 as Squad Leader.</p>
+                <p>• Up to {maxTeamSize - 1} other participants can join your squad.</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-2 border-t-2 border-[#0E0E0D]">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 border border-[#0E0E0D] font-mono text-[0.6rem] uppercase font-bold cursor-pointer"
+                  className="px-5 py-2.5 border-2 border-[#0E0E0D] font-mono text-xs uppercase font-bold hover:bg-[#0E0E0D]/5 transition-colors cursor-pointer"
                 >
                   CANCEL
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-orange hover:bg-orange/90 text-white font-mono text-[0.6rem] uppercase font-bold border-2 border-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D] cursor-pointer"
+                  className="px-6 py-2.5 bg-orange hover:bg-orange/90 text-white font-mono text-xs uppercase font-bold border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D] transition-colors cursor-pointer"
                 >
-                  HOST SQUAD LOBBY NOW
+                  CREATE SQUAD NOW →
                 </button>
               </div>
             </form>
