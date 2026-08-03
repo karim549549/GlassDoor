@@ -7,6 +7,11 @@ enum ArenaStatus {
   COMPLETED
 }
 
+enum LocationType {
+  ONLINE
+  IN_PERSON
+}
+
 enum InvitationStatus {
   PENDING
   ACCEPTED
@@ -22,6 +27,11 @@ model Arena {
   creator                User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   status                 ArenaStatus       @default(DRAFT)
   
+  // Location
+  locationType           LocationType      @default(ONLINE)
+  locationName           String?
+  googleMapsUrl          String?
+
   // Access Control & Invites
   isPrivate              Boolean           @default(false)
   inviteCode             String?           @unique
@@ -39,6 +49,7 @@ model Arena {
   minTeamSize            Int               @default(1)
   maxTeamSize            Int               @default(1)
   maxParticipants        Int?              
+  allowLeaderAccessControl Boolean?        @default(true)
   
   // Submission Toggles
   requireGithubUrl       Boolean           @default(true)

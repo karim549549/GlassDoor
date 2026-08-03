@@ -14,6 +14,7 @@ import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaCardBody } from "@/components/arena/ArenaCard";
 import { GeneralSection } from "@/components/arena/create/GeneralSection";
 import { AccessSection } from "@/components/arena/create/AccessSection";
+import { LocationSection } from "@/components/arena/create/LocationSection";
 import { TeamSection } from "@/components/arena/create/TeamSection";
 import { TimelineSection } from "@/components/arena/create/TimelineSection";
 import { RulesSection } from "@/components/arena/create/RulesSection";
@@ -65,10 +66,14 @@ export default function CreateArenaPage() {
   } = useForm<ArenaFormInput, unknown, ArenaFormOutput>({
     resolver: zodResolver(arenaSchema),
     defaultValues: {
+      locationType: "ONLINE",
+      locationName: null,
+      googleMapsUrl: null,
       isPrivate: false,
       isTeam: false,
       minTeamSize: 1,
       maxTeamSize: 1,
+      allowLeaderAccessControl: true,
       requireGithubUrl: true,
       requireFigmaUrl: false,
       requireVideoUrl: false,
@@ -78,6 +83,9 @@ export default function CreateArenaPage() {
 
   const watchIsPrivate = watch("isPrivate") as boolean;
   const watchIsTeam = watch("isTeam") as boolean;
+  const watchLocationType = (watch("locationType") as "ONLINE" | "IN_PERSON") || "ONLINE";
+  const watchGoogleMapsUrl = watch("googleMapsUrl") as string | null;
+  const watchLocationName = watch("locationName") as string | null;
 
   const watchTitle = watch("title") as string;
   const watchDescription = watch("description") as string;
@@ -199,6 +207,15 @@ export default function CreateArenaPage() {
               <TagSelectionSection setValue={setValue} watch={watch} />
 
               <AccessSection register={register} errors={errors} watchIsPrivate={watchIsPrivate} />
+
+              <LocationSection
+                register={register}
+                errors={errors}
+                setValue={setValue}
+                watchLocationType={watchLocationType}
+                watchGoogleMapsUrl={watchGoogleMapsUrl}
+                watchLocationName={watchLocationName}
+              />
 
               <TeamSection register={register} errors={errors} watchIsTeam={watchIsTeam} />
 

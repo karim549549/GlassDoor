@@ -13,6 +13,11 @@ export const arenaBaseSchema = z.object({
   isPrivate: z.boolean().default(false),
   inviteCode: z.string().optional().nullable(),
 
+  // Location
+  locationType: z.enum(["ONLINE", "IN_PERSON"]).default("ONLINE"),
+  locationName: z.string().optional().nullable(),
+  googleMapsUrl: z.string().optional().nullable(),
+
   // Timeline
   registrationStart: z.string().min(1, "Registration start date is required"),
   registrationEnd: z.string().min(1, "Registration end date is required"),
@@ -26,6 +31,7 @@ export const arenaBaseSchema = z.object({
   minTeamSize: z.coerce.number().min(1, "Min team size is 1").default(1),
   maxTeamSize: z.coerce.number().min(1, "Max team size is 1").default(1),
   maxParticipants: z.coerce.number().optional().nullable(),
+  allowLeaderAccessControl: z.boolean().optional().nullable().default(true),
 
   // Submission Rules
   requireGithubUrl: z.boolean().default(true),
@@ -44,13 +50,28 @@ export const arenaBaseSchema = z.object({
  * (app/api/arena/route.ts). Cover image is required to match the create
  * flow's UX.
  */
-export const arenaSchema = arenaBaseSchema.refine(
-  (data) => new Date(data.registrationEnd) > new Date(data.registrationStart),
-  {
-    message: "Registration end must be after registration start",
-    path: ["registrationEnd"],
-  }
-);
+export const arenaSchema = arenaBaseSchema
+  .refine(
+    (data) => new Date(data.registrationEnd) > new Date(data.registrationStart),
+    {
+      message: "Registration end must be after registration start",
+      path: ["registrationEnd"],
+    }
+  )
+  .refine(
+    (data) => data.locationType !== "IN_PERSON" || Boolean(data.googleMapsUrl && data.googleMapsUrl.trim().length > 0),
+    {
+      message: "Google Maps URL or map pin link is required for in-person arenas",
+      path: ["googleMapsUrl"],
+    }
+  )
+  .refine(
+    (data) => !data.isTeam || typeof data.allowLeaderAccessControl === "boolean",
+    {
+      message: "Please specify whether team leaders can configure team privacy",
+      path: ["allowLeaderAccessControl"],
+    }
+  );
 
 export type ArenaFormInput = z.input<typeof arenaSchema>;
 export type ArenaFormOutput = z.output<typeof arenaSchema>;
