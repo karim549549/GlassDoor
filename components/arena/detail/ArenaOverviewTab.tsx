@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { CheckSquare, FileText, Code2, Video, Layers, ShieldAlert, Check, Sparkles } from "lucide-react";
 

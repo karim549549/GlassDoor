@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
@@ -8,6 +10,7 @@ import { ArenaInteractiveTabs } from "./ArenaInteractiveTabs";
 import { ArenaCommentsSection } from "./ArenaCommentsSection";
 import { Footer } from "@/components/home/Footer";
 import { PrototypeTeam } from "./ArenaTeamPoolsTab";
+import { CheckCircle2 } from "lucide-react";
 
 interface ArenaDetailClientProps {
   arena: {
@@ -114,22 +117,107 @@ const INITIAL_MOCK_TEAMS: PrototypeTeam[] = [
 
 export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
   const isGuest = false;
-  const isJoined = meta.isRegistered;
+  const [isJoined, setIsJoined] = useState<boolean>(meta.isRegistered);
   const isHost = meta.isOwner;
-  const totalParticipants = meta.totalParticipants || 24;
 
-  // Placeholder handlers for prototype client islands
-  const handleJoin = () => {};
-  const handleQuit = () => {};
-  const handleResign = () => {};
-  const handleLoginRedirect = () => {};
-  const handleRequestPrivateJoin = () => {};
-  const handleJoinTeamPool = () => {};
-  const handleCreateNewTeamPool = () => {};
+  const [teams, setTeams] = useState<PrototypeTeam[]>(INITIAL_MOCK_TEAMS);
+  const [totalParticipants, setTotalParticipants] = useState<number>(
+    meta.totalParticipants || teams.reduce((sum, t) => sum + t.members.length, 0)
+  );
+
+  const [notification, setNotification] = useState<string | null>(null);
+
+  const triggerNotification = (msg: string) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleLoginRedirect = () => {
+    if (typeof window !== "undefined") {
+      window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname)}`;
+    }
+  };
+
+  const handleJoin = () => {
+    setIsJoined(true);
+    setTotalParticipants((prev) => prev + 1);
+    triggerNotification("Successfully joined the arena!");
+  };
+
+  const handleQuit = () => {
+    setIsJoined(false);
+    setTotalParticipants((prev) => Math.max(0, prev - 1));
+    triggerNotification("You have quit the arena.");
+  };
+
+  const handleResign = () => {
+    setIsJoined(false);
+    triggerNotification("You have resigned from this active competition.");
+  };
+
+  const handleRequestPrivateJoin = (_code?: string) => {
+    setIsJoined(true);
+    setTotalParticipants((prev) => prev + 1);
+    const msg = _code ? `Code ${_code} verified! Joined private arena.` : "Access granted to private arena!";
+    triggerNotification(msg);
+  };
+
+  const handleJoinTeamPool = (teamId: string, teamName: string) => {
+    setTeams((prev) =>
+      prev.map((t) =>
+        t.id === teamId
+          ? {
+              ...t,
+              members: [
+                ...t.members,
+                {
+                  userId: "current-user-id",
+                  fullName: "You",
+                  handle: "you_dev",
+                  avatarUrl: null,
+                  isLeader: false,
+                },
+              ],
+            }
+          : t
+      )
+    );
+    setIsJoined(true);
+    setTotalParticipants((prev) => prev + 1);
+    triggerNotification(`Joined team pool "${teamName}"!`);
+  };
+
+  const handleCreateNewTeamPool = (newTeamName: string) => {
+    const newTeam: PrototypeTeam = {
+      id: `team-${Date.now()}`,
+      name: newTeamName,
+      members: [
+        {
+          userId: "current-user-id",
+          fullName: "You (Leader)",
+          handle: "you_dev",
+          avatarUrl: null,
+          isLeader: true,
+        },
+      ],
+    };
+    setTeams((prev) => [newTeam, ...prev]);
+    setIsJoined(true);
+    setTotalParticipants((prev) => prev + 1);
+    triggerNotification(`Created new team pool "${newTeamName}"!`);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0 pb-20 space-y-0">
-      {/* SERVER COMPONENT HERO: Static H1, Cover Image (Priority LCP), Description snippet & Breadcrumbs */}
+      {/* Notification Toast */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50 bg-[#0E0E0D] text-[#F1EFE9] border-2 border-orange shadow-[4px_4px_0px_0px_#FF5722] p-4 max-w-md font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
+          <CheckCircle2 className="w-5 h-5 text-orange shrink-0" />
+          <span>{notification}</span>
+        </div>
+      )}
+
+      {/* Hero Component */}
       <ArenaDetailHero
         id={arena.id}
         title={arena.title}
@@ -166,7 +254,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         <BackgroundGrid opacity={0.05} />
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10">
-          {/* SERVER COMPONENT: Full Markdown Description (100% SEO-Indexed HTML) */}
+          {/* Full Markdown Description */}
           <section id="arena-description" className="space-y-3 scroll-mt-8">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
               ABOUT THIS ARENA
@@ -186,7 +274,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
             </article>
           </section>
 
-          {/* SERVER COMPONENT: Deliverables & Official Rules (100% SEO-Indexed HTML) */}
+          {/* Deliverables & Official Rules */}
           <section className="space-y-4 pt-2 border-t border-[#0E0E0D]/10">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
               REQUIRED DELIVERABLES & OFFICIAL RULES
@@ -201,10 +289,10 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
             />
           </section>
 
-          {/* CLIENT ISLAND: Interactive Module Tabs (Teams, Submission, Leaderboard) */}
+          {/* Interactive Module Tabs (Teams, Submission, Leaderboard) */}
           <ArenaInteractiveTabs
             arena={arena}
-            teams={INITIAL_MOCK_TEAMS}
+            teams={teams}
             isGuest={isGuest}
             isJoined={isJoined}
             isHost={isHost}
@@ -212,7 +300,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
             onCreateNewTeamPool={handleCreateNewTeamPool}
           />
 
-          {/* CLIENT ISLAND: Discussion & Comments Tree */}
+          {/* Discussion & Comments Tree */}
           <section className="space-y-4 pt-6 border-t-2 border-[#0E0E0D]">
             <ArenaCommentsSection
               isGuest={isGuest}
@@ -222,7 +310,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         </div>
       </ArenaContainer>
       
-      {/* SERVER COMPONENT FOOTER */}
+      {/* Footer */}
       <Footer />
     </div>
   );
