@@ -18,15 +18,22 @@ export default async function ArenaDetailPage({ params }: PageProps) {
     id: uuid || "prototype-arena-1",
     title: "CYBERPUNK ALGORITHM BATTLE 2026",
     description:
-      `Architect and implement high-throughput real-time distributed systems under simulated cyber-threat scenarios. Compete in teams or solo to build resilient microservices with Next.js, Prisma, and WebSockets that can withstand adversarial network conditions.
+      `Architect and implement **high-throughput real-time distributed systems** under simulated cyber-threat scenarios. Compete in teams or solo to build resilient microservices with Next.js, Prisma, and WebSockets.
 
-This arena pushes participants to think beyond the happy path. You will be building systems that must remain available, consistent, and partition-tolerant — all at the same time. Judges will evaluate not just whether your system works, but how gracefully it fails under pressure.
+## 🎯 Challenge Objectives
+- Build **partition-tolerant** services that remain available during simulated network splits.
+- Implement real-time telemetry streaming via \`WebSockets\` and \`Server-Sent Events\`.
+- Guarantee idempotency and eventual consistency across heterogeneous database replicas.
 
-Participants are expected to design their own data models, define their own API contracts, and make real architectural trade-offs. The problem statement is intentionally open-ended — there is no one correct solution. The best submissions will be those that clearly justify every decision made.
+## 🛠️ Recommended Tech Stack
+> "Simplicity is prerequisite for reliability." — Edsger W. Dijkstra
 
-Distributed tracing, circuit breakers, event-driven architectures, CQRS patterns — these are the tools of the trade. Whether you use them is up to you. What matters is that your system is observable, recoverable, and defensible in front of our judging panel.
+You are free to leverage open-source packages, but core distributed primitives (\`circuit-breakers\`, \`rate-limiters\`, \`message-queues\`) must be implemented or explicitly configured by your team.
 
-The top three teams will present their systems live in a 10-minute final showcase. Questions from judges will be technical, direct, and unforgiving. Come prepared.`,
+### Evaluation Criteria
+1. **System Resilience & Throughput** (40%)
+2. **Code Cleanliness & Architectural Choices** (30%)
+3. **Observability & Live Demo Quality** (30%)`,
     coverImageUrl:
       "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
     additionalImages: [

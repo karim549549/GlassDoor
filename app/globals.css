@@ -3,6 +3,10 @@
 @import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --font-size: 16px;
   --background: #F1EFE9;

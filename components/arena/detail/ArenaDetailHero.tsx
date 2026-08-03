@@ -188,6 +188,10 @@ export function ArenaDetailHero({
               <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[#0E0E0D] to-transparent pointer-events-none" />
               <a
                 href="#arena-description"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("arena-description")?.scrollIntoView({ behavior: "smooth" });
+                }}
                 className="mt-1.5 inline-block font-mono text-[0.55rem] uppercase tracking-widest font-bold text-orange hover:text-orange/70 transition-colors cursor-pointer"
               >
                 READ MORE ↓
