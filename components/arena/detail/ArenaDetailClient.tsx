@@ -262,8 +262,20 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         <BackgroundGrid opacity={0.05} />
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10">
+          {/* SECTION: Full Arena Description (server-rendered, SEO-indexed, no CLS) */}
+          <section className="space-y-3">
+            <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
+              ABOUT THIS ARENA
+            </h2>
+            <div className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-6">
+              <p className="font-sans text-sm text-[#0E0E0D]/85 leading-[1.9] whitespace-pre-line">
+                {arena.description}
+              </p>
+            </div>
+          </section>
+
           {/* CRITICAL DIRECT SEO CONTENT: Deliverables & Official Rules */}
-          <section className="space-y-4">
+          <section className="space-y-4 pt-2 border-t border-[#0E0E0D]/10">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
               REQUIRED DELIVERABLES & OFFICIAL RULES
             </h2>

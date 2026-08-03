@@ -82,7 +82,6 @@ export function ArenaDetailHero({
 }: ArenaDetailHeroProps) {
   const [inputCode, setInputCode] = useState("");
   const [codeError, setCodeError] = useState("");
-  const [descExpanded, setDescExpanded] = useState(false);
 
   const isFull = maxParticipants !== null && totalParticipants >= maxParticipants;
   const isCompleted = status === "COMPLETED";
@@ -181,25 +180,13 @@ export function ArenaDetailHero({
               {title}
             </h1>
 
-            {/* Description — Clamped to 3 lines with gradient fade-out + inline Read More toggle */}
-            <div className="relative max-w-2xl">
-              <p
-                className={`font-mono text-xs text-[#F1EFE9]/75 leading-relaxed transition-[max-height] duration-400 ease-in-out overflow-hidden ${
-                  descExpanded ? "max-h-[600px]" : "max-h-[4.5rem]"
-                }`}
-              >
+            {/* Description — fixed 3-line clamp, no in-flow expansion (avoids CLS) */}
+            <div className="relative max-w-2xl overflow-hidden">
+              <p className="font-mono text-xs text-[#F1EFE9]/75 leading-relaxed line-clamp-3">
                 {description}
               </p>
-              {/* Gradient fade-out — only visible when clamped */}
-              {!descExpanded && (
-                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-[#0E0E0D] to-transparent pointer-events-none" />
-              )}
-              <button
-                onClick={() => setDescExpanded((prev) => !prev)}
-                className="mt-1.5 font-mono text-[0.55rem] uppercase tracking-widest font-bold text-orange hover:text-orange/70 transition-colors cursor-pointer"
-              >
-                {descExpanded ? "[ SHOW LESS ]" : "[ READ MORE ]"}
-              </button>
+              {/* Gradient mask hints at more content below — no JS, no layout shift */}
+              <div className="absolute bottom-0 left-0 right-0 h-5 bg-gradient-to-t from-[#0E0E0D] to-transparent pointer-events-none" />
             </div>
 
             {/* Sleek 1-Line Organizer Metadata Pill */}
