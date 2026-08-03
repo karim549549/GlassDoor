@@ -187,20 +187,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
     triggerNotification(`Joined team pool "${teamName}"!`);
   };
 
-  const handleLeaveTeamPool = (teamId: string, teamName: string) => {
-    setTeams((prev) =>
-      prev
-        .map((t) => {
-          if (t.id !== teamId) return t;
-          const updatedMembers = t.members.filter(
-            (m) => m.userId !== "current-user-id" && m.handle !== "you_dev"
-          );
-          return { ...t, members: updatedMembers };
-        })
-        .filter((t) => t.members.length > 0)
-    );
-    triggerNotification(`Left team pool "${teamName}". Your slot has been freed.`);
-  };
+
 
   const handleCreateNewTeamPool = (newTeamName: string) => {
     const newTeam: PrototypeTeam = {
@@ -312,7 +299,6 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
             isJoined={isJoined}
             isHost={isHost}
             onJoinTeamPool={handleJoinTeamPool}
-            onLeaveTeamPool={handleLeaveTeamPool}
             onCreateNewTeamPool={handleCreateNewTeamPool}
             onLoginRedirect={handleLoginRedirect}
           />

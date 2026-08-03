@@ -21,7 +21,6 @@ interface ArenaInteractiveTabsProps {
   isJoined: boolean;
   isHost: boolean;
   onJoinTeamPool: (teamId: string, teamName: string) => void;
-  onLeaveTeamPool: (teamId: string, teamName: string) => void;
   onCreateNewTeamPool: (teamName: string) => void;
   onLoginRedirect: () => void;
 }
@@ -32,7 +31,6 @@ export function ArenaInteractiveTabs({
   isGuest,
   isJoined,
   onJoinTeamPool,
-  onLeaveTeamPool,
   onCreateNewTeamPool,
   onLoginRedirect,
 }: ArenaInteractiveTabsProps) {
@@ -80,7 +78,6 @@ export function ArenaInteractiveTabs({
           status={arena.status}
           currentUserRole={isGuest ? "guest" : isJoined ? "participant" : "user_not_joined"}
           onJoinTeamPool={onJoinTeamPool}
-          onLeaveTeamPool={onLeaveTeamPool}
           onCreateNewTeamPool={onCreateNewTeamPool}
           onLoginRedirect={onLoginRedirect}
         />
