@@ -18,7 +18,15 @@ export default async function ArenaDetailPage({ params }: PageProps) {
     id: uuid || "prototype-arena-1",
     title: "CYBERPUNK ALGORITHM BATTLE 2026",
     description:
-      "Architect and implement high-throughput real-time distributed systems under simulated cyber-threat scenarios. Compete in teams or solo to build resilient microservices with Next.js, Prisma, and WebSockets.",
+      `Architect and implement high-throughput real-time distributed systems under simulated cyber-threat scenarios. Compete in teams or solo to build resilient microservices with Next.js, Prisma, and WebSockets that can withstand adversarial network conditions.
+
+This arena pushes participants to think beyond the happy path. You will be building systems that must remain available, consistent, and partition-tolerant — all at the same time. Judges will evaluate not just whether your system works, but how gracefully it fails under pressure.
+
+Participants are expected to design their own data models, define their own API contracts, and make real architectural trade-offs. The problem statement is intentionally open-ended — there is no one correct solution. The best submissions will be those that clearly justify every decision made.
+
+Distributed tracing, circuit breakers, event-driven architectures, CQRS patterns — these are the tools of the trade. Whether you use them is up to you. What matters is that your system is observable, recoverable, and defensible in front of our judging panel.
+
+The top three teams will present their systems live in a 10-minute final showcase. Questions from judges will be technical, direct, and unforgiving. Come prepared.`,
     coverImageUrl:
       "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
     additionalImages: [
