@@ -1,10 +1,9 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, ShieldCheck, LogOut, Flag, ArrowRight, Navigation, ExternalLink } from "lucide-react";
+import { Camera, ShieldCheck, Navigation, ExternalLink } from "lucide-react";
 import { ArenaCarousel } from "./ArenaCarousel";
+import { ArenaActionButtons } from "./ArenaActionButtons";
 
 interface ArenaDetailHeroProps {
   id: string;
@@ -80,23 +79,10 @@ export function ArenaDetailHero({
   onRequestPrivateJoin,
   onEditCoverClick,
 }: ArenaDetailHeroProps) {
-  const [inputCode, setInputCode] = useState("");
-  const [codeError, setCodeError] = useState("");
-
   const isFull = maxParticipants !== null && totalParticipants >= maxParticipants;
   const isCompleted = status === "COMPLETED";
   const isRegistrationPhase = status === "REGISTRATION_OPEN" || status === "DRAFT";
   const isInPerson = locationType === "IN_PERSON" || locationType === "HYBRID";
-
-  const handlePrivateSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inviteCode && inputCode.trim() !== inviteCode.trim()) {
-      setCodeError("Invalid code.");
-      return;
-    }
-    setCodeError("");
-    onRequestPrivateJoin(inputCode);
-  };
 
   return (
     <div className="relative w-full bg-[#0E0E0D] text-[#F1EFE9] border-b-4 border-double border-[#F1EFE9]/25 pt-20 pb-12 px-6 md:px-12 overflow-hidden">
@@ -274,73 +260,21 @@ export function ArenaDetailHero({
 
             {/* SINGLE CLEAN THEME-CONSISTENT ACTION BUTTON DIRECTLY UNDER CAROUSEL */}
             <div className="w-full">
-              {isHost ? (
-                /* HOST STATE: Edit Arena */
-                <button className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-white hover:text-[#0E0E0D] text-[#F1EFE9] font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all cursor-pointer">
-                  EDIT ARENA
-                </button>
-              ) : isJoined ? (
-                /* JOINED PARTICIPANT STATE: Single Clean Deactivating Action (Quit vs Resign vs Locked) */
-                isCompleted ? (
-                  <button
-                    disabled
-                    className="w-full py-3 px-4 bg-[#0E0E0D]/60 text-white/50 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/10 cursor-not-allowed"
-                  >
-                    ARENA COMPLETED
-                  </button>
-                ) : isRegistrationPhase ? (
-                  <button
-                    onClick={onQuit}
-                    className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
-                  >
-                    <LogOut className="w-3.5 h-3.5 text-red-400" />
-                    <span>QUIT ARENA</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={onResign}
-                    className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
-                  >
-                    <Flag className="w-3.5 h-3.5 text-red-400" />
-                    <span>RESIGN</span>
-                  </button>
-                )
-              ) : isFull ? (
-                <button
-                  disabled
-                  className="w-full py-3 px-4 bg-[#0E0E0D]/60 text-gray-500 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/10 cursor-not-allowed"
-                >
-                  ARENA FULL
-                </button>
-              ) : isPrivate && !isGuest ? (
-                <form onSubmit={handlePrivateSubmit} className="space-y-2">
-                  <input
-                    type="text"
-                    value={inputCode}
-                    onChange={(e) => setInputCode(e.target.value)}
-                    placeholder="ENTER INVITE CODE..."
-                    className="w-full px-3.5 py-2 border-2 border-white/30 font-mono text-xs uppercase bg-[#0E0E0D] text-white focus:outline-none focus:ring-2 focus:ring-orange"
-                  />
-                  {codeError && (
-                    <p className="font-mono text-[0.5rem] text-red-400 font-bold uppercase">{codeError}</p>
-                  )}
-                  <button
-                    type="submit"
-                    className="w-full py-3 px-4 bg-orange text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] cursor-pointer"
-                  >
-                    JOIN
-                  </button>
-                </form>
-              ) : (
-                /* UNJOINED / GUEST STATE: Single Clean Primary "JOIN" Button */
-                <button
-                  onClick={isGuest ? onLoginRedirect : onJoin}
-                  className="w-full py-3 px-4 bg-orange hover:bg-orange/90 text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex items-center justify-center gap-1.5 group cursor-pointer"
-                >
-                  <span>JOIN</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </button>
-              )}
+              <ArenaActionButtons
+                isGuest={isGuest}
+                isJoined={isJoined}
+                isHost={isHost}
+                isFull={isFull}
+                isCompleted={isCompleted}
+                isRegistrationPhase={isRegistrationPhase}
+                isPrivate={isPrivate}
+                inviteCode={inviteCode}
+                onJoin={onJoin}
+                onQuit={onQuit}
+                onResign={onResign}
+                onLoginRedirect={onLoginRedirect}
+                onRequestPrivateJoin={onRequestPrivateJoin}
+              />
             </div>
           </div>
         </div>

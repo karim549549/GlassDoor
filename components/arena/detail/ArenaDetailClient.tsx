@@ -1,17 +1,13 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
+import ReactMarkdown from "react-markdown";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaDetailHero } from "./ArenaDetailHero";
 import { ArenaOverviewTab } from "./ArenaOverviewTab";
-import { ArenaTeamPoolsTab, PrototypeTeam } from "./ArenaTeamPoolsTab";
-import { ArenaSubmissionTab } from "./ArenaSubmissionTab";
-import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
+import { ArenaInteractiveTabs } from "./ArenaInteractiveTabs";
 import { ArenaCommentsSection } from "./ArenaCommentsSection";
 import { Footer } from "@/components/home/Footer";
-import { CheckCircle2, Users, Upload, Trophy } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { PrototypeTeam } from "./ArenaTeamPoolsTab";
 
 interface ArenaDetailClientProps {
   arena: {
@@ -60,7 +56,6 @@ interface ArenaDetailClientProps {
   };
 }
 
-// Initial mock team pools
 const INITIAL_MOCK_TEAMS: PrototypeTeam[] = [
   {
     id: "team-1",
@@ -118,116 +113,23 @@ const INITIAL_MOCK_TEAMS: PrototypeTeam[] = [
 ];
 
 export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
-  // Real actor states (no prototype role switcher)
-  const isGuest = false; // Set based on auth state
-  const [isJoined, setIsJoined] = useState<boolean>(meta.isRegistered);
+  const isGuest = false;
+  const isJoined = meta.isRegistered;
   const isHost = meta.isOwner;
+  const totalParticipants = meta.totalParticipants || 24;
 
-  // Active module tab state
-  const [activeTab, setActiveTab] = useState<"teams" | "submission" | "leaderboard">(
-    arena.isTeam ? "teams" : "submission"
-  );
-
-  // Dynamic team pools & capacity
-  const [teams, setTeams] = useState<PrototypeTeam[]>(INITIAL_MOCK_TEAMS);
-  const [totalParticipants, setTotalParticipants] = useState<number>(
-    meta.totalParticipants || teams.reduce((sum, t) => sum + t.members.length, 0)
-  );
-
-  const [notification, setNotification] = useState<string | null>(null);
-
-  const triggerNotification = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(null), 4000);
-  };
-
-  // ACTOR HANDLERS
-  const handleLoginRedirect = () => {
-    if (typeof window !== "undefined") {
-      window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname)}`;
-    }
-  };
-
-  const handleJoin = () => {
-    setIsJoined(true);
-    setTotalParticipants((prev) => prev + 1);
-    triggerNotification("Successfully joined the arena!");
-  };
-
-  const handleQuit = () => {
-    setIsJoined(false);
-    setTotalParticipants((prev) => Math.max(0, prev - 1));
-    triggerNotification("You have quit the arena.");
-  };
-
-  const handleResign = () => {
-    setIsJoined(false);
-    triggerNotification("You have resigned from this active competition.");
-  };
-
-  const handleRequestPrivateJoin = (_code?: string) => {
-    setIsJoined(true);
-    setTotalParticipants((prev) => prev + 1);
-    const msg = _code ? `Code ${_code} verified! Joined private arena.` : "Access granted to private arena!";
-    triggerNotification(msg);
-  };
-
-  const handleJoinTeamPool = (teamId: string, teamName: string) => {
-    setTeams((prev) =>
-      prev.map((t) =>
-        t.id === teamId
-          ? {
-              ...t,
-              members: [
-                ...t.members,
-                {
-                  userId: "current-user-id",
-                  fullName: "You",
-                  handle: "you_dev",
-                  avatarUrl: null,
-                  isLeader: false,
-                },
-              ],
-            }
-          : t
-      )
-    );
-    setIsJoined(true);
-    setTotalParticipants((prev) => prev + 1);
-    triggerNotification(`Joined team pool "${teamName}"!`);
-  };
-
-  const handleCreateNewTeamPool = (newTeamName: string) => {
-    const newTeam: PrototypeTeam = {
-      id: `team-${Date.now()}`,
-      name: newTeamName,
-      members: [
-        {
-          userId: "current-user-id",
-          fullName: "You (Leader)",
-          handle: "you_dev",
-          avatarUrl: null,
-          isLeader: true,
-        },
-      ],
-    };
-    setTeams((prev) => [newTeam, ...prev]);
-    setIsJoined(true);
-    setTotalParticipants((prev) => prev + 1);
-    triggerNotification(`Created new team pool "${newTeamName}"!`);
-  };
+  // Placeholder handlers for prototype client islands
+  const handleJoin = () => {};
+  const handleQuit = () => {};
+  const handleResign = () => {};
+  const handleLoginRedirect = () => {};
+  const handleRequestPrivateJoin = () => {};
+  const handleJoinTeamPool = () => {};
+  const handleCreateNewTeamPool = () => {};
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0 pb-20 space-y-0">
-      {/* Notification Toast */}
-      {notification && (
-        <div className="fixed top-4 right-4 z-50 bg-[#0E0E0D] text-[#F1EFE9] border-2 border-orange shadow-[4px_4px_0px_0px_#FF5722] p-4 max-w-md font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
-          <CheckCircle2 className="w-5 h-5 text-orange shrink-0" />
-          <span>{notification}</span>
-        </div>
-      )}
-
-      {/* Hero Showcase with Cover Background, Compact Action Card & Inline Location */}
+      {/* SERVER COMPONENT HERO: Static H1, Cover Image (Priority LCP), Description snippet & Breadcrumbs */}
       <ArenaDetailHero
         id={arena.id}
         title={arena.title}
@@ -264,12 +166,12 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         <BackgroundGrid opacity={0.05} />
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10">
-          {/* SECTION: Full Arena Description — Markdown rendered, scroll target from hero "Read More" */}
+          {/* SERVER COMPONENT: Full Markdown Description (100% SEO-Indexed HTML) */}
           <section id="arena-description" className="space-y-3 scroll-mt-8">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
               ABOUT THIS ARENA
             </h2>
-            <div className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-6">
+            <article className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-6">
               <div className="prose prose-sm prose-neutral max-w-none text-[#0E0E0D]/85 leading-[1.9]
                 prose-headings:font-mono prose-headings:uppercase prose-headings:tracking-widest prose-headings:text-[#0E0E0D] prose-headings:font-bold
                 prose-h1:text-base prose-h2:text-sm prose-h3:text-xs
@@ -281,10 +183,10 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
                 prose-blockquote:border-l-4 prose-blockquote:border-orange prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-[#0E0E0D]/60">
                 <ReactMarkdown>{arena.description}</ReactMarkdown>
               </div>
-            </div>
+            </article>
           </section>
 
-          {/* CRITICAL DIRECT SEO CONTENT: Deliverables & Official Rules */}
+          {/* SERVER COMPONENT: Deliverables & Official Rules (100% SEO-Indexed HTML) */}
           <section className="space-y-4 pt-2 border-t border-[#0E0E0D]/10">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
               REQUIRED DELIVERABLES & OFFICIAL RULES
@@ -299,75 +201,18 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
             />
           </section>
 
-          {/* INTERACTIVE MODULES TABBED CONTAINER */}
-          <section className="space-y-6 pt-6 border-t-2 border-[#0E0E0D]">
-            {/* Tab Header Bar */}
-            <div className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-2 flex flex-wrap gap-2">
-              {arena.isTeam && (
-                <button
-                  onClick={() => setActiveTab("teams")}
-                  className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
-                    activeTab === "teams"
-                      ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#FF5722]"
-                      : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
-                  }`}
-                >
-                  <Users className="w-3.5 h-3.5 text-orange" />
-                  <span>TEAM POOLS ({teams.length})</span>
-                </button>
-              )}
+          {/* CLIENT ISLAND: Interactive Module Tabs (Teams, Submission, Leaderboard) */}
+          <ArenaInteractiveTabs
+            arena={arena}
+            teams={INITIAL_MOCK_TEAMS}
+            isGuest={isGuest}
+            isJoined={isJoined}
+            isHost={isHost}
+            onJoinTeamPool={handleJoinTeamPool}
+            onCreateNewTeamPool={handleCreateNewTeamPool}
+          />
 
-              <button
-                onClick={() => setActiveTab("submission")}
-                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === "submission"
-                    ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#10B981]"
-                    : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
-                }`}
-              >
-                <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                <span>SUBMISSION PORTAL</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("leaderboard")}
-                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === "leaderboard"
-                    ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#F59E0B]"
-                    : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
-                }`}
-              >
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                <span>LEADERBOARD</span>
-              </button>
-            </div>
-
-            {/* Active Tab Panel Content */}
-            {activeTab === "teams" && arena.isTeam && (
-              <ArenaTeamPoolsTab
-                teams={teams}
-                maxTeamSize={arena.maxTeamSize}
-                minTeamSize={arena.minTeamSize}
-                currentUserRole={isGuest ? "guest" : isJoined ? "participant" : "user_not_joined"}
-                onJoinTeamPool={handleJoinTeamPool}
-                onCreateNewTeamPool={handleCreateNewTeamPool}
-              />
-            )}
-
-            {activeTab === "submission" && (
-              <ArenaSubmissionTab
-                requireGithubUrl={arena.requireGithubUrl}
-                requireFigmaUrl={arena.requireFigmaUrl}
-                requireVideoUrl={arena.requireVideoUrl}
-                requireWriteup={arena.requireWriteup}
-                isRegistered={isJoined || isHost}
-              />
-            )}
-
-            {activeTab === "leaderboard" && <ArenaLeaderboardTab />}
-          </section>
-
-          {/* COMMENTS & DISCUSSION SECTION */}
+          {/* CLIENT ISLAND: Discussion & Comments Tree */}
           <section className="space-y-4 pt-6 border-t-2 border-[#0E0E0D]">
             <ArenaCommentsSection
               isGuest={isGuest}
@@ -376,6 +221,8 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
           </section>
         </div>
       </ArenaContainer>
+      
+      {/* SERVER COMPONENT FOOTER */}
       <Footer />
     </div>
   );
