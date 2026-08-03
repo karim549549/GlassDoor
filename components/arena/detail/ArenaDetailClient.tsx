@@ -150,7 +150,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         {/* Main Content Area */}
         <ArenaContainer className="py-10">
           <BackgroundGrid opacity={0.05} />
-          <div className="relative z-10 max-w-5xl mx-auto space-y-12">
+          <div className="relative z-10 max-w-7xl mx-auto space-y-12">
             {/* Full Markdown Description */}
             <section id="arena-description" className="space-y-4 pt-2">
               <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
@@ -188,18 +188,18 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
               />
             </section>
 
-            {/* Side-by-Side 2-Column Grid: Discussion (2/3 width = 7-8 cols) vs Leaderboard (1/3 width = 4-5 cols) */}
+            {/* Side-by-Side 2-Column Grid: Discussion (2/3 width = 8 cols) vs Leaderboard (1/3 width = 4 cols) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6 border-t-2 border-[#0E0E0D]">
-              {/* Left Column (7/12 = ~60%): Community Discussion & Q&A */}
-              <div className="lg:col-span-7 space-y-4">
+              {/* Left Column (8/12 = 66.67%): Community Discussion & Q&A */}
+              <div className="lg:col-span-8 space-y-4">
                 <ArenaCommentsSection
                   isGuest={isGuest}
                   onLoginRedirect={handleLoginRedirect}
                 />
               </div>
 
-              {/* Right Column (5/12 = ~40%): Leaderboard Standings */}
-              <div className="lg:col-span-5 space-y-4">
+              {/* Right Column (4/12 = 33.33%): Leaderboard Standings */}
+              <div className="lg:col-span-4 space-y-4">
                 <ArenaLeaderboardTab />
               </div>
             </div>

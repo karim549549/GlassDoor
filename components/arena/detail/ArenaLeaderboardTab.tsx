@@ -12,7 +12,7 @@ export function ArenaLeaderboardTab() {
       members: ["@alex_dev", "@sarah_code"],
       repoUrl: "https://github.com/example/cyber-warriors",
       videoUrl: "https://youtube.com/watch?v=1",
-      badge: "🥇 1ST PLACE",
+      badge: "1ST PLACE",
     },
     {
       rank: 2,
@@ -21,7 +21,7 @@ export function ArenaLeaderboardTab() {
       members: ["@john_hacks", "@emma_ui"],
       repoUrl: "https://github.com/example/algo-titans",
       videoUrl: "https://youtube.com/watch?v=2",
-      badge: "🥈 2ND PLACE",
+      badge: "2ND PLACE",
     },
     {
       rank: 3,
@@ -30,37 +30,35 @@ export function ArenaLeaderboardTab() {
       members: ["@dev_dave"],
       repoUrl: "https://github.com/example/prisma-pirates",
       videoUrl: "https://youtube.com/watch?v=3",
-      badge: "🥉 3RD PLACE",
+      badge: "3RD PLACE",
     },
   ];
 
   return (
-    <div className="bg-white border-2 border-[#0E0E0D] shadow-[6px_6px_0px_0px_#0E0E0D] p-6 space-y-6">
-      <div className="flex items-center justify-between border-b border-[#0E0E0D]/10 pb-4">
-        <div>
-          <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-amber-600 font-bold">
-            <Trophy className="w-4 h-4" />
-            <span>ARENA LEADERBOARD & WINNERS</span>
-          </div>
-          <p className="font-mono text-[0.52rem] text-[#0E0E0D]/60 uppercase tracking-widest mt-0.5">
-            Final rankings evaluated by judges upon arena completion.
-          </p>
+    <div className="bg-white border-2 border-[#0E0E0D] shadow-[4px_4px_0px_0px_#0E0E0D] p-4 space-y-4">
+      <div className="border-b border-[#0E0E0D]/10 pb-3">
+        <div className="flex items-center gap-1.5 font-mono text-[0.58rem] uppercase tracking-[0.15em] text-amber-600 font-bold">
+          <Trophy className="w-3.5 h-3.5" />
+          <span>ARENA LEADERBOARD</span>
         </div>
+        <p className="font-mono text-[0.48rem] text-[#0E0E0D]/60 uppercase tracking-widest mt-0.5">
+          Official judge evaluations &amp; scores.
+        </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {mockLeaderboard.map((item) => (
           <div
             key={item.rank}
-            className={`p-4 border-2 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
+            className={`p-3 border-2 flex items-center justify-between gap-2 transition-all ${
               item.rank === 1
-                ? "bg-amber-50 border-amber-500 shadow-[3px_3px_0px_0px_#F59E0B]"
-                : "bg-white border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D]"
+                ? "bg-amber-50/50 border-amber-500 shadow-[2px_2px_0px_0px_#F59E0B]"
+                : "bg-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D]"
             }`}
           >
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2.5 min-w-0">
               <div
-                className={`w-10 h-10 border-2 font-mono text-sm font-bold flex items-center justify-center shrink-0 ${
+                className={`w-7 h-7 border-2 font-mono text-xs font-bold flex items-center justify-center shrink-0 ${
                   item.rank === 1
                     ? "bg-amber-500 text-white border-amber-700"
                     : item.rank === 2
@@ -71,47 +69,42 @@ export function ArenaLeaderboardTab() {
                 #{item.rank}
               </div>
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="font-mono text-sm font-bold uppercase tracking-wider text-[#0E0E0D]">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0E0E0D] truncate">
                     {item.teamName}
                   </h4>
-                  <span className="font-mono text-[0.52rem] font-bold uppercase px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-400">
+                  <span className="font-mono text-[0.45rem] font-bold uppercase px-1 py-0.2 bg-amber-100 text-amber-900 border border-amber-400 shrink-0">
                     {item.badge}
                   </span>
                 </div>
-                <p className="font-mono text-[0.55rem] text-[#0E0E0D]/60 uppercase">
-                  Members: {item.members.join(", ")}
+                <p className="font-mono text-[0.48rem] text-[#0E0E0D]/60 uppercase truncate">
+                  {item.members.join(", ")}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="text-right">
-                <span className="font-mono text-[0.5rem] uppercase tracking-widest text-[#0E0E0D]/50 block">
-                  SCORE
-                </span>
-                <span className="font-mono text-base font-bold text-orange">{item.score} / 100</span>
-              </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="font-mono text-xs font-bold text-orange">{item.score}</span>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <a
                   href={item.repoUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 border border-[#0E0E0D] bg-white hover:bg-gray-100 text-[#0E0E0D]"
+                  className="p-1 border border-[#0E0E0D] bg-white hover:bg-gray-100 text-[#0E0E0D]"
                   title="View GitHub Repo"
                 >
-                  <Code2 className="w-4 h-4" />
+                  <Code2 className="w-3 h-3" />
                 </a>
                 <a
                   href={item.videoUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 border border-[#0E0E0D] bg-white hover:bg-gray-100 text-[#0E0E0D]"
+                  className="p-1 border border-[#0E0E0D] bg-white hover:bg-gray-100 text-[#0E0E0D]"
                   title="Watch Video Demo"
                 >
-                  <Video className="w-4 h-4 text-red-600" />
+                  <Video className="w-3 h-3 text-red-600" />
                 </a>
               </div>
             </div>
@@ -120,10 +113,10 @@ export function ArenaLeaderboardTab() {
       </div>
 
       {/* LOAD MORE PAGINATION BUTTON */}
-      <div className="pt-2">
+      <div className="pt-1">
         <button
           type="button"
-          className="w-full py-2.5 bg-[#0E0E0D] hover:bg-orange text-white font-mono text-[0.62rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D] transition-colors cursor-pointer"
+          className="w-full py-2 bg-[#0E0E0D] hover:bg-orange text-white font-mono text-[0.55rem] uppercase tracking-[0.15em] font-bold border border-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D] transition-colors cursor-pointer"
         >
           LOAD MORE STANDINGS ↓
         </button>
