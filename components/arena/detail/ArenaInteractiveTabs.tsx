@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Users, Upload, Trophy } from "lucide-react";
+import { Users, Trophy } from "lucide-react";
 import { ArenaTeamPoolsTab, PrototypeTeam } from "./ArenaTeamPoolsTab";
-import { ArenaSubmissionTab } from "./ArenaSubmissionTab";
 import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
 
 interface ArenaInteractiveTabsProps {
@@ -29,12 +28,11 @@ export function ArenaInteractiveTabs({
   teams,
   isGuest,
   isJoined,
-  isHost,
   onJoinTeamPool,
   onCreateNewTeamPool,
 }: ArenaInteractiveTabsProps) {
-  const [activeTab, setActiveTab] = useState<"teams" | "submission" | "leaderboard">(
-    arena.isTeam ? "teams" : "submission"
+  const [activeTab, setActiveTab] = useState<"teams" | "leaderboard">(
+    arena.isTeam ? "teams" : "leaderboard"
   );
 
   return (
@@ -54,18 +52,6 @@ export function ArenaInteractiveTabs({
             <span>TEAM POOLS ({teams.length})</span>
           </button>
         )}
-
-        <button
-          onClick={() => setActiveTab("submission")}
-          className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
-            activeTab === "submission"
-              ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#10B981]"
-              : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
-          }`}
-        >
-          <Upload className="w-3.5 h-3.5 text-emerald-400" />
-          <span>SUBMISSION PORTAL</span>
-        </button>
 
         <button
           onClick={() => setActiveTab("leaderboard")}
@@ -89,16 +75,6 @@ export function ArenaInteractiveTabs({
           currentUserRole={isGuest ? "guest" : isJoined ? "participant" : "user_not_joined"}
           onJoinTeamPool={onJoinTeamPool}
           onCreateNewTeamPool={onCreateNewTeamPool}
-        />
-      )}
-
-      {activeTab === "submission" && (
-        <ArenaSubmissionTab
-          requireGithubUrl={arena.requireGithubUrl}
-          requireFigmaUrl={arena.requireFigmaUrl}
-          requireVideoUrl={arena.requireVideoUrl}
-          requireWriteup={arena.requireWriteup}
-          isRegistered={isJoined || isHost}
         />
       )}
 
