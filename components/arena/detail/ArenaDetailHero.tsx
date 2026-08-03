@@ -54,6 +54,7 @@ interface ArenaDetailHeroProps {
 }
 
 export function ArenaDetailHero({
+  id,
   title,
   description,
   coverImageUrl,
@@ -270,6 +271,8 @@ export function ArenaDetailHero({
                 isCompleted={isCompleted}
                 isRegistrationPhase={isRegistrationPhase}
                 isPrivate={isPrivate}
+                isTeam={isTeam}
+                arenaSlug={id}
                 inviteCode={inviteCode}
                 onJoin={onJoin}
                 onQuit={onQuit}

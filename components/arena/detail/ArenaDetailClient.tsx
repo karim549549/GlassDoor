@@ -293,6 +293,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
 
           {/* Interactive Module Tabs (Teams, Submission, Leaderboard) */}
           <ArenaInteractiveTabs
+            arenaId={arena.id}
             arena={arena}
             teams={teams}
             isGuest={isGuest}

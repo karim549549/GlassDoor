@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { LogOut, Flag, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { LogOut, Flag, ArrowRight, Gamepad2 } from "lucide-react";
 
 interface ArenaActionButtonsProps {
   isGuest: boolean;
@@ -11,6 +12,8 @@ interface ArenaActionButtonsProps {
   isCompleted: boolean;
   isRegistrationPhase: boolean;
   isPrivate: boolean;
+  isTeam?: boolean;
+  arenaSlug?: string;
   inviteCode?: string | null;
   onJoin: () => void;
   onQuit: () => void;
@@ -27,6 +30,8 @@ export function ArenaActionButtons({
   isCompleted,
   isRegistrationPhase,
   isPrivate,
+  isTeam = true,
+  arenaSlug,
   inviteCode,
   onJoin,
   onQuit,
@@ -124,12 +129,39 @@ export function ArenaActionButtons({
     );
   }
 
+  // TEAM ARENA: Navigate to Matchmaking Hub (/arena/[id]/teams)
+  if (isTeam && arenaSlug) {
+    if (isGuest) {
+      return (
+        <button
+          onClick={onLoginRedirect}
+          className="w-full py-3 px-4 bg-orange hover:bg-orange/90 text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] flex items-center justify-center gap-1.5 group cursor-pointer"
+        >
+          <Gamepad2 className="w-4 h-4 text-white" />
+          <span>SIGN IN TO JOIN SQUADS</span>
+        </button>
+      );
+    }
+
+    return (
+      <Link
+        href={`/arena/${arenaSlug}/teams`}
+        className="w-full py-3 px-4 bg-orange hover:bg-orange/90 text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex items-center justify-center gap-1.5 group cursor-pointer"
+      >
+        <Gamepad2 className="w-4 h-4 text-white" />
+        <span>BROWSE SQUAD LOBBIES</span>
+        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+      </Link>
+    );
+  }
+
+  // SOLO ARENA: Direct 1-Click Join
   return (
     <button
       onClick={isGuest ? onLoginRedirect : onJoin}
       className="w-full py-3 px-4 bg-orange hover:bg-orange/90 text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex items-center justify-center gap-1.5 group cursor-pointer"
     >
-      <span>JOIN</span>
+      <span>JOIN ARENA</span>
       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
     </button>
   );
