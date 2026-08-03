@@ -9,6 +9,7 @@ import { ArenaTeamPoolsTab, PrototypeTeam } from "./ArenaTeamPoolsTab";
 import { ArenaSubmissionTab } from "./ArenaSubmissionTab";
 import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
 import { ArenaCommentsSection } from "./ArenaCommentsSection";
+import { Footer } from "@/components/home/Footer";
 import { CheckCircle2, Users, Upload, Trophy } from "lucide-react";
 
 interface ArenaDetailClientProps {
@@ -366,6 +367,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
           </section>
         </div>
       </ArenaContainer>
+      <Footer />
     </div>
   );
 }
