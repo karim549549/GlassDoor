@@ -134,11 +134,11 @@ export function ArenaDetailHero({
         {/* Top Header: Clickable Breadcrumbs (Left) & Header Badges (Right - NO EMOJIS) */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/15 pb-4">
           <nav aria-label="Breadcrumb" className="font-mono text-[0.58rem] tracking-widest uppercase font-bold flex flex-wrap items-center gap-1.5 text-orange">
-            <Link href="/" className="hover:underline hover:text-orange/80 transition-colors">
+            <Link href="/" className="hover:underline hover:text-orange/80 transition-colors cursor-pointer">
               HOME
             </Link>
             <span className="text-white/40">&gt;</span>
-            <Link href="/arena" className="hover:underline hover:text-orange/80 transition-colors">
+            <Link href="/arena" className="hover:underline hover:text-orange/80 transition-colors cursor-pointer">
               ARENAS
             </Link>
             <span className="text-white/40">&gt;</span>
@@ -184,7 +184,7 @@ export function ArenaDetailHero({
               {description}
             </p>
 
-            {/* SLEEK 1-LINE ORGANIZER METADATA PILL */}
+            {/* Sleek 1-Line Organizer Metadata Pill */}
             <div className="flex flex-wrap items-center gap-3 font-mono text-[0.62rem] text-[#F1EFE9]/70 pt-1">
               <div className="flex items-center gap-1.5 bg-white/5 border border-white/15 px-2.5 py-1">
                 <span className="text-[#F1EFE9]/50">Organized by</span>
@@ -199,7 +199,7 @@ export function ArenaDetailHero({
                 </div>
                 <Link
                   href={`/profile/${creator.handle}`}
-                  className="font-bold text-orange hover:underline flex items-center gap-0.5"
+                  className="font-bold text-orange hover:underline flex items-center gap-0.5 cursor-pointer"
                 >
                   <span>@{creator.handle}</span>
                   <ShieldCheck className="w-3 h-3 text-orange" />
@@ -220,28 +220,31 @@ export function ArenaDetailHero({
               )}
             </div>
 
-            {/* INLINE LOCATION & GOOGLE MAPS LINK DIRECTLY UNDER DESCRIPTION & LABELS */}
-            <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-[0.6rem]">
+            {/* LOCATION BADGE & OPEN IN GOOGLE MAPS BUTTON UNDER IT */}
+            <div className="pt-2 space-y-2 font-mono text-[0.6rem]">
               {isInPerson ? (
-                <>
-                  <span className="px-2.5 py-1 bg-white/10 text-[#F1EFE9] border border-white/20 font-bold uppercase tracking-wider">
+                <div className="space-y-2">
+                  <div className="inline-block px-2.5 py-1 bg-white/10 text-[#F1EFE9] border border-white/20 font-bold uppercase tracking-wider">
                     IN-PERSON @ {venueName}
-                  </span>
+                  </div>
+
                   {googleMapsUrl && (
-                    <a
-                      href={googleMapsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-1 bg-orange hover:bg-orange/90 text-white font-bold uppercase tracking-wider border border-white/30 flex items-center gap-1.5 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)]"
-                    >
-                      <span>OPEN IN GOOGLE MAPS</span>
-                      <Navigation className="w-3 h-3 text-white" />
-                      <ExternalLink className="w-2.5 h-2.5 text-white/70" />
-                    </a>
+                    <div>
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 py-2 px-3.5 bg-white text-[#0E0E0D] hover:bg-[#0E0E0D] hover:text-[#F1EFE9] font-bold uppercase tracking-widest border-2 border-white/40 hover:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] transition-colors cursor-pointer"
+                      >
+                        <Navigation className="w-3.5 h-3.5 text-orange" />
+                        <span>OPEN IN GOOGLE MAPS</span>
+                        <ExternalLink className="w-3 h-3 opacity-60" />
+                      </a>
+                    </div>
                   )}
-                </>
+                </div>
               ) : (
-                <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase tracking-wider">
+                <span className="inline-block px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase tracking-wider">
                   ONLINE VIRTUAL EVENT
                 </span>
               )}
@@ -259,7 +262,7 @@ export function ArenaDetailHero({
             <div className="w-full">
               {isHost ? (
                 /* HOST STATE: Edit Arena */
-                <button className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-white hover:text-[#0E0E0D] text-[#F1EFE9] font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all">
+                <button className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-white hover:text-[#0E0E0D] text-[#F1EFE9] font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all cursor-pointer">
                   EDIT ARENA
                 </button>
               ) : isJoined ? (
@@ -274,7 +277,7 @@ export function ArenaDetailHero({
                 ) : isRegistrationPhase ? (
                   <button
                     onClick={onQuit}
-                    className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group"
+                    className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5 text-red-400" />
                     <span>QUIT ARENA</span>
@@ -282,7 +285,7 @@ export function ArenaDetailHero({
                 ) : (
                   <button
                     onClick={onResign}
-                    className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group"
+                    className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
                   >
                     <Flag className="w-3.5 h-3.5 text-red-400" />
                     <span>RESIGN</span>
@@ -309,7 +312,7 @@ export function ArenaDetailHero({
                   )}
                   <button
                     type="submit"
-                    className="w-full py-3 px-4 bg-orange text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]"
+                    className="w-full py-3 px-4 bg-orange text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] cursor-pointer"
                   >
                     JOIN
                   </button>
@@ -318,7 +321,7 @@ export function ArenaDetailHero({
                 /* UNJOINED / GUEST STATE: Single Clean Primary "JOIN" Button */
                 <button
                   onClick={isGuest ? onLoginRedirect : onJoin}
-                  className="w-full py-3 px-4 bg-orange hover:bg-orange/90 text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex items-center justify-center gap-1.5 group"
+                  className="w-full py-3 px-4 bg-orange hover:bg-orange/90 text-white font-mono text-[0.7rem] uppercase tracking-[0.25em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex items-center justify-center gap-1.5 group cursor-pointer"
                 >
                   <span>JOIN</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />

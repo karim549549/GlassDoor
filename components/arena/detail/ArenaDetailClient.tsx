@@ -283,7 +283,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
               {arena.isTeam && (
                 <button
                   onClick={() => setActiveTab("teams")}
-                  className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
+                  className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTab === "teams"
                       ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#FF5722]"
                       : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
@@ -296,7 +296,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
 
               <button
                 onClick={() => setActiveTab("submission")}
-                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
+                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
                   activeTab === "submission"
                     ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#10B981]"
                     : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
@@ -308,7 +308,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
 
               <button
                 onClick={() => setActiveTab("leaderboard")}
-                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
+                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
                   activeTab === "leaderboard"
                     ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#F59E0B]"
                     : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
