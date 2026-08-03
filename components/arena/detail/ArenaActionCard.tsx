@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Users, Lock, Globe, UserCheck, LogOut, Flag, ArrowRight } from "lucide-react";
+import { Users, Lock, Globe, LogOut, Flag, ArrowRight } from "lucide-react";
 
 interface ArenaActionCardProps {
   isPrivate: boolean;
@@ -102,53 +102,45 @@ export function ArenaActionCard({
         )}
       </div>
 
-      {/* DYNAMIC ACTION BUTTON BASED ON ACTOR & PHASE */}
-      <div className="pt-2 border-t border-[#0E0E0D]/10 space-y-3">
-        {/* CASE 1: HOST */}
+      {/* SINGLE CLEAN THEME-CONSISTENT ACTION BUTTON */}
+      <div className="pt-2 border-t border-[#0E0E0D]/10">
         {isHost ? (
-          <button className="w-full py-2 px-4 bg-[#0E0E0D] hover:bg-[#1f1f1d] text-[#F1EFE9] font-mono text-[0.6rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D]">
+          <button className="w-full py-2.5 px-4 bg-[#0E0E0D] hover:bg-white hover:text-[#0E0E0D] text-[#F1EFE9] font-mono text-[0.65rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D]">
             EDIT ARENA
           </button>
         ) : isJoined ? (
-          /* CASE 2: JOINED PARTICIPANT (Phase-aware Quit vs Resign vs Completed) */
-          <div className="space-y-2">
-            <div className="p-2 bg-emerald-50 border border-emerald-400 text-center font-mono text-[0.55rem] text-emerald-900 uppercase font-bold flex items-center justify-center gap-1">
-              <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>YOU ARE PARTICIPATING</span>
-            </div>
-
-            {!isCompleted && (
-              isRegistrationPhase ? (
-                /* During Registration Phase -> Quit Arena */
-                <button
-                  onClick={onQuit}
-                  className="w-full py-2 px-3 bg-red-50 hover:bg-red-100 text-red-700 font-mono text-[0.6rem] uppercase tracking-widest font-bold border border-red-300 flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>QUIT ARENA</span>
-                </button>
-              ) : (
-                /* During Active Phase -> Resign */
-                <button
-                  onClick={onResign}
-                  className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 font-mono text-[0.6rem] uppercase tracking-widest font-bold border border-amber-300 flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <Flag className="w-3.5 h-3.5" />
-                  <span>RESIGN FROM ARENA</span>
-                </button>
-              )
-            )}
-          </div>
+          isCompleted ? (
+            <button
+              disabled
+              className="w-full py-2.5 px-4 bg-gray-100 text-gray-400 font-mono text-[0.65rem] uppercase tracking-[0.2em] font-bold border border-gray-300 cursor-not-allowed"
+            >
+              ARENA COMPLETED
+            </button>
+          ) : isRegistrationPhase ? (
+            <button
+              onClick={onQuit}
+              className="w-full py-2.5 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.65rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D] hover:border-red-500 shadow-[3px_3px_0px_0px_#0E0E0D] flex items-center justify-center gap-2 transition-all"
+            >
+              <LogOut className="w-3.5 h-3.5 text-red-400" />
+              <span>QUIT ARENA</span>
+            </button>
+          ) : (
+            <button
+              onClick={onResign}
+              className="w-full py-2.5 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.65rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D] hover:border-red-500 shadow-[3px_3px_0px_0px_#0E0E0D] flex items-center justify-center gap-2 transition-all"
+            >
+              <Flag className="w-3.5 h-3.5 text-red-400" />
+              <span>RESIGN</span>
+            </button>
+          )
         ) : isFull ? (
-          /* CASE 3: CAPACITY FULL */
           <button
             disabled
-            className="w-full py-2.5 px-4 bg-gray-100 text-gray-400 font-mono text-[0.6rem] uppercase tracking-widest font-bold border border-gray-300 cursor-not-allowed"
+            className="w-full py-2.5 px-4 bg-gray-100 text-gray-400 font-mono text-[0.65rem] uppercase tracking-[0.2em] font-bold border border-gray-300 cursor-not-allowed"
           >
             ARENA FULL
           </button>
         ) : isPrivate && !isGuest ? (
-          /* CASE 4: PRIVATE ARENA ACCESS CODE FORM */
           <form onSubmit={handlePrivateSubmit} className="space-y-2">
             <input
               type="text"
@@ -162,13 +154,12 @@ export function ArenaActionCard({
             )}
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-orange text-white font-mono text-[0.65rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D]"
+              className="w-full py-2.5 px-4 bg-orange text-white font-mono text-[0.65rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D]"
             >
               JOIN
             </button>
           </form>
         ) : (
-          /* CASE 5: UNJOINED USER OR GUEST -> SINGLE CLEAN "JOIN" BUTTON */
           <button
             onClick={isGuest ? onLoginRedirect : onJoin}
             className="w-full py-2.5 px-4 bg-orange hover:bg-orange/90 text-white font-mono text-[0.7rem] uppercase tracking-[0.2em] font-bold border-2 border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex items-center justify-center gap-1.5 group"
