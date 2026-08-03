@@ -143,8 +143,8 @@ export function ArenaLeaderboardTab() {
         </span>
       </div>
 
-      {/* SCROLL CONTAINER WITH FIXED MAX HEIGHT TO PREVENT LAYOUT SHIFT (CLS FIX) */}
-      <div className="max-h-[460px] overflow-y-auto pr-1 space-y-2.5 custom-scrollbar">
+      {/* EXPANDING CONTAINER FOR NATURALLY FLUID LEADERBOARD HEIGHT */}
+      <div className="space-y-2.5 transition-all duration-300 ease-in-out">
         {displayedItems.map((item) => (
           <div
             key={item.rank}

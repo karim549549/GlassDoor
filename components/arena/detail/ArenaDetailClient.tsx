@@ -188,37 +188,18 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
               />
             </section>
 
-            {/* 2-Stage Editorial L-Shape Layout: Top area is 2/3 Comments + 1/3 Leaderboard; Bottom area is 100% Full-Width Comments */}
-            <div className="pt-6 border-t-2 border-[#0E0E0D] space-y-6">
-              {/* Stage 1: Top 2-Column Grid (Comments 2/3 vs Leaderboard 1/3) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Left Column (8/12 = 66.67%): Header, Comment Input, and Top Featured Comments */}
-                <div className="lg:col-span-8 space-y-4">
-                  <ArenaCommentsSection
-                    isGuest={isGuest}
-                    onLoginRedirect={handleLoginRedirect}
-                    limit={2}
-                    startIndex={0}
-                    showInput={true}
-                    hideHeader={false}
-                  />
-                </div>
-
-                {/* Right Column (4/12 = 33.33%): Leaderboard Standings */}
-                <div className="lg:col-span-4 space-y-4">
-                  <ArenaLeaderboardTab />
-                </div>
+            {/* Authentic Editorial L-Shape Layout: Leaderboard floats right on desktop, single unified comment stream flows beside it and expands 100% full width below */}
+            <div className="pt-6 border-t-2 border-[#0E0E0D] flow-root">
+              {/* Leaderboard Floated Card (32% width on desktop, smooth height expansion) */}
+              <div className="lg:float-right lg:w-[32%] lg:ml-8 lg:mb-8 mb-6 transition-all duration-300 ease-in-out">
+                <ArenaLeaderboardTab />
               </div>
 
-              {/* Stage 2: Bottom Full-Width Discussion (Expands 100% across all 12 columns below the Leaderboard) */}
-              <div className="w-full pt-2">
+              {/* Single Unified Discussion & Comments Stream */}
+              <div className="space-y-4">
                 <ArenaCommentsSection
                   isGuest={isGuest}
                   onLoginRedirect={handleLoginRedirect}
-                  limit={10}
-                  startIndex={2}
-                  showInput={false}
-                  hideHeader={true}
                 />
               </div>
             </div>
