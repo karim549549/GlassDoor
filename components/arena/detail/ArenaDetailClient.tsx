@@ -9,6 +9,7 @@ import { ArenaOverviewTab } from "./ArenaOverviewTab";
 import { ArenaTeamPoolsTab, PrototypeTeam } from "./ArenaTeamPoolsTab";
 import { ArenaSubmissionTab } from "./ArenaSubmissionTab";
 import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
+import { ArenaLocationSection } from "./ArenaLocationSection";
 import { CheckCircle2 } from "lucide-react";
 
 interface ArenaDetailClientProps {
@@ -277,6 +278,23 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
               requireFigmaUrl={arena.requireFigmaUrl}
               requireVideoUrl={arena.requireVideoUrl}
               requireWriteup={arena.requireWriteup}
+            />
+          </section>
+
+          {/* SECTION 2: Venue & Location (Google Maps for In-Person / Hybrid or Online Stage) */}
+          <section className="space-y-4 pt-4 border-t border-[#0E0E0D]/10">
+            <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
+              ARENA LOCATION & VENUE DETAILS
+            </h2>
+            <ArenaLocationSection
+              locationType={((arena as unknown) as Record<string, unknown>).locationType as "IN_PERSON" || "IN_PERSON"}
+              venueName={((arena as unknown) as Record<string, unknown>).venueName as string || "Cairo Tech Innovation Hub"}
+              address={((arena as unknown) as Record<string, unknown>).address as string || "124 El-Tahrir Square, Downtown"}
+              city={((arena as unknown) as Record<string, unknown>).city as string || "Cairo"}
+              country={((arena as unknown) as Record<string, unknown>).country as string || "Egypt"}
+              googleMapsUrl={((arena as unknown) as Record<string, unknown>).googleMapsUrl as string}
+              googleMapsEmbedUrl={((arena as unknown) as Record<string, unknown>).googleMapsEmbedUrl as string}
+              onlineJoinUrl={((arena as unknown) as Record<string, unknown>).onlineJoinUrl as string}
             />
           </section>
 

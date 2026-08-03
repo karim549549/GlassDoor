@@ -29,7 +29,7 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
   const currentImage = images[activeIndex];
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-2.5">
       {/* 2-Column Section: Active Main Image (Left) + Vertical Scrollable Thumbnail Column (Right) */}
       <div className="flex gap-2 h-[200px] sm:h-[220px] md:h-[240px]">
         {/* Main Active Image Frame */}
@@ -81,24 +81,6 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
               </button>
             </>
           )}
-
-          {/* CIRCULAR DOTS INDICATOR AT BOTTOM OF MAIN FRAME (Orange Active Dot) */}
-          {images.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-xs">
-              {images.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveIndex(idx)}
-                  className={`transition-all duration-200 ${
-                    idx === activeIndex
-                      ? "w-2.5 h-2.5 rounded-full bg-orange scale-110"
-                      : "w-2 h-2 rounded-full bg-white/40 hover:bg-white/80"
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          )}
         </div>
 
         {/* RIGHT SIDE VERTICAL SCROLLABLE THUMBNAIL COLUMN (Exact height of active image) */}
@@ -126,6 +108,24 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
           </div>
         )}
       </div>
+
+      {/* CIRCULAR DOTS INDICATOR POSITIONED UNDERNEATH THE IMAGE FRAME (Active Dot in Orange) */}
+      {images.length > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-0.5">
+          {images.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveIndex(idx)}
+              className={`transition-all duration-200 ${
+                idx === activeIndex
+                  ? "w-2.5 h-2.5 rounded-full bg-orange scale-110 shadow-[0_0_8px_rgba(255,87,34,0.6)]"
+                  : "w-2 h-2 rounded-full bg-[#F1EFE9]/40 hover:bg-[#F1EFE9]/80"
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Lightbox Modal */}
       {isLightboxOpen && (
