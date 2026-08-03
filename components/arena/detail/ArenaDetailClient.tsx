@@ -4,13 +4,11 @@ import React, { useState } from "react";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaDetailHero } from "./ArenaDetailHero";
-import { ArenaTimelineStepper } from "./ArenaTimelineStepper";
 import { ArenaOverviewTab } from "./ArenaOverviewTab";
 import { ArenaTeamPoolsTab, PrototypeTeam } from "./ArenaTeamPoolsTab";
 import { ArenaSubmissionTab } from "./ArenaSubmissionTab";
 import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
-import { ArenaLocationSection } from "./ArenaLocationSection";
-import { CheckCircle2, Users, MapPin, Upload, Trophy } from "lucide-react";
+import { CheckCircle2, Users, Upload, Trophy } from "lucide-react";
 
 interface ArenaDetailClientProps {
   arena: {
@@ -123,8 +121,8 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
   const isHost = meta.isOwner;
 
   // Active module tab state
-  const [activeTab, setActiveTab] = useState<"teams" | "location" | "submission" | "leaderboard">(
-    arena.isTeam ? "teams" : "location"
+  const [activeTab, setActiveTab] = useState<"teams" | "submission" | "leaderboard">(
+    arena.isTeam ? "teams" : "submission"
   );
 
   // Dynamic team pools & capacity
@@ -226,7 +224,7 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         </div>
       )}
 
-      {/* Hero Showcase with Cover Background & Compact Action Card */}
+      {/* Hero Showcase with Cover Background, Compact Action Card & Inline Location */}
       <ArenaDetailHero
         id={arena.id}
         title={arena.title}
@@ -243,6 +241,9 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         registrationStart={arena.registrationStart}
         registrationEnd={arena.registrationEnd}
         inviteCode={arena.inviteCode}
+        locationType={((arena as unknown) as Record<string, unknown>).locationType as "IN_PERSON" || "IN_PERSON"}
+        venueName={((arena as unknown) as Record<string, unknown>).venueName as string || "CAIRO TECH INNOVATION HUB"}
+        googleMapsUrl={((arena as unknown) as Record<string, unknown>).googleMapsUrl as string || "https://maps.google.com/?q=Cairo+Tech+Hub"}
         creator={arena.creator}
         tags={arena.tags}
         isGuest={isGuest}
@@ -253,17 +254,6 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         onResign={handleResign}
         onLoginRedirect={handleLoginRedirect}
         onRequestPrivateJoin={handleRequestPrivateJoin}
-      />
-
-      {/* Phase Timeline Stepper */}
-      <ArenaTimelineStepper
-        status={arena.status}
-        registrationStart={arena.registrationStart}
-        registrationEnd={arena.registrationEnd}
-        ideaPhaseStart={arena.ideaPhaseStart}
-        ideaPhaseEnd={arena.ideaPhaseEnd}
-        implPhaseStart={arena.implPhaseStart}
-        implPhaseEnd={arena.implPhaseEnd}
       />
 
       {/* Main Content Body */}
@@ -305,18 +295,6 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
               )}
 
               <button
-                onClick={() => setActiveTab("location")}
-                className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
-                  activeTab === "location"
-                    ? "bg-[#0E0E0D] text-white border-[#0E0E0D] shadow-[2px_2px_0px_0px_#FF5722]"
-                    : "bg-white text-[#0E0E0D] border-transparent hover:border-[#0E0E0D]/20"
-                }`}
-              >
-                <MapPin className="w-3.5 h-3.5 text-orange" />
-                <span>LOCATION & VENUE</span>
-              </button>
-
-              <button
                 onClick={() => setActiveTab("submission")}
                 className={`py-2.5 px-4 font-mono text-[0.62rem] uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
                   activeTab === "submission"
@@ -350,18 +328,6 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
                 currentUserRole={isGuest ? "guest" : isJoined ? "participant" : "user_not_joined"}
                 onJoinTeamPool={handleJoinTeamPool}
                 onCreateNewTeamPool={handleCreateNewTeamPool}
-              />
-            )}
-
-            {activeTab === "location" && (
-              <ArenaLocationSection
-                locationType={((arena as unknown) as Record<string, unknown>).locationType as "IN_PERSON" || "IN_PERSON"}
-                venueName={((arena as unknown) as Record<string, unknown>).venueName as string || "Cairo Tech Innovation Hub"}
-                address={((arena as unknown) as Record<string, unknown>).address as string || "124 El-Tahrir Square, Downtown"}
-                city={((arena as unknown) as Record<string, unknown>).city as string || "Cairo"}
-                country={((arena as unknown) as Record<string, unknown>).country as string || "Egypt"}
-                googleMapsUrl={((arena as unknown) as Record<string, unknown>).googleMapsUrl as string}
-                onlineJoinUrl={((arena as unknown) as Record<string, unknown>).onlineJoinUrl as string}
               />
             )}
 

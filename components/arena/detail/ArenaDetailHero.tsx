@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, ShieldCheck, LogOut, Flag, ArrowRight } from "lucide-react";
+import { Camera, ShieldCheck, LogOut, Flag, ArrowRight, Navigation, ExternalLink } from "lucide-react";
 import { ArenaCarousel } from "./ArenaCarousel";
 
 interface ArenaDetailHeroProps {
@@ -22,6 +22,9 @@ interface ArenaDetailHeroProps {
   registrationStart: string;
   registrationEnd: string;
   inviteCode?: string | null;
+  locationType?: "ONLINE" | "IN_PERSON" | "HYBRID";
+  venueName?: string | null;
+  googleMapsUrl?: string | null;
   creator: {
     id: string;
     fullName: string | null;
@@ -62,6 +65,9 @@ export function ArenaDetailHero({
   totalParticipants,
   status,
   inviteCode,
+  locationType = "IN_PERSON",
+  venueName = "CAIRO TECH INNOVATION HUB",
+  googleMapsUrl = "https://maps.google.com/?q=Cairo+Tech+Hub",
   creator,
   tags,
   isGuest,
@@ -80,6 +86,7 @@ export function ArenaDetailHero({
   const isFull = maxParticipants !== null && totalParticipants >= maxParticipants;
   const isCompleted = status === "COMPLETED";
   const isRegistrationPhase = status === "REGISTRATION_OPEN" || status === "DRAFT";
+  const isInPerson = locationType === "IN_PERSON" || locationType === "HYBRID";
 
   const handlePrivateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,7 +174,7 @@ export function ArenaDetailHero({
 
         {/* HERO BODY: Left Title & Description (60%) vs Right Carousel & Action (40%) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
-          {/* Left Column (7/12 = 58%): Title, Organizer, Description */}
+          {/* Left Column (7/12 = 58%): Title, Organizer, Description & Inline Location */}
           <div className="lg:col-span-7 space-y-4">
             <h1 className="font-display italic text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-[#F1EFE9] leading-[1.05]">
               {title}
@@ -177,7 +184,7 @@ export function ArenaDetailHero({
               {description}
             </p>
 
-            {/* Sleek 1-Line Organizer Metadata Pill */}
+            {/* SLEEK 1-LINE ORGANIZER METADATA PILL */}
             <div className="flex flex-wrap items-center gap-3 font-mono text-[0.62rem] text-[#F1EFE9]/70 pt-1">
               <div className="flex items-center gap-1.5 bg-white/5 border border-white/15 px-2.5 py-1">
                 <span className="text-[#F1EFE9]/50">Organized by</span>
@@ -210,6 +217,33 @@ export function ArenaDetailHero({
                     ))}
                   </div>
                 </>
+              )}
+            </div>
+
+            {/* INLINE LOCATION & GOOGLE MAPS LINK DIRECTLY UNDER DESCRIPTION & LABELS */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-[0.6rem]">
+              {isInPerson ? (
+                <>
+                  <span className="px-2.5 py-1 bg-white/10 text-[#F1EFE9] border border-white/20 font-bold uppercase tracking-wider">
+                    IN-PERSON @ {venueName}
+                  </span>
+                  {googleMapsUrl && (
+                    <a
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1 bg-orange hover:bg-orange/90 text-white font-bold uppercase tracking-wider border border-white/30 flex items-center gap-1.5 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)]"
+                    >
+                      <span>OPEN IN GOOGLE MAPS</span>
+                      <Navigation className="w-3 h-3 text-white" />
+                      <ExternalLink className="w-2.5 h-2.5 text-white/70" />
+                    </a>
+                  )}
+                </>
+              ) : (
+                <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase tracking-wider">
+                  ONLINE VIRTUAL EVENT
+                </span>
               )}
             </div>
           </div>
