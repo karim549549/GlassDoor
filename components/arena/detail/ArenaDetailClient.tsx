@@ -8,6 +8,7 @@ import { ArenaOverviewTab } from "./ArenaOverviewTab";
 import { ArenaTeamPoolsTab, PrototypeTeam } from "./ArenaTeamPoolsTab";
 import { ArenaSubmissionTab } from "./ArenaSubmissionTab";
 import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
+import { ArenaCommentsSection } from "./ArenaCommentsSection";
 import { CheckCircle2, Users, Upload, Trophy } from "lucide-react";
 
 interface ArenaDetailClientProps {
@@ -342,6 +343,14 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
             )}
 
             {activeTab === "leaderboard" && <ArenaLeaderboardTab />}
+          </section>
+
+          {/* COMMENTS & DISCUSSION SECTION */}
+          <section className="space-y-4 pt-6 border-t-2 border-[#0E0E0D]">
+            <ArenaCommentsSection
+              isGuest={isGuest}
+              onLoginRedirect={handleLoginRedirect}
+            />
           </section>
         </div>
       </ArenaContainer>
