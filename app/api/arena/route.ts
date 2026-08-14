@@ -22,14 +22,22 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const result = await createArena({ ...parsed.data, creatorId: user.id });
-      if ("error" in result) {
-        return NextResponse.json({ error: result.error }, { status: 400 });
+      try {
+        const result = await createArena({ ...parsed.data, creatorId: user.id });
+        if ("error" in result) {
+          return NextResponse.json({ error: result.error }, { status: 400 });
+        }
+        return NextResponse.json({ success: true, id: result.id });
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : "Database error during arena creation.";
+        console.error("createArena DB Error:", err);
+        return NextResponse.json(
+          { error: errorMsg },
+          { status: 500 }
+        );
       }
-
-      return NextResponse.json({ success: true, id: result.id });
     },
-    "An unexpected database error occurred."
+    "An unexpected error occurred during arena creation."
   );
 }
 

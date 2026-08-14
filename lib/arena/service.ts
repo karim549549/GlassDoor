@@ -146,17 +146,30 @@ export async function createArena(
     }
   }
 
-  // Connect tags if provided
-  const tagCreateInput =
-    data.tags && data.tags.length > 0
-      ? {
-          create: data.tags.map((tagIdOrName) => ({
-            tag: {
-              connect: { id: tagIdOrName },
-            },
-          })),
-        }
-      : undefined;
+  // Connect tags safely if provided
+  let tagCreateInput: Prisma.TagOnArenaCreateNestedManyWithoutArenaInput | undefined;
+  if (data.tags && data.tags.length > 0) {
+    const existingTags = await prisma.tag.findMany({
+      where: {
+        OR: [
+          { id: { in: data.tags } },
+          { name: { in: data.tags } },
+          { slug: { in: data.tags } },
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (existingTags.length > 0) {
+      tagCreateInput = {
+        create: existingTags.map((t) => ({
+          tag: {
+            connect: { id: t.id },
+          },
+        })),
+      };
+    }
+  }
 
   const arena = await prisma.arena.create({
     data: {
