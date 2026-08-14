@@ -66,18 +66,33 @@ export default function CreateArenaPage() {
   } = useForm<ArenaFormInput, unknown, ArenaFormOutput>({
     resolver: zodResolver(arenaSchema),
     defaultValues: {
+      title: "CYBERPUNK ALGORITHM BATTLE 2026",
+      description:
+        "Architect and implement high-throughput real-time distributed systems under simulated cyber-threat scenarios. Compete in teams or solo to build resilient microservices with Next.js, Prisma, and WebSockets.",
+      coverImageUrl:
+        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
       locationType: "ONLINE",
-      locationName: null,
-      googleMapsUrl: null,
+      locationName: "CAIRO TECH INNOVATION HUB",
+      googleMapsUrl: "https://maps.google.com/?q=Cairo+Tech+Hub",
       isPrivate: false,
-      isTeam: false,
-      minTeamSize: 1,
-      maxTeamSize: 1,
+      inviteCode: "",
+      registrationStart: "2026-08-15T00:00",
+      registrationEnd: "2026-08-25T23:59",
+      ideaPhaseStart: "2026-08-26T00:00",
+      ideaPhaseEnd: "2026-09-05T23:59",
+      implPhaseStart: "2026-09-06T00:00",
+      implPhaseEnd: "2026-09-15T23:59",
+      isTeam: true,
+      minTeamSize: 2,
+      maxTeamSize: 4,
+      maxParticipants: 50,
       allowLeaderAccessControl: true,
       requireGithubUrl: true,
-      requireFigmaUrl: false,
-      requireVideoUrl: false,
+      requireFigmaUrl: true,
+      requireVideoUrl: true,
       requireWriteup: true,
+      rulesText:
+        "1. Code must be original and created during the official implementation window.\n2. Open-source libraries are permitted, but core logic must be custom.\n3. All entries must include a working GitHub repository and 2-minute video demonstration.\n4. Respect team members, play fair, and build awesome software!",
     },
   });
 
