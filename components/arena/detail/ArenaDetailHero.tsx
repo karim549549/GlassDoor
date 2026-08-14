@@ -24,6 +24,7 @@ interface ArenaDetailHeroProps {
   registrationEnd: string;
   inviteCode?: string | null;
   locationType?: "ONLINE" | "IN_PERSON" | "HYBRID";
+  locationName?: string | null;
   venueName?: string | null;
   googleMapsUrl?: string | null;
   creator: {
@@ -70,6 +71,7 @@ export function ArenaDetailHero({
   status,
   inviteCode,
   locationType = "IN_PERSON",
+  locationName,
   venueName = "CAIRO TECH INNOVATION HUB",
   googleMapsUrl = "https://maps.google.com/?q=Cairo+Tech+Hub",
   creator,
@@ -241,7 +243,7 @@ export function ArenaDetailHero({
               {isInPerson ? (
                 <div className="space-y-2">
                   <div className="inline-block px-2.5 py-1 bg-white/10 text-[#F1EFE9] border border-white/20 font-bold uppercase tracking-wider">
-                    IN-PERSON @ {venueName}
+                    IN-PERSON @ {locationName || venueName || "VENUE LOCATION"}
                   </div>
 
                   {googleMapsUrl && (
