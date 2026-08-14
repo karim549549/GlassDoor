@@ -3,7 +3,7 @@ import { listArenas } from "@/lib/arena/service";
 import { DEFAULT_LIST_PARAMS } from "@/lib/arena/schema";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function ArenasPage() {
   const { arenas, total, totalPages } = await listArenas(DEFAULT_LIST_PARAMS);

@@ -80,7 +80,7 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
     }
   }
 
-  let orderBy: Prisma.ArenaOrderByWithRelationInput = { registrationStart: "desc" };
+  let orderBy: Prisma.ArenaOrderByWithRelationInput = { createdAt: "desc" };
   if (sortBy === "oldest") {
     orderBy = { registrationStart: "asc" };
   } else if (sortBy === "title") {

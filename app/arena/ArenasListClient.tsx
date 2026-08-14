@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
 import { CairoBillboard } from "@/components/arena/CairoBillboard";
@@ -39,7 +39,6 @@ export function ArenasListClient({
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
   const [isLoading, setIsLoading] = useState(false);
-  const isFirstLoad = useRef(true);
 
   // Only the free-text search needs debouncing; the other filters are
   // discrete/select-driven and can trigger a fetch immediately.
@@ -47,11 +46,6 @@ export function ArenasListClient({
 
   // Sync API state updates when search queries or filters alter
   useEffect(() => {
-    if (isFirstLoad.current) {
-      isFirstLoad.current = false;
-      return;
-    }
-
     let cancelled = false;
 
     (async () => {
