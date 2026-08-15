@@ -1,49 +1,69 @@
 import "server-only";
-import { Prisma } from "@prisma/client";
+import { Prisma, type ArenaFormat, type ArenaAuthority, type ArenaIntent, type RatingDomain, type DifficultyTier, type PrizeCurrency } from "@prisma/client";
 import prisma from "@/lib/server/prisma";
+import { arenaStatusWhere } from "./status";
 import type { ArenaFormOutput, ArenaListQuery } from "./schema";
 import {
   ARENA_LIST_SELECT,
   ARENA_DETAIL_INCLUDE,
   type ArenaListItem,
   type ArenaDetail,
-  type ArenaDetailMeta,
 } from "./types";
 
 export { ARENA_LIST_SELECT, ARENA_DETAIL_INCLUDE };
 
 export interface ListArenasParams extends ArenaListQuery {
   userId?: string | null;
+  now?: Date;
 }
 
 export interface ListArenasResult {
   arenas: ArenaListItem[];
   total: number;
   totalPages: number;
+  myCount: number | null;
+}
+
+export interface ArenaDetailMeta {
+  isOwner: boolean;
+  isRegistered: boolean;
+  totalParticipants: number;
+  canAccessPrivate: boolean;
+}
+
+/** Matches an arena the user created, entered directly, or belongs to via a team. */
+function myArenasWhere(userId: string): Prisma.ArenaWhereInput {
+  return {
+    OR: [
+      { creatorId: userId },
+      { entries: { some: { userId, withdrawnAt: null } } },
+      { teams: { some: { members: { some: { userId } } } } },
+    ],
+  };
 }
 
 export async function listArenas(params: ListArenasParams): Promise<ListArenasResult> {
-  const { page, limit, status, access, search, sortBy, tab, userId, tag } = params;
+  const { page, limit, status, access, search, sortBy, tab, userId, tag, now = new Date() } = params;
   const skip = (page - 1) * limit;
 
-  const where: Prisma.ArenaWhereInput = {};
+  const statusFilter = arenaStatusWhere(status, now);
+
+  const where: Prisma.ArenaWhereInput = {
+    isDeleted: false,
+    ...statusFilter,
+  };
 
   if (tab === "my") {
     if (!userId) {
       throw new Error("listArenas: tab='my' requires a userId.");
     }
-    where.OR = [
-      { creatorId: userId },
-      { teams: { some: { members: { some: { userId } } } } },
-    ];
-  }
-
-  if (status === "open") {
-    where.status = "REGISTRATION_OPEN";
-  } else if (status === "active") {
-    where.status = { in: ["IDEA_PHASE", "IMPLEMENTATION_PHASE"] };
-  } else if (status === "completed") {
-    where.status = "COMPLETED";
+    const myCondition = myArenasWhere(userId);
+    if (where.OR) {
+      where.AND = [{ OR: where.OR }, myCondition];
+      delete where.OR;
+    } else {
+      Object.assign(where, myCondition);
+    }
   }
 
   if (access === "public") {
@@ -89,7 +109,7 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
     orderBy = { teams: { _count: "desc" } };
   }
 
-  const [arenas, total] = await Promise.all([
+  const [arenas, total, myCount] = await Promise.all([
     prisma.arena.findMany({
       where,
       orderBy,
@@ -98,12 +118,21 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
       select: ARENA_LIST_SELECT,
     }),
     prisma.arena.count({ where }),
+    userId
+      ? prisma.arena.count({
+          where: {
+            isDeleted: false,
+            ...myArenasWhere(userId),
+          },
+        })
+      : Promise.resolve(null),
   ]);
 
   return {
     arenas,
     total,
     totalPages: Math.ceil(total / limit),
+    myCount,
   };
 }
 
@@ -111,8 +140,11 @@ export async function getArenaDetail(
   uuid: string,
   currentUserId: string | null
 ): Promise<{ arena: ArenaDetail; meta: ArenaDetailMeta } | null> {
-  const arena = await prisma.arena.findUnique({
-    where: { id: uuid },
+  const arena = await prisma.arena.findFirst({
+    where: {
+      id: uuid,
+      isDeleted: false,
+    },
     include: ARENA_DETAIL_INCLUDE,
   });
 
@@ -121,14 +153,28 @@ export async function getArenaDetail(
   }
 
   const isOwner = currentUserId ? arena.creatorId === currentUserId : false;
-  const isRegistered = currentUserId
+  const isDirectEntry = currentUserId
+    ? arena.entries.some((entry) => entry.userId === currentUserId && !entry.withdrawnAt)
+    : false;
+  const isTeamEntry = currentUserId
     ? arena.teams.some((team) => team.members.some((member) => member.userId === currentUserId))
     : false;
-  const totalParticipants = arena.teams.reduce((sum, team) => sum + team.members.length, 0);
+  const isRegistered = isDirectEntry || isTeamEntry;
+
+  const totalParticipants = arena.isTeam
+    ? arena.teams.reduce((sum, team) => sum + team.members.length, 0)
+    : arena.entries.filter((entry) => !entry.withdrawnAt).length;
+
+  const canAccessPrivate = !arena.isPrivate || isOwner || isRegistered;
 
   return {
     arena,
-    meta: { isOwner, isRegistered, totalParticipants },
+    meta: {
+      isOwner,
+      isRegistered,
+      totalParticipants,
+      canAccessPrivate,
+    },
   };
 }
 
@@ -176,11 +222,26 @@ export async function createArena(
       title: data.title,
       description: data.description,
       coverImageUrl: data.coverImageUrl || null,
+      format: data.format as ArenaFormat,
+      authority: data.authority as ArenaAuthority,
+      intent: data.intent as ArenaIntent,
+      domain: data.domain as RatingDomain,
+      difficulty: data.difficulty as DifficultyTier,
+      publishedAt: new Date(),
       locationType: data.locationType,
       locationName: data.locationType === "IN_PERSON" ? data.locationName || null : null,
       googleMapsUrl: data.locationType === "IN_PERSON" ? data.googleMapsUrl || null : null,
       isPrivate: data.isPrivate,
       inviteCode: data.isPrivate ? data.inviteCode || null : null,
+      hasPrizePool: data.hasPrizePool,
+      totalPrizePool: data.totalPrizePool || null,
+      prizeCurrency: data.prizeCurrency as PrizeCurrency,
+      firstPlacePrize: data.firstPlacePrize || null,
+      secondPlacePrize: data.secondPlacePrize || null,
+      thirdPlacePrize: data.thirdPlacePrize || null,
+      prizeDisbursementTerms: data.prizeDisbursementTerms || null,
+      requireHiringConsent: data.requireHiringConsent,
+      companyId: data.companyId || null,
       registrationStart: new Date(data.registrationStart),
       registrationEnd: new Date(data.registrationEnd),
       ideaPhaseStart: new Date(data.ideaPhaseStart),
@@ -196,9 +257,8 @@ export async function createArena(
       requireFigmaUrl: data.requireFigmaUrl,
       requireVideoUrl: data.requireVideoUrl,
       requireWriteup: data.requireWriteup,
-      rulesText: data.rulesText,
+      rulesText: data.rulesText || "",
       creatorId: data.creatorId,
-      status: "REGISTRATION_OPEN",
       tags: tagCreateInput,
     },
   });
@@ -235,17 +295,13 @@ export async function getAllTags() {
 }
 
 /**
- * Placeholder hook for RAG (Retrieval-Augmented Generation) & AI Tag Extraction.
- * On-the-fly analyzes arena title and description to auto-suggest relevant tags.
+ * Hook for RAG & AI Tag Extraction.
  */
 export async function extractAndSuggestTags(title: string, description: string) {
   const allTags = await getAllTags();
   const textContent = `${title} ${description}`.toLowerCase();
 
-  // Keyword match ranking for auto-suggestions
-  const suggestedTags = allTags.filter((tag) =>
+  return allTags.filter((tag) =>
     textContent.includes(tag.name.toLowerCase()) || textContent.includes(tag.slug.toLowerCase())
   );
-
-  return suggestedTags;
 }

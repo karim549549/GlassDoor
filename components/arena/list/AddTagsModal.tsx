@@ -47,22 +47,22 @@ export function AddTagsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent showCloseButton={false} className="max-w-md bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-6 shadow-[6px_6px_0px_0px_#0E0E0D] rounded-none">
-        <DialogHeader className="border-b-2 border-double border-[#0E0E0D] pb-3 flex flex-row items-center justify-between">
+      <DialogContent showCloseButton={false} className="max-w-md bg-card text-foreground border-2 border-foreground p-6 shadow-[6px_6px_0px_0px_var(--foreground)] rounded-none">
+        <DialogHeader className="border-b-2 border-double border-foreground pb-3 flex flex-row items-center justify-between">
           <div>
             <span className="font-mono text-[0.45rem] text-orange uppercase tracking-[0.25em] font-bold block mb-0.5">
               [CATEGORY SELECTION DIALOG]
             </span>
-            <DialogTitle className="font-display italic text-lg uppercase text-[#0E0E0D] flex items-center gap-1.5">
+            <DialogTitle className="font-display italic text-lg uppercase text-foreground flex items-center gap-1.5">
               <Filter className="h-4 w-4 text-orange" /> Filter Arenas By Tag
             </DialogTitle>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 hover:bg-[#0E0E0D]/10 transition-colors border border-[#0E0E0D] cursor-pointer"
+            className="p-1 hover:bg-foreground/10 transition-colors border border-foreground cursor-pointer"
           >
-            <X className="h-4 w-4 text-[#0E0E0D]" />
+            <X className="h-4 w-4 text-foreground" />
           </button>
         </DialogHeader>
 
@@ -88,11 +88,11 @@ export function AddTagsModal({
           </div>
         </div>
 
-        <div className="pt-3 border-t border-dashed border-[#0E0E0D]/20 flex items-center justify-between gap-3">
+        <div className="pt-3 border-t border-dashed border-foreground/20 flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={handleClear}
-            className="font-mono text-[0.56rem] text-muted-foreground uppercase font-bold hover:text-[#0E0E0D] transition-colors"
+            className="font-mono text-[0.56rem] text-muted-foreground uppercase font-bold hover:text-foreground transition-colors"
           >
             Reset Selection
           </button>
@@ -101,14 +101,14 @@ export function AddTagsModal({
               type="button"
               variant="outline"
               onClick={onClose}
-              className="py-1.5 px-3 font-mono text-[0.58rem] font-bold tracking-wider uppercase border-2 border-[#0E0E0D] bg-transparent text-[#0E0E0D] hover:bg-[#0E0E0D] hover:text-[#FAF8F5] transition-all"
+              className="py-1.5 px-3 font-mono text-[0.58rem] font-bold tracking-wider uppercase border-2 border-foreground bg-transparent text-foreground hover:bg-foreground hover:text-card transition-all"
             >
               Cancel
             </Button>
             <Button
               type="button"
               onClick={handleApply}
-              className="py-1.5 px-4 font-mono text-[0.58rem] font-bold tracking-wider uppercase border-2 border-[#0E0E0D] bg-orange text-white hover:bg-transparent hover:text-[#0E0E0D] shadow-[2px_2px_0px_0px_#0E0E0D] hover:shadow-none transition-all"
+              className="py-1.5 px-4 font-mono text-[0.58rem] font-bold tracking-wider uppercase border-2 border-foreground bg-orange text-white hover:bg-transparent hover:text-foreground shadow-[2px_2px_0px_0px_var(--foreground)] hover:shadow-none transition-all"
             >
               Apply Filter <Sparkles className="h-3 w-3 ml-1 inline-block" />
             </Button>

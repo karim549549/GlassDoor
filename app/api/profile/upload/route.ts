@@ -3,6 +3,7 @@ import { prisma } from "@/lib/server/prisma";
 import { validateImageUpload, uploadImageToStorage } from "@/lib/server/upload";
 import { requireUser } from "@/lib/server/auth/require-user";
 import { withApiErrorHandling } from "@/lib/server/api-route";
+import { checkRateLimit, rateLimitResponse } from "@/lib/server/rate-limit";
 
 export async function POST(request: NextRequest) {
   return withApiErrorHandling(
@@ -11,6 +12,11 @@ export async function POST(request: NextRequest) {
       const auth = await requireUser();
       if ("response" in auth) return auth.response;
       const { user } = auth;
+
+      // Keyed on the authenticated user rather than the IP: every upload writes
+      // up to 5MB through the service-role client, which bypasses storage RLS.
+      const limit = checkRateLimit(`upload-profile:${user.id}`, { limit: 20, windowMs: 3_600_000 });
+      if (!limit.ok) return rateLimitResponse(limit.retryAfterSeconds);
 
       const formData = await request.formData();
       const file = formData.get("file") as File | null;
@@ -36,14 +42,7 @@ export async function POST(request: NextRequest) {
       // taken from the verified session above, never from client input.
       const filePath = `${type}s/${user.id}.jpg`; // We compress to JPEG on client anyway
 
-      let publicUrl: string;
-      try {
-        ({ publicUrl } = await uploadImageToStorage({ file, path: filePath }));
-      } catch (uploadError) {
-        console.error("Supabase Storage Upload Error:", uploadError);
-        const message = uploadError instanceof Error ? uploadError.message : "Upload failed.";
-        return NextResponse.json({ error: message }, { status: 500 });
-      }
+      const { publicUrl } = await uploadImageToStorage({ file, path: filePath });
 
       // Cache-busting URL parameter ensures client browsers don't serve old cached assets
       const finalUrl = `${publicUrl}?t=${Date.now()}`;
@@ -58,6 +57,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ success: true, url: finalUrl });
     },
-    "An unexpected error occurred during upload."
+    "An unexpected error occurred during upload.",
+    request
   );
 }

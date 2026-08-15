@@ -1,10 +1,46 @@
-enum ArenaStatus {
-  DRAFT
-  REGISTRATION_OPEN
-  IDEA_PHASE
-  IDEA_REVIEW
-  IMPLEMENTATION_PHASE
-  COMPLETED
+enum ArenaFormat {
+  REP
+  LIVE
+  ARENA
+}
+
+enum ArenaAuthority {
+  OFFICIAL
+  COMPANY
+  COMMUNITY
+}
+
+enum ArenaIntent {
+  HIRING_ASSESSMENT
+  BRAND_HACKATHON
+  COMMUNITY_FUN
+}
+
+enum RatingDomain {
+  FULL_STACK_WEB
+  BACKEND_DISTRIBUTED
+  FRONTEND_MOBILE
+  AI_MACHINE_LEARNING
+  DATA_ENGINEERING
+  CYBERSECURITY_ETHICAL_HACKING
+  SYSTEMS_DEV_OPS
+  EMBEDDED_IOT
+  BLOCKCHAIN_WEB3
+}
+
+enum DifficultyTier {
+  NOVICE
+  INTERMEDIATE
+  ADVANCED
+  GRANDMASTER
+}
+
+enum PrizeCurrency {
+  EGP
+  USD
+  EUR
+  SAR
+  AED
 }
 
 enum LocationType {
@@ -19,70 +55,137 @@ enum InvitationStatus {
 }
 
 model Arena {
-  id                     String            @id @default(uuid()) @db.Uuid
-  title                  String
-  description            String            @db.Text
-  coverImageUrl          String?           
-  creatorId              String            @db.Uuid
-  creator                User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  status                 ArenaStatus       @default(DRAFT)
+  id                       String            @id @default(uuid()) @db.Uuid
+  title                    String
+  description              String            @db.Text
+  coverImageUrl            String?           
+  creatorId                String            @db.Uuid
+  creator                  User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  
+  // Format & Domain Discriminators
+  format                   ArenaFormat       @default(ARENA)
+  authority                ArenaAuthority    @default(COMMUNITY)
+  intent                   ArenaIntent       @default(COMMUNITY_FUN)
+  domain                   RatingDomain      @default(FULL_STACK_WEB)
+  difficulty               DifficultyTier    @default(INTERMEDIATE)
+
+  // Status is a pure function of phase timestamps + now.
+  // publishedAt is null for DRAFT; canceledAt records cancellation; resultsPublishedAt locks results.
+  publishedAt              DateTime?
+  canceledAt               DateTime?
+  resultsPublishedAt       DateTime?
   
   // Location
-  locationType           LocationType      @default(ONLINE)
-  locationName           String?
-  googleMapsUrl          String?
+  locationType             LocationType      @default(ONLINE)
+  locationName             String?
+  googleMapsUrl            String?
 
-  // Access Control & Invites
-  isPrivate              Boolean           @default(false)
-  inviteCode             String?           @unique
+  // Access Control & Gates
+  isPrivate                Boolean           @default(false)
+  inviteCode               String?           @unique
+  minRatingToEnter         Int?
+  requireHiringConsent     Boolean           @default(false)
+
+  // Judging Config
+  minJudgesPerSubmission   Int               @default(2)
+  divergenceThreshold      Float             @default(15.0)
+
+  // Prize Pool
+  hasPrizePool             Boolean           @default(false)
+  totalPrizePool           Float?
+  prizeCurrency            PrizeCurrency     @default(EGP)
+  firstPlacePrize          Float?
+  secondPlacePrize         Float?
+  thirdPlacePrize          Float?
+  prizeDisbursementTerms   String?           @db.Text
   
-  // Timeline
-  registrationStart      DateTime
-  registrationEnd        DateTime
-  ideaPhaseStart         DateTime
-  ideaPhaseEnd           DateTime
-  implPhaseStart         DateTime
-  implPhaseEnd           DateTime
+  // Timeline Windows
+  registrationStart        DateTime
+  registrationEnd          DateTime
+  ideaPhaseStart           DateTime
+  ideaPhaseEnd             DateTime
+  implPhaseStart           DateTime
+  implPhaseEnd             DateTime
 
   // Team Setup
-  isTeam                 Boolean           @default(false)
-  minTeamSize            Int               @default(1)
-  maxTeamSize            Int               @default(1)
-  maxParticipants        Int?              
-  allowLeaderAccessControl Boolean?        @default(true)
+  isTeam                   Boolean           @default(false)
+  minTeamSize              Int               @default(1)
+  maxTeamSize              Int               @default(1)
+  maxParticipants          Int?              
+  allowLeaderAccessControl Boolean?          @default(true)
   
   // Submission Toggles
-  requireGithubUrl       Boolean           @default(true)
-  requireFigmaUrl        Boolean           @default(false)
-  requireVideoUrl        Boolean           @default(false)
-  requireWriteup         Boolean           @default(true)
+  requireGithubUrl         Boolean           @default(true)
+  requireFigmaUrl          Boolean           @default(false)
+  requireVideoUrl          Boolean           @default(false)
+  requireWriteup           Boolean           @default(true)
+  rulesText                String            @default("") @db.Text
   
-  rulesText              String            @db.Text
+  // Company & Sponsorship
+  companyId                String?           @db.Uuid
+  company                  Company?          @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  sponsors                 ArenaSponsor[]
 
   // Relations
-  invitations            ArenaInvitation[]
-  teams                  ArenaTeam[]
-  tags                   TagOnArena[]
+  entries                  ArenaEntry[]
+  invitations              ArenaInvitation[]
+  teams                    ArenaTeam[]
+  tags                     TagOnArena[]
+  submissions              ArenaSubmission[]
+  requirements             ArenaRequirement[]
+  rubrics                  Rubric[]
+  judges                   ArenaJudge[]
 
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
+  isDeleted                Boolean           @default(false)
+  deletedAt                DateTime?
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
 
+  @@index([publishedAt])
+  @@index([isPrivate])
+  @@index([creatorId])
+  @@index([createdAt])
+  @@index([registrationStart])
+  @@index([implPhaseEnd])
   @@map("arenas")
 }
 
-model ArenaInvitation {
-  id        String           @id @default(uuid()) @db.Uuid
-  arenaId   String           @db.Uuid
-  arena     Arena            @relation(fields: [arenaId], references: [id], onDelete: Cascade)
-  senderId  String           @db.Uuid
-  sender    User             @relation("SentInvitations", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId String          @db.Uuid
-  receiver  User             @relation("ReceivedInvitations", fields: [receiverId], references: [id], onDelete: Cascade)
-  status    InvitationStatus @default(PENDING)
-  
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+model ArenaEntry {
+  id          String           @id @default(uuid()) @db.Uuid
+  arenaId     String           @db.Uuid
+  arena       Arena            @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  userId      String?          @db.Uuid
+  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId      String?          @db.Uuid
+  team        ArenaTeam?       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  submission  ArenaSubmission?
 
+  joinedAt    DateTime         @default(now())
+  withdrawnAt DateTime?
+
+  @@unique([arenaId, userId])
+  @@unique([arenaId, teamId])
+  @@index([userId])
+  @@index([teamId])
+  @@map("arena_entries")
+}
+
+model ArenaInvitation {
+  id         String           @id @default(uuid()) @db.Uuid
+  arenaId    String           @db.Uuid
+  arena      Arena            @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  senderId   String           @db.Uuid
+  sender     User             @relation("SentInvitations", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String           @db.Uuid
+  receiver   User             @relation("ReceivedInvitations", fields: [receiverId], references: [id], onDelete: Cascade)
+  status     InvitationStatus @default(PENDING)
+  
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([arenaId])
+  @@index([receiverId])
+  @@index([senderId])
   @@map("arena_invitations")
 }
 
@@ -92,10 +195,13 @@ model ArenaTeam {
   arena     Arena             @relation(fields: [arenaId], references: [id], onDelete: Cascade)
   name      String              
   members   ArenaTeamMember[]
+  entries   ArenaEntry[]
   
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
+  @@unique([arenaId, name])
+  @@index([arenaId])
   @@map("arena_teams")
 }
 
@@ -106,6 +212,7 @@ model ArenaTeamMember {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   isLeader  Boolean   @default(false)
 
+  @@index([userId])
   @@id([teamId, userId])
   @@map("arena_team_members")
 }

@@ -22,8 +22,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Devs Arena — Egypt tech salary transparency",
-  description: "Real salaries. Real reviews. Every Egyptian tech company, indexed.",
+  title: {
+    default: "Devs Arena — Developer Competition Platform & Hiring Credentials",
+    template: "%s | Devs Arena",
+  },
+  description: "Rubric-based developer competitions, domain Glicko-2 ratings, and tamper-evident hiring credentials for engineering talent.",
 };
 
 import AuthProvider from "@/components/providers/AuthProvider";
@@ -35,6 +38,17 @@ import { ToastProvider } from "@/components/providers/ToastProvider";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 
+/**
+ * Deliberately NOT async and deliberately does not read the session.
+ *
+ * Resolving the viewer here (via cookies()) was tried and measured: it opts the
+ * entire route tree into dynamic rendering, and `/`, `/billboard`, and
+ * `/arena/create` all lost static prerendering — the homepage's
+ * `revalidate = 3600` became dead code. That trade is not worth it, and it is
+ * not even coherent: a page cached for an hour is shared across users, so it
+ * cannot embed per-user nav in the first place. Auth state is therefore
+ * resolved client-side in AuthProvider, which is the correct layer for it here.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

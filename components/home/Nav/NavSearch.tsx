@@ -99,8 +99,8 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
           <button
             className={`w-full lg:w-80 flex items-center justify-between gap-6 px-3.5 py-1.5 font-mono text-[0.55rem] tracking-wider uppercase border transition-all duration-150 cursor-pointer ${
               isDarkTheme
-                ? "bg-[#0E0E0D] text-[#F1EFE9] border-[#F1EFE9]/20 hover:border-[#F1EFE9]"
-                : "bg-[#FAF8F5] text-[#0E0E0D] border-[#0E0E0D]/25 hover:border-[#0E0E0D] shadow-[2px_2px_0px_0px_currentColor] active:translate-y-0.5 active:shadow-none"
+                ? "bg-foreground text-background border-background/20 hover:border-background"
+                : "bg-card text-foreground border-foreground/25 hover:border-foreground shadow-[2px_2px_0px_0px_currentColor] active:translate-y-0.5 active:shadow-none"
             }`}
           >
             <span className="opacity-60">Search site...</span>
@@ -111,24 +111,25 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
 
       <DialogContent
         showCloseButton={false}
-        className="w-full max-w-3xl p-0 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-[100] overflow-hidden"
+        className="w-full max-w-3xl p-0 bg-background border-2 border-foreground rounded-none shadow-[6px_6px_0px_0px_var(--foreground)] font-mono text-[0.65rem] uppercase tracking-wider text-foreground z-[100] overflow-hidden"
       >
         {/* Header Search Input */}
-        <div className="flex items-center gap-3 p-4 border-b-2 border-[#0E0E0D] bg-[#FAF8F5]">
-          <Search className="h-4 w-4 text-[#0E0E0D]/60 shrink-0" />
+        <div className="flex items-center gap-3 p-4 border-b-2 border-foreground bg-card">
+          <Search className="h-4 w-4 text-foreground/60 shrink-0" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type to search..."
+            aria-label="Search site"
             autoFocus
-            className="flex-1 bg-transparent border-none outline-none font-mono text-[0.7rem] uppercase tracking-wider placeholder-[#0E0E0D]/40 text-[#0E0E0D]"
+            className="flex-1 bg-transparent border-none outline-none font-mono text-[0.7rem] uppercase tracking-wider placeholder-foreground/40 text-foreground"
           />
           <button
             onClick={handleClose}
-            className="p-1 hover:bg-[#0E0E0D]/5 transition-colors cursor-pointer border-none bg-transparent"
+            className="p-1 hover:bg-foreground/5 transition-colors cursor-pointer border-none bg-transparent"
           >
-            <X className="h-4 w-4 text-[#0E0E0D]" />
+            <X className="h-4 w-4 text-foreground" />
           </button>
         </div>
 

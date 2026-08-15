@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { Plus, Search, Tag as TagIcon, Filter, RotateCcw } from "lucide-react";
 import { ArenaTabs } from "@/components/arena/ArenaTabs";
@@ -39,17 +39,17 @@ interface ArenasFilterSidebarProps {
  */
 function TagFilterSkeleton() {
   return (
-    <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-[#0E0E0D]/10 min-h-[85px]">
+    <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-foreground/10 min-h-[85px]">
       <div className="flex items-center justify-between">
         <span className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
           <TagIcon className="h-3 w-3 text-orange" /> Golden Ticket Tags
         </span>
-        <div className="h-3.5 w-12 bg-[#0E0E0D]/10 animate-pulse" />
+        <div className="h-3.5 w-12 bg-foreground/10 animate-pulse" />
       </div>
       <div className="flex flex-wrap gap-1.5 pt-1">
-        <div className="h-6 w-20 bg-[#0E0E0D]/10 border border-[#0E0E0D]/15 animate-pulse" />
-        <div className="h-6 w-24 bg-[#0E0E0D]/10 border border-[#0E0E0D]/15 animate-pulse" />
-        <div className="h-6 w-16 bg-[#0E0E0D]/10 border border-[#0E0E0D]/15 animate-pulse" />
+        <div className="h-6 w-20 bg-foreground/10 border border-foreground/15 animate-pulse" />
+        <div className="h-6 w-24 bg-foreground/10 border border-foreground/15 animate-pulse" />
+        <div className="h-6 w-16 bg-foreground/10 border border-foreground/15 animate-pulse" />
       </div>
     </div>
   );
@@ -75,6 +75,9 @@ export function ArenasFilterSidebar({
   const [tags, setTags] = useState<TagFilterItem[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Prefixes the filter control ids so a second sidebar instance (mobile
+  // drawer, for example) can't collide with the desktop one.
+  const fieldId = useId();
 
   useEffect(() => {
     (async () => {
@@ -100,7 +103,7 @@ export function ArenasFilterSidebar({
   };
 
   return (
-    <div className="border-2 border-[#0E0E0D] bg-white p-5 shadow-[4px_4px_0px_0px_#0E0E0D] space-y-4">
+    <div className="border-2 border-foreground bg-white p-5 shadow-[4px_4px_0px_0px_var(--foreground)] space-y-4">
       <span className="font-mono text-[0.48rem] text-orange uppercase tracking-[0.25em] font-bold block">
         [DIRECTORY SEARCH & FILTERS]
       </span>
@@ -109,14 +112,15 @@ export function ArenasFilterSidebar({
         <input
           type="text"
           placeholder="Search Arena..."
+          aria-label="Search arenas"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] pl-9 pr-3 py-2 font-mono text-[0.62rem] placeholder-muted-foreground/60 uppercase focus:outline-none focus:border-orange transition-colors"
+          className="w-full bg-card border-2 border-foreground pl-9 pr-3 py-2 font-mono text-[0.62rem] placeholder-muted-foreground/60 uppercase focus:outline-none focus:border-orange transition-colors"
         />
-        <Search className="absolute left-3 top-3 h-3.5 w-3.5 text-[#0E0E0D]/60" />
+        <Search className="absolute left-3 top-3 h-3.5 w-3.5 text-foreground/60" />
       </div>
 
-      <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-[#0E0E0D]/10">
+      <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-foreground/10">
         <span className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Scope</span>
         <ArenaTabs activeTab={activeTab} setActiveTab={onTabChange} allCount={allCount} myCount={myCount} />
       </div>
@@ -126,7 +130,7 @@ export function ArenasFilterSidebar({
         <TagFilterSkeleton />
       ) : (
         tags.length > 0 && (
-          <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-[#0E0E0D]/10 min-h-[85px]">
+          <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-foreground/10 min-h-[85px]">
             <div className="flex items-center justify-between">
               <span className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 <TagIcon className="h-3 w-3 text-orange" /> Golden Ticket Tags
@@ -138,9 +142,9 @@ export function ArenasFilterSidebar({
                   type="button"
                   title="Add Tags"
                   onClick={() => setIsModalOpen(true)}
-                  className="p-1 text-[#0E0E0D] hover:bg-[#0E0E0D]/10 border border-[#0E0E0D] transition-colors cursor-pointer"
+                  className="p-1 text-foreground hover:bg-foreground/10 border border-foreground transition-colors cursor-pointer"
                 >
-                  <Filter className="h-3 w-3 text-[#0E0E0D]" />
+                  <Filter className="h-3 w-3 text-foreground" />
                 </button>
                 {selectedTag && (
                   <button
@@ -184,12 +188,13 @@ export function ArenasFilterSidebar({
       />
 
       {/* Status Filter */}
-      <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-[#0E0E0D]/10">
-        <label className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Status</label>
+      <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-foreground/10">
+        <label htmlFor={`${fieldId}-status`} className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Status</label>
         <select
+          id={`${fieldId}-status`}
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value as ArenaStatusFilter)}
-          className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
+          className="w-full bg-card border-2 border-foreground px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
         >
           <option value="all">ALL STATUSES</option>
           <option value="open">REGISTRATION OPEN</option>
@@ -199,12 +204,13 @@ export function ArenasFilterSidebar({
       </div>
 
       {/* Access Filter */}
-      <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-[#0E0E0D]/10">
-        <label className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Access</label>
+      <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-foreground/10">
+        <label htmlFor={`${fieldId}-access`} className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Access</label>
         <select
+          id={`${fieldId}-access`}
           value={accessFilter}
           onChange={(e) => onAccessChange(e.target.value as ArenaAccessFilter)}
-          className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
+          className="w-full bg-card border-2 border-foreground px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
         >
           <option value="all">ALL ACCESS</option>
           <option value="public">PUBLIC ONLY</option>
@@ -213,12 +219,13 @@ export function ArenasFilterSidebar({
       </div>
 
       {/* Sorting Select Dropdown */}
-      <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-[#0E0E0D]/10">
-        <label className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Sort By</label>
+      <div className="flex flex-col gap-1 pt-2 border-t border-dashed border-foreground/10">
+        <label htmlFor={`${fieldId}-sort`} className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-wider block">Sort By</label>
         <select
+          id={`${fieldId}-sort`}
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value as ArenaSortOption)}
-          className="w-full bg-[#FAF8F5] border-2 border-[#0E0E0D] px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
+          className="w-full bg-card border-2 border-foreground px-2 py-1.5 font-mono text-[0.6rem] uppercase focus:outline-none focus:border-orange cursor-pointer"
         >
           <option value="newest">NEWEST ADDED</option>
           <option value="oldest">OLDEST ADDED</option>
@@ -227,10 +234,10 @@ export function ArenasFilterSidebar({
         </select>
       </div>
 
-      <div className="pt-2 border-t border-dashed border-[#0E0E0D]/10">
+      <div className="pt-2 border-t border-dashed border-foreground/10">
         <Link
           href="/arena/create"
-          className="w-full py-2.5 bg-orange text-white border-2 border-[#0E0E0D] font-mono text-[0.58rem] font-bold tracking-widest uppercase hover:bg-transparent hover:text-[#0E0E0D] transition-all duration-150 shadow-[2px_2px_0px_0px_#0E0E0D] hover:shadow-none active:translate-y-0.5 flex items-center justify-center gap-1.5"
+          className="w-full py-2.5 bg-orange text-white border-2 border-foreground font-mono text-[0.58rem] font-bold tracking-widest uppercase hover:bg-transparent hover:text-foreground transition-all duration-150 shadow-[2px_2px_0px_0px_var(--foreground)] hover:shadow-none active:translate-y-0.5 flex items-center justify-center gap-1.5"
         >
           <Plus className="h-3 w-3" /> Host Arena
         </Link>

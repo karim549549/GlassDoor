@@ -26,5 +26,5 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, user: result.user });
-  });
+  }, "Profile update failed.", req);
 }

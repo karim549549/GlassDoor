@@ -99,12 +99,12 @@ export function HeroJoinSeatCta() {
     >
       <span
         ref={joinAnRef}
-        className="block font-display italic text-[clamp(1.2rem,2.8vw,2.2rem)] text-[#0E0E0D] leading-none uppercase pr-1.5"
+        className="block font-display italic text-[clamp(1.2rem,2.8vw,2.2rem)] text-foreground leading-none uppercase pr-1.5"
       >
         Join an
       </span>
 
-      <span className="relative inline-block font-display italic text-[clamp(1.35rem,3.1vw,2.5rem)] text-[#F1EFE9] leading-none uppercase px-3 py-1.5 mt-1 font-bold">
+      <span className="relative inline-block font-display italic text-[clamp(1.35rem,3.1vw,2.5rem)] text-background leading-none uppercase px-3 py-1.5 mt-1 font-bold">
         {/* Background block animation element */}
         <span
           ref={bgBlockRef}

@@ -11,9 +11,9 @@ interface LogoutConfirmDialogProps {
 export function LogoutConfirmDialog({ isOpen, onOpenChange, onConfirm }: LogoutConfirmDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-8 bg-[#F1EFE9] border border-[#0E0E0D] rounded-none shadow-2xl font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-50">
+      <DialogContent className="max-w-md p-8 bg-background border border-foreground rounded-none shadow-2xl font-mono text-[0.65rem] uppercase tracking-wider text-foreground z-50">
         <div className="space-y-4">
-          <h3 className="font-display text-[1.2rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-[#0E0E0D]">
+          <h3 className="font-display text-[1.2rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-foreground">
             Remember this account?
           </h3>
           <p className="font-sans text-[0.7rem] text-muted-foreground leading-normal lowercase first-letter:uppercase">
@@ -22,13 +22,13 @@ export function LogoutConfirmDialog({ isOpen, onOpenChange, onConfirm }: LogoutC
           <div className="grid grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => onConfirm(true)}
-              className="py-2 border border-[#0E0E0D] bg-[#0E0E0D] text-[#F1EFE9] font-bold hover:bg-[#F1EFE9] hover:text-[#0E0E0D] transition-colors cursor-pointer text-center"
+              className="py-2 border border-foreground bg-foreground text-background font-bold hover:bg-background hover:text-foreground transition-colors cursor-pointer text-center"
             >
               Yes, Remember
             </button>
             <button
               onClick={() => onConfirm(false)}
-              className="py-2 border border-[#0E0E0D] bg-transparent text-[#0E0E0D] font-bold hover:bg-[#0E0E0D] hover:text-[#F1EFE9] transition-colors cursor-pointer text-center"
+              className="py-2 border border-foreground bg-transparent text-foreground font-bold hover:bg-foreground hover:text-background transition-colors cursor-pointer text-center"
             >
               No, Forget
             </button>

@@ -176,12 +176,12 @@ async function main() {
     
     // Calculate timelines relative to now
     const now = new Date();
-    let regStart = new Date();
-    let regEnd = new Date();
-    let ideaStart = new Date();
-    let ideaEnd = new Date();
-    let implStart = new Date();
-    let implEnd = new Date();
+    const regStart = new Date();
+    const regEnd = new Date();
+    const ideaStart = new Date();
+    const ideaEnd = new Date();
+    const implStart = new Date();
+    const implEnd = new Date();
 
     if (status === "REGISTRATION_OPEN") {
       regStart.setDate(now.getDate() - 3);
@@ -229,7 +229,7 @@ async function main() {
         description,
         coverImageUrl: defaultCover,
         creatorId: creator.id,
-        status: status as any,
+        publishedAt: new Date(),
         isPrivate,
         inviteCode: isPrivate ? `INVITE-CODE-${i + 1000}` : null,
         registrationStart: regStart,

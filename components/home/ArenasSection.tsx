@@ -43,7 +43,7 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
         ref={ref}
         // Set z-index to z-30 (up from z-10) to force the container and its absolute children (the cards) 
         // to render on top of the subsequent pink section (z-10) during scroll translations.
-        className="arenas-section-container relative h-auto md:h-screen md:min-h-screen bg-[#F1EFE9] text-[#0E0E0D] flex flex-col justify-between py-12 md:py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-30 border-b border-[#0E0E0D]"
+        className="arenas-section-container relative h-auto md:h-screen md:min-h-screen bg-background text-foreground flex flex-col justify-between py-12 md:py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-30 border-b border-foreground"
         {...props}
       >
         {/* Technical Section Header */}
@@ -89,7 +89,7 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
 
               {/* Organizer Block (Reveals dynamically beneath the card settled spot) */}
               <div className="arena-organizer-block absolute left-4 bottom-[-54px] flex items-center gap-2.5 opacity-0 translate-y-3 pointer-events-none transition-colors duration-300">
-                <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center font-mono text-[0.6rem] font-bold bg-[#FAF8F5] text-[#0E0E0D]">
+                <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center font-mono text-[0.6rem] font-bold bg-card text-foreground">
                   {slot.initials}
                 </div>
                 <div className="text-left">
@@ -115,7 +115,7 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
         <div className="arena-enter-button w-full flex justify-center py-6 md:opacity-0 md:translate-y-4 md:pointer-events-none transition-all duration-300">
           <a
             href="/arenas"
-            className="px-8 py-3.5 bg-orange text-[#FAF8F5] border border-orange font-mono text-[0.65rem] font-bold tracking-[0.25em] uppercase hover:bg-[#FAF8F5] hover:text-[#0E0E0D] hover:border-[#0E0E0D] transition-colors shadow-[4px_4px_0px_0px_rgba(14,14,13,1)] hover:shadow-[6px_6px_0px_0px_rgba(14,14,13,1)] active:translate-y-0.5 flex items-center gap-2 pointer-events-auto"
+            className="px-8 py-3.5 bg-orange text-card border border-orange font-mono text-[0.65rem] font-bold tracking-[0.25em] uppercase hover:bg-card hover:text-foreground hover:border-foreground transition-colors shadow-[4px_4px_0px_0px_var(--foreground)] hover:shadow-[6px_6px_0px_0px_var(--foreground)] active:translate-y-0.5 flex items-center gap-2 pointer-events-auto"
           >
             Enter the Arena <span className="font-sans font-normal text-xs">→</span>
           </a>

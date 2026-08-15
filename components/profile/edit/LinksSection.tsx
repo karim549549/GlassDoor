@@ -9,7 +9,7 @@ interface LinksSectionProps {
 export function LinksSection({ register, errors }: LinksSectionProps) {
   return (
     <div className="space-y-5">
-      <h4 className="font-bold border-b-2 border-[#0E0E0D] pb-1 text-[#0E0E0D] text-[0.85rem]">
+      <h4 className="font-bold border-b-2 border-foreground pb-1 text-foreground text-[0.85rem]">
         4. Social Links (URLs)
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -20,7 +20,7 @@ export function LinksSection({ register, errors }: LinksSectionProps) {
           <input
             id="githubUrl"
             type="text"
-            className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
+            className="w-full p-3 bg-card border border-foreground focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
             placeholder="https://github.com/..."
             {...register("githubUrl")}
           />
@@ -37,7 +37,7 @@ export function LinksSection({ register, errors }: LinksSectionProps) {
           <input
             id="linkedinUrl"
             type="text"
-            className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
+            className="w-full p-3 bg-card border border-foreground focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
             placeholder="https://linkedin.com/in/..."
             {...register("linkedinUrl")}
           />
@@ -54,7 +54,7 @@ export function LinksSection({ register, errors }: LinksSectionProps) {
           <input
             id="portfolioUrl"
             type="text"
-            className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
+            className="w-full p-3 bg-card border border-foreground focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
             placeholder="https://portfolio.dev"
             {...register("portfolioUrl")}
           />

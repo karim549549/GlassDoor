@@ -1,22 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export function useRecentSearches() {
-  const [searches, setSearches] = useState<string[]>([]);
-
-  useEffect(() => {
+  const [searches, setSearches] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
     const saved = localStorage.getItem("recent_searches");
-    if (saved) {
-      try {
-        setSearches(JSON.parse(saved));
-      } catch {
-        // Silent on purpose: a corrupted or stale-format localStorage value
-        // (e.g. left over from an older schema) is expected, not a bug -
-        // falls back to an empty recent-searches list, nothing to fail over.
-      }
+    if (!saved) return [];
+    try {
+      return JSON.parse(saved);
+    } catch {
+      // Silent on purpose: a corrupted or stale-format localStorage value
+      // (e.g. left over from an older schema) is expected, not a bug -
+      // falls back to an empty recent-searches list, nothing to fail over.
+      return [];
     }
-  }, []);
+  });
 
   const addSearch = (query: string) => {
     const trimmed = query.trim();

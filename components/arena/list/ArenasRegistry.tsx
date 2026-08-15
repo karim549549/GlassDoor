@@ -31,7 +31,7 @@ export function ArenasRegistry({
     <div className="lg:col-span-9 space-y-6 relative">
 
       {/* Registry Toolbar Header (Results & Top-Right Pagination) */}
-      <div className="flex items-center justify-between border-b border-[#0E0E0D]/10 pb-3.5">
+      <div className="flex items-center justify-between border-b border-foreground/10 pb-3.5">
         <span className="font-mono text-[0.62rem] uppercase tracking-wider text-muted-foreground font-bold">
           Registry: {totalCount} Arena(s) Found
         </span>
@@ -47,7 +47,7 @@ export function ArenasRegistry({
       {/* Active Tab Contents */}
       <div>
         {activeTab === "my" && !isUserLoggedIn ? (
-          <div className="border-2 border-dashed border-[#0E0E0D]/20 bg-white p-10 text-center space-y-3 shadow-[4px_4px_0px_0px_#0E0E0D]">
+          <div className="border-2 border-dashed border-foreground/20 bg-white p-10 text-center space-y-3 shadow-[4px_4px_0px_0px_var(--foreground)]">
             <Trophy className="h-10 w-10 mx-auto text-muted-foreground/50 stroke-[1.25]" />
             <h4 className="font-mono text-xs uppercase tracking-widest font-bold">Authentication Required</h4>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -81,7 +81,7 @@ export function ArenasRegistry({
             />
           </div>
         ) : (
-          <div className="border-2 border-dashed border-[#0E0E0D]/20 bg-white p-12 text-center space-y-2 shadow-[4px_4px_0px_0px_#0E0E0D]">
+          <div className="border-2 border-dashed border-foreground/20 bg-white p-12 text-center space-y-2 shadow-[4px_4px_0px_0px_var(--foreground)]">
             <Trophy className="h-10 w-10 mx-auto text-muted-foreground/30 stroke-[1.25]" />
             <p className="font-mono text-[0.62rem] uppercase tracking-widest text-muted-foreground font-bold">
               No matching arenas found in this directory.

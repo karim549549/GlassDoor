@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { signupSchema } from "@/lib/auth/schema";
 import { upsertSavedAccount } from "@/lib/client/saved-accounts";
 import { logger } from "@/lib/client/logger";
 import { useAuthFormAnimation } from "@/components/login/shared/useAuthFormAnimation";
@@ -15,19 +16,13 @@ import { RoleSelector } from "./RoleSelector";
 import { SignupFormFields } from "./SignupFormFields";
 import { SignupSuccessPanel } from "./SignupSuccessPanel";
 
-const signupSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string()
-    .min(6, "Password must be at least 6 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least one special character"),
-  roleName: z.enum(["USER", "COMPANY"]),
-});
-
-export type SignupSchemaType = z.infer<typeof signupSchema>;
+/**
+ * The shared schema defaults `roleName`, so its input and output types differ:
+ * the form's field values (what `register`/`errors` describe) are the input
+ * shape, and the parsed submit payload is the output shape.
+ */
+export type SignupSchemaType = z.input<typeof signupSchema>;
+type SignupSubmitValues = z.output<typeof signupSchema>;
 
 export default function SignupForm() {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -43,20 +38,20 @@ export default function SignupForm() {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors },
-  } = useForm<SignupSchemaType>({
+  } = useForm<SignupSchemaType, unknown, SignupSubmitValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       roleName: "USER",
     },
   });
 
-  const selectedRole = watch("roleName");
+  const selectedRole = useWatch({ control, name: "roleName" });
 
   useAuthFormAnimation({ containerRef, titleRef, formRef, footerRef });
 
-  const onSubmit = async (data: SignupSchemaType) => {
+  const onSubmit = async (data: SignupSubmitValues) => {
     setIsLoading(true);
     setServerError(null);
 
@@ -83,7 +78,6 @@ export default function SignupForm() {
         upsertSavedAccount({
           email: data.email,
           name: data.fullName || data.email.split("@")[0],
-          refreshToken: result.session?.refreshToken || null,
         });
 
         setIsSuccess(true);
@@ -119,7 +113,10 @@ export default function SignupForm() {
       <AuthErrorBanner message={serverError} />
 
       <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        <RoleSelector selectedRole={selectedRole} onSelect={(role) => setValue("roleName", role)} />
+        <RoleSelector
+          selectedRole={selectedRole ?? "USER"}
+          onSelect={(role) => setValue("roleName", role)}
+        />
 
         <SignupFormFields register={register} errors={errors} disabled={isLoading} />
 

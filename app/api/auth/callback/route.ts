@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/server/supabase/server";
 import { syncUser } from "@/lib/server/auth/auth-service";
 import { logger } from "@/lib/server/logger";
+import { safeRedirectPath } from "@/lib/url";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -33,6 +34,9 @@ export async function GET(request: NextRequest) {
       fullName: user.user_metadata.full_name || null,
       roleName: "USER",
       emailVerified: true,
+      // Safe here: exchangeCodeForSession just established a real session, so
+      // this id is a genuine Supabase identity.
+      allowStaleEmailReconciliation: true,
     });
   } catch (syncError) {
     logger.error("Profile sync failed on OAuth callback", {
@@ -42,6 +46,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/login?error=Profile+sync+failed", request.url));
   }
 
-  const finalRedirect = redirectTo || `/user/${user.id}`;
+  const finalRedirect = safeRedirectPath(redirectTo, `/user/${user.id}`);
   return NextResponse.redirect(new URL(finalRedirect, request.url));
 }

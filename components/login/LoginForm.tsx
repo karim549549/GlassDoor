@@ -7,6 +7,7 @@ import * as z from "zod";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { loginSchema } from "@/lib/auth/schema";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { upsertSavedAccount } from "@/lib/client/saved-accounts";
 import { logger } from "@/lib/client/logger";
@@ -14,11 +15,6 @@ import { useAuthFormAnimation } from "@/components/login/shared/useAuthFormAnima
 import { AuthErrorBanner } from "@/components/login/shared/AuthErrorBanner";
 import { OAuthOptions } from "@/components/login/shared/OAuthOptions";
 import { LoginFormFields } from "./LoginFormFields";
-
-const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
 
 export type LoginSchemaType = z.infer<typeof loginSchema>;
 
@@ -76,7 +72,6 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
         upsertSavedAccount({
           email: data.email,
           name: result.user?.fullName || data.email.split("@")[0],
-          refreshToken: result.session?.refreshToken || null,
         });
 
         // Re-verify against the server rather than trusting the client-supplied

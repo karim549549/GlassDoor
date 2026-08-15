@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import LoginForm from "@/components/login/LoginForm";
@@ -25,24 +25,28 @@ export function AuthModal() {
 
   const isOpen = isLogin || isSignup || isForgotPassword || isResetPassword;
 
+  // Saved accounts live in localStorage, so this is a client-only lookup. It is
+  // read during render rather than synced into state from an effect: the modal
+  // body is portalled and never part of the server-rendered markup, so there is
+  // nothing to hydrate against and no need for a second render pass.
+  const hasAccounts =
+    isOpen && typeof window !== "undefined" && getSavedAccounts().length > 0;
+
   // Local state for account switcher vs credentials login
   const [forceLoginView, setForceLoginView] = useState(false);
   const [prefilledEmail, setPrefilledEmail] = useState<string | undefined>(undefined);
-  const [hasAccounts, setHasAccounts] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      setHasAccounts(getSavedAccounts().length > 0);
-    }
-  }, [isOpen, pathname]);
-
-  // Clean up states when modal closes or routes change
-  useEffect(() => {
+  // Clean up states when modal closes or routes change. Adjusting state during
+  // render (rather than in an effect) means the reset is applied before the
+  // browser paints, so a reopened modal never flashes the previous selection.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
     if (!isOpen) {
       setForceLoginView(false);
       setPrefilledEmail(undefined);
     }
-  }, [isOpen]);
+  }
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {

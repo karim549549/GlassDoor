@@ -1,22 +1,29 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/server/supabase/server";
-import type { Provider } from "@supabase/supabase-js";
 import { logger } from "@/lib/server/logger";
+import { safeRedirectPath } from "@/lib/url";
+
+const ALLOWED_PROVIDERS = ["google", "github"] as const;
+type AllowedProvider = (typeof ALLOWED_PROVIDERS)[number];
+
+function isAllowedProvider(value: string | null): value is AllowedProvider {
+  return value !== null && (ALLOWED_PROVIDERS as readonly string[]).includes(value);
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const provider = searchParams.get("provider");
-  const redirectTo = searchParams.get("redirectTo") || "";
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"), "");
 
-  if (!provider) {
-    return NextResponse.json({ error: "Provider is required." }, { status: 400 });
+  if (!isAllowedProvider(provider)) {
+    return NextResponse.json({ error: "Unsupported provider." }, { status: 400 });
   }
 
   const supabase = await createClient();
   const origin = request.nextUrl.origin;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: provider as Provider,
+    provider,
     options: {
       redirectTo: `${origin}/api/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
     },

@@ -30,7 +30,7 @@ export function ArenaHeader({
   animationHooks = {},
 }: ArenaHeaderProps) {
   return (
-    <div className="w-full bg-[#0E0E0D] text-[#F1EFE9] border-b-4 border-double border-[#F1EFE9]/25 pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
+    <div className="w-full bg-foreground text-background border-b-4 border-double border-background/25 pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
       {/* Faint blueprint grid overlay specifically inside the dark masthead block */}
       <BackgroundGrid opacity={0.05} patternSize={30} />
 
@@ -48,11 +48,11 @@ export function ArenaHeader({
             </span>
           )}
           <div className="overflow-hidden py-1">
-            <h1 className={`font-display italic text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-[#F1EFE9] ${animationHooks.title ?? ""}`}>
+            <h1 className={`font-display italic text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-background ${animationHooks.title ?? ""}`}>
               {title}
             </h1>
           </div>
-          <p className={`font-mono text-[0.52rem] text-[#F1EFE9]/60 uppercase tracking-widest leading-relaxed max-w-2xl ${animationHooks.description ?? ""}`}>
+          <p className={`font-mono text-[0.52rem] text-background/60 uppercase tracking-widest leading-relaxed max-w-2xl ${animationHooks.description ?? ""}`}>
             {description}
           </p>
         </div>

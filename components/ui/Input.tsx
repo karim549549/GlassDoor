@@ -7,20 +7,25 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, ...props }, ref) => {
+  ({ className, type, label, error, id, ...props }, ref) => {
     const [showPassword, setShowPassword] = React.useState(false);
     const isPassword = type === "password";
     const inputType = isPassword ? (showPassword ? "text" : "password") : type;
+    // Falls back to a generated id so the visible label can always be
+    // associated, while still honouring an explicit id from the caller.
+    const generatedId = React.useId();
+    const inputId = id ?? generatedId;
 
     return (
       <div className="w-full flex flex-col gap-1.5">
         {label && (
-          <label className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
+          <label htmlFor={inputId} className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
             {label}
           </label>
         )}
         <div className="relative w-full">
           <input
+            id={inputId}
             type={inputType}
             className={`w-full bg-secondary border border-border py-2 text-sm font-sans placeholder-muted-foreground/60 focus:outline-none focus:border-foreground/45 transition-colors duration-200 ${
               isPassword ? "pl-3 pr-10" : "px-3"

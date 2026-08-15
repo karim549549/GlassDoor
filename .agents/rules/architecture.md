@@ -2,16 +2,27 @@
 
 Applies to: `lib/**`, `app/api/**`, `app/**/page.tsx`, `components/**`
 
-## Frontend/backend boundary — pages never touch Prisma or Supabase directly for data
+## Frontend/backend boundary — the service layer is the seam, not HTTP
 
-This project is built as one Next.js app today, but with an explicit intent to eventually split into a separately-deployed backend for scalability. To keep that split possible without a rewrite, treat `app/api/**` as if it were already a different service: **pages and components (including Server Components) fetch it over HTTP — they never import `prisma`, construct a Supabase client, or call a `lib/<domain>/service.ts` function directly to read/write business data.**
+This project is built as one Next.js app today, but with an explicit intent to eventually split into a separately-deployed backend. The seam that makes that split cheap is **`lib/<domain>/service.ts`: every piece of data logic lives there, and nothing else talks to Prisma.**
 
-- **Dynamic pages** (anything that already depends on the current viewer — auth-gated content, per-request data): fetch the API route with `fetchInternalApi` from `lib/server/api-client.ts`, which forwards the request's cookies so the route's own auth check sees the same session. Reference: `app/user/[id]/page.tsx` → `GET /api/user/[id]`, `app/arena/[id]/page.tsx` → `GET /api/arena/[id]`.
-- **If the API route a page needs doesn't exist yet, create it** — don't reach for the service function as a shortcut. Move any inline Prisma logic you find in a page into `lib/<domain>/service.ts` and wrap it with a real route handler, the way `lib/user/service.ts` + `app/api/user/[id]/route.ts` were added for what used to be raw Prisma calls inside `app/user/[id]/page.tsx`.
-- **The one confirmed exception: statically-generated / ISR pages** (`export const revalidate = N` with no per-request dependency). A build-time prerender has no live server to self-fetch against — this was verified by an actual failed `next build` (`fetch failed` / `ECONNREFUSED`) when the ISR'd arena listing page was pointed at a self-fetch. These pages call their domain's service function directly instead (see the comment in `app/arena/page.tsx` for the full reasoning) — the API route calls that same function, so there's still exactly one place the query logic lives, even though the page doesn't reach it over HTTP.
-- A plain `supabase.auth.getUser()` call to identify the current request's viewer (not to read business data) is infrastructure, not a boundary violation — every dynamic page and API route needs to know who's asking.
+- **Pages and components (including Server Components) never import `prisma`, construct a Supabase client for business data, or inline a query.** That restriction is unchanged and is what this rule was always really protecting.
+- **Server Components call the domain service function directly.** Reference: `app/user/[id]/page.tsx` → `getUserProfileById()` + `toUserProfileDto()`, `app/arena/page.tsx` → `listArenas()`.
+- **`app/api/**` is a parallel thin adapter over the *same* service functions**, for client components and any future external consumer. Neither side calls the other. `app/api/user/[id]/route.ts` calls the exact same `getUserProfileById` + `toUserProfileDto` pair the page does.
+- **If the service function a page needs doesn't exist yet, create it** — don't inline Prisma in the page. Add the API route too when a client component will need the same data.
+- A plain `supabase.auth.getUser()` call to identify the current viewer (not to read business data) is infrastructure, not a boundary violation.
 
-If you're unsure which case a new page falls into: does it need `export const revalidate` (or is it otherwise safe to statically generate) — if yes, direct service call; if it's inherently per-request, HTTP fetch through `fetchInternalApi`.
+### Why this changed (2026-08-15)
+
+This rule previously required Server Components to HTTP-fetch the app's own `/api/*` routes via `fetchInternalApi`. That was reversed, and `lib/server/api-client.ts` deleted, for three reasons:
+
+1. **Security.** It built its target URL from the client-controlled `Host` header and attached the caller's session cookie — a request-forgery primitive that sent the victim's session to whatever host an attacker named. The hosting platform happened to block it; the code did not.
+2. **Cost.** Every render became page → HTTP request to self → route → service → Prisma: an extra network hop and a second billed serverless invocation per page view, outside React's request-level dedup.
+3. **It was already breaking down.** `app/arena/page.tsx` is `force-dynamic` and called `listArenas()` directly, which the old "statically-generated pages only" exception did not cover. The codebase paid the round-trip cost on one page while ignoring the rule on another.
+
+Split-readiness is unaffected: when the backend is extracted, `lib/*/service.ts` and `app/api/*` move to it and the call sites change either way — whether they currently say `await listArenas(params)` or `await fetchInternalApi("/api/arena?…")`. The HTTP hop bought nothing a typed service call doesn't.
+
+For absolute URLs that must not come from the request (sitemap, robots, OG tags), use `getSiteUrl()` from `lib/site-url.ts`, which reads configuration rather than the `Host` header.
 
 ## Domain-scoped data layer
 

@@ -10,12 +10,12 @@ interface GeneralSectionProps {
   register: UseFormRegister<ArenaFormInput>;
   errors: FieldErrors<ArenaFormInput>;
   setValue: UseFormSetValue<ArenaFormInput>;
-  watchCoverImageUrl: string;
+  watchCoverImageUrl?: string | null;
 }
 
 export function GeneralSection({ register, errors, setValue, watchCoverImageUrl }: GeneralSectionProps) {
   return (
-    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_var(--foreground)]">
       <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
         <Trophy className="h-4 w-4" /> 01. General Details
       </h2>
@@ -29,10 +29,11 @@ export function GeneralSection({ register, errors, setValue, watchCoverImageUrl 
         />
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
+          <label htmlFor="description" className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
             Description / Overview
           </label>
           <textarea
+            id="description"
             rows={4}
             placeholder="Give a thorough description about the arena theme, goals, and who should join..."
             className={`w-full bg-secondary border border-border px-3 py-2.5 text-sm font-sans placeholder-muted-foreground/60 focus:outline-none focus:border-foreground/45 transition-colors duration-200 resize-none ${

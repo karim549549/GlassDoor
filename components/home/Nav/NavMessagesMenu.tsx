@@ -23,8 +23,8 @@ export function NavMessagesMenu({ isDarkTheme }: NavMessagesMenuProps) {
           <button
             className={`p-1.5 rounded-full border border-transparent transition-all duration-200 cursor-pointer flex items-center justify-center relative hover:scale-105 active:scale-95 ${
               isDarkTheme
-                ? "text-[#F1EFE9] hover:bg-[#F1EFE9]/15"
-                : "text-[#0E0E0D] hover:bg-[#0E0E0D]/10"
+                ? "text-background hover:bg-background/15"
+                : "text-foreground hover:bg-foreground/10"
             }`}
             title="Messages"
           >
@@ -37,15 +37,15 @@ export function NavMessagesMenu({ isDarkTheme }: NavMessagesMenuProps) {
       />
       <DropdownMenuContent
         align="end"
-        className="w-64 bg-[#F1EFE9] text-[#0E0E0D] border border-[#0E0E0D] rounded-none shadow-xl p-0 font-mono text-[0.65rem] uppercase tracking-wider z-50 overflow-hidden transition-all duration-200 animate-in fade-in slide-in-from-top-2"
+        className="w-64 bg-background text-foreground border border-foreground rounded-none shadow-xl p-0 font-mono text-[0.65rem] uppercase tracking-wider z-50 overflow-hidden transition-all duration-200 animate-in fade-in slide-in-from-top-2"
       >
-        <div className="p-3 border-b border-[#0E0E0D] font-bold text-[#0E0E0D]/60 bg-[#FAF8F5]">
+        <div className="p-3 border-b border-foreground font-bold text-foreground/60 bg-card">
           Conversations
         </div>
-        <div className="divide-y divide-[#0E0E0D]/5 max-h-48 overflow-y-auto">
+        <div className="divide-y divide-foreground/5 max-h-48 overflow-y-auto">
           <DropdownMenuItem
             onClick={() => { setHasUnreadMessages(false); alert("Opening chat with Anwar..."); }}
-            className="p-3 cursor-pointer flex flex-col items-start gap-1 rounded-none hover:bg-[#0E0E0D] hover:text-[#F1EFE9] focus:bg-[#0E0E0D] focus:text-[#F1EFE9] outline-none group"
+            className="p-3 cursor-pointer flex flex-col items-start gap-1 rounded-none hover:bg-foreground hover:text-background focus:bg-foreground focus:text-background outline-none group"
           >
             <div className="flex items-center justify-between w-full">
               <span className="font-bold">Anwar Moustafa</span>
@@ -57,7 +57,7 @@ export function NavMessagesMenu({ isDarkTheme }: NavMessagesMenuProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => alert("Opening chat with Karim...")}
-            className="p-3 cursor-pointer flex flex-col items-start gap-1 rounded-none hover:bg-[#0E0E0D] hover:text-[#F1EFE9] focus:bg-[#0E0E0D] focus:text-[#F1EFE9] outline-none group"
+            className="p-3 cursor-pointer flex flex-col items-start gap-1 rounded-none hover:bg-foreground hover:text-background focus:bg-foreground focus:text-background outline-none group"
           >
             <div className="flex items-center justify-between w-full">
               <span className="font-bold">Karim Hassan</span>

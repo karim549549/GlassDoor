@@ -29,10 +29,10 @@ export function Nav() {
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       forceDarkNavbar
-        ? "bg-[#0E0E0D] text-[#F1EFE9] border-b border-[#F1EFE9]/10 shadow-sm"
+        ? "bg-foreground text-background border-b border-background/10 shadow-sm"
         : isCoverPage
-          ? "bg-transparent text-[#F1EFE9]"
-          : "bg-transparent text-[#0E0E0D]"
+          ? "bg-transparent text-background"
+          : "bg-transparent text-foreground"
     }`}>
       <div className={`flex items-center justify-between h-11 transition-all duration-300 ${
         isScrolled ? "md:px-40 px-6" : "px-6"

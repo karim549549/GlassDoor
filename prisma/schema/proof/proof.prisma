@@ -1,0 +1,18 @@
+model ProofPacket {
+  id               String          @id @default(uuid()) @db.Uuid
+  slug             String          @unique
+  submissionId     String          @unique @db.Uuid
+  submission       ArenaSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  contentHash      String
+  payloadSnapshot  Json
+  isRevoked        Boolean         @default(false)
+  revokedAt        DateTime?
+  revocationReason String?         @db.Text
+  issuedAt         DateTime        @default(now())
+
+  createdAt        DateTime        @default(now())
+
+  @@index([slug])
+  @@map("proof_packets")
+}

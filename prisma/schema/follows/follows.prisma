@@ -4,6 +4,9 @@ model Follows {
   follower    User   @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
   following   User   @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
 
+  // getUserProfileById() counts rows by followingId; the composite PK is ordered
+  // (followerId, followingId) so it cannot serve that lookup.
+  @@index([followingId])
   @@id([followerId, followingId])
   @@map("follows")
 }

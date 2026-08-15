@@ -6,7 +6,7 @@ import { BackgroundGrid } from "../../ui/BackgroundGrid";
 export function HeroSection() {
   return (
     <section
-      className="hero-section-container relative bg-[#F1EFE9] text-[#0E0E0D] border-b border-border overflow-visible h-screen min-h-screen"
+      className="hero-section-container relative bg-background text-foreground border-b border-border overflow-visible h-screen min-h-screen"
     >
       {/* Darker Blueprint Grid Backdrop Overlay */}
       <BackgroundGrid />

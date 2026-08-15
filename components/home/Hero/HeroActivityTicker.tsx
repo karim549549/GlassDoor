@@ -1,12 +1,11 @@
 const TICKER_ITEMS = [
-  "Vodafone Egypt · EGP 42,000 median",
-  "Backend +12% since Q1",
-  "2 Arenas live now",
-  "Amazon Egypt · EGP 68,000 median",
-  "128 developers connected this week",
-  "Instabug · EGP 55,000 median",
-  "New Arena: Full-Stack Sprint · 6 hrs",
-  "Breadfast · EGP 38,000 median",
+  "Vodafone Egypt · 2 Arenas Hosted",
+  "Rating Period #32 Computed",
+  "128 Verified Proof Packets Issued",
+  "Instabug · Full-Stack Challenge Live",
+  "Glicko-2 Top Rank: 2140 General",
+  "New Arena: Egypt React Winter Hackathon",
+  "Breadfast · Backend Sprint Under Judging",
 ];
 
 /**
@@ -17,7 +16,7 @@ const TICKER_ITEMS = [
 export function HeroActivityTicker() {
   return (
     <div
-      className="absolute left-0 right-0 border-t border-border overflow-hidden hidden sm:flex items-center z-20 text-[#0E0E0D]"
+      className="absolute left-0 right-0 border-t border-border overflow-hidden hidden sm:flex items-center z-20 text-foreground"
       style={{ bottom: 0, height: "clamp(28px, 4vh, 38px)" }}
     >
       <div

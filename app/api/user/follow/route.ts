@@ -73,5 +73,5 @@ export async function POST(req: Request) {
       following: isFollowing,
       followersCount,
     });
-  });
+  }, "Follow action failed.", req);
 }

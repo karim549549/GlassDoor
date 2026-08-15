@@ -1,6 +1,7 @@
 import * as z from "zod";
 import { isSafeHttpUrl } from "@/lib/url";
 import { EGYPTIAN_UNIVERSITIES, EGYPT_LOCATIONS } from "./constants";
+import { SENIORITY_INPUT_VALUES } from "@/lib/taxonomy/seniority";
 
 /**
  * Single source of truth for the employment-status/seniority enums. Both the
@@ -10,10 +11,21 @@ import { EGYPTIAN_UNIVERSITIES, EGYPT_LOCATIONS } from "./constants";
  * app/api/profile/update/route.ts), which could silently drift out of sync.
  */
 export const EMPLOYMENT_STATUS_VALUES = ["UNEMPLOYED", "EMPLOYED", "FREELANCER", "INTERN", "STUDENT"] as const;
-export const SENIORITY_VALUES = ["JUNIOR", "MID", "SENIOR", "LEAD", "MANAGER"] as const;
+/**
+ * Seniority now lives in lib/taxonomy/seniority.ts — it was defined here AND,
+ * with different casing and cardinality, in lib/companies/schema.ts under the
+ * same exported name. Re-exported rather than moved so existing importers keep
+ * working; new code should import from the taxonomy module directly.
+ */
+export {
+  SENIORITY_VALUES,
+  SENIORITY_LABELS,
+  SENIORITY_INPUT_VALUES,
+  normalizeSeniority,
+  type Seniority,
+} from "@/lib/taxonomy/seniority";
 
 export type EmploymentStatus = (typeof EMPLOYMENT_STATUS_VALUES)[number];
-export type Seniority = (typeof SENIORITY_VALUES)[number];
 
 /**
  * Statuses for which the form requires (and displays) a current employer.
@@ -57,7 +69,14 @@ export const profileBaseSchema = z.object({
   bio: optionalTrimmedString,
   employmentStatus: requiredEnumField(EMPLOYMENT_STATUS_VALUES, "Employment status is required"),
   currentEmployer: optionalTrimmedString,
-  seniority: requiredEnumField(SENIORITY_VALUES, "Seniority level is required"),
+  // Validated against the INPUT set, which still admits the legacy spellings
+  // (JUNIOR/MID/...) sitting in existing `users.seniority` rows so those
+  // profiles remain editable. The service normalizes to a canonical value on
+  // write; narrow this to SENIORITY_VALUES once the data migration has run.
+  seniority: requiredEnumField(
+    SENIORITY_INPUT_VALUES as [string, ...string[]],
+    "Seniority level is required"
+  ),
   education: z
     .string()
     .trim()

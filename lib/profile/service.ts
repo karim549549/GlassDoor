@@ -2,6 +2,7 @@ import "server-only";
 import { Prisma, type User } from "@prisma/client";
 import prisma from "@/lib/server/prisma";
 import { EMPLOYER_REQUIRED_STATUSES, type ProfileFormOutput } from "./schema";
+import { normalizeSeniority } from "@/lib/taxonomy/seniority";
 
 export type UpdateProfileResult = { user: User } | { error: string };
 
@@ -43,7 +44,11 @@ export async function updateUserProfile(userId: string, data: ProfileFormOutput)
         bio: data.bio ?? null,
         employmentStatus: data.employmentStatus,
         currentEmployer: showEmployer ? (data.currentEmployer ?? null) : null,
-        seniority: data.seniority,
+        // Normalize on write so a profile edited under the legacy scale
+        // (JUNIOR/MID/...) is persisted canonically. Over time this drains the
+        // legacy spellings out of the column without a bulk migration; the
+        // migration still runs, this just stops the set growing meanwhile.
+        seniority: normalizeSeniority(data.seniority) ?? data.seniority,
         education: data.education,
         location: data.location,
         githubUrl: data.githubUrl ?? null,

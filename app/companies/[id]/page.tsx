@@ -1,21 +1,23 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getCompanyById } from "@/lib/companies/service";
+import { getCompanyByIdOrSlug } from "@/lib/companies/service";
+import { toCompanyDto } from "@/lib/companies/dto";
 import { Footer } from "@/components/home/Footer";
 import { CompanyDetailView } from "@/components/companies/CompanyDetailView";
 
-// Company data is public, static mock data (see lib/companies/data.ts) with no
-// per-request or per-user logic gating this page - safe to serve as ISR.
-export const revalidate = 3600;
+export const revalidate = 300;
 
 interface PageProps {
+  /** The route segment is a company slug; a uuid also resolves. */
   params: Promise<{ id: string }>;
 }
 
+const loadCompany = cache(getCompanyByIdOrSlug);
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const companyId = parseInt(id, 10);
-  const company = getCompanyById(companyId);
+  const company = await loadCompany(id);
 
   if (!company) {
     return {
@@ -24,15 +26,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${company.name} Salaries & Reviews | Devs Arena`,
-    description: `Browse salary ranges, average pay rates, and community reviews for tech roles at ${company.name} in Egypt. Data transparency without HR filters.`,
+    title: `${company.name} — Tech Company Profile | Devs Arena`,
+    description: `Explore tech stack, active coding arenas, and engineering hiring challenges at ${company.name} on Devs Arena.`,
   };
 }
 
 export default async function CompanyPage({ params }: PageProps) {
   const { id } = await params;
-  const companyId = parseInt(id, 10);
-  const company = getCompanyById(companyId);
+  const company = await loadCompany(id);
 
   if (!company) {
     notFound();
@@ -54,7 +55,7 @@ export default async function CompanyPage({ params }: PageProps) {
 
       <div className="relative z-10 flex flex-col min-h-screen">
         <main className="flex-1">
-          <CompanyDetailView company={company} />
+          <CompanyDetailView company={toCompanyDto(company)} />
         </main>
         <Footer />
       </div>

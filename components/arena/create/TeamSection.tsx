@@ -13,7 +13,7 @@ interface TeamSectionProps {
 
 export function TeamSection({ register, errors, watchIsTeam }: TeamSectionProps) {
   return (
-    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_var(--foreground)]">
       <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
         <Users className="h-4 w-4" /> 04. Team Configurations
       </h2>
@@ -49,8 +49,8 @@ export function TeamSection({ register, errors, watchIsTeam }: TeamSectionProps)
             </div>
 
             {/* Team Leader Privacy Access Control Toggle */}
-            <div className="pt-3 border-t border-dashed border-[#0E0E0D]/20">
-              <div className="flex items-center gap-3 p-3 bg-[#0E0E0D]/5 border border-[#0E0E0D]/20">
+            <div className="pt-3 border-t border-dashed border-foreground/20">
+              <div className="flex items-center gap-3 p-3 bg-foreground/5 border border-foreground/20">
                 <input
                   type="checkbox"
                   id="allowLeaderAccessControl"

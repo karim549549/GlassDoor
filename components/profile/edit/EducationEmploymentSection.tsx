@@ -3,10 +3,10 @@ import { SearchableDropdown, type DropdownOption } from "@/components/ui/Searcha
 import {
   EMPLOYER_REQUIRED_STATUSES,
   EMPLOYMENT_STATUS_VALUES,
-  SENIORITY_VALUES,
   type EmploymentStatus,
   type ProfileFormInput,
 } from "@/lib/profile/schema";
+import { SENIORITY_VALUES, SENIORITY_LABELS } from "@/lib/taxonomy/seniority";
 
 const EMPLOYMENT_STATUS_LABELS: Record<EmploymentStatus, string> = {
   UNEMPLOYED: "Looking For Work",
@@ -16,13 +16,8 @@ const EMPLOYMENT_STATUS_LABELS: Record<EmploymentStatus, string> = {
   STUDENT: "Student",
 };
 
-const SENIORITY_LABELS: Record<(typeof SENIORITY_VALUES)[number], string> = {
-  JUNIOR: "Junior Developer",
-  MID: "Mid-level Developer",
-  SENIOR: "Senior Developer",
-  LEAD: "Lead Engineer",
-  MANAGER: "Engineering Manager",
-};
+// Seniority labels come from lib/taxonomy/seniority.ts. A local map here was
+// part of the three-way drift that module now resolves.
 
 interface EducationEmploymentSectionProps {
   register: UseFormRegister<ProfileFormInput>;
@@ -45,7 +40,7 @@ export function EducationEmploymentSection({
 
   return (
     <div className="space-y-5">
-      <h4 className="font-bold border-b-2 border-[#0E0E0D] pb-1 text-[#0E0E0D] text-[0.85rem]">
+      <h4 className="font-bold border-b-2 border-foreground pb-1 text-foreground text-[0.85rem]">
         2. Employment & Credentials
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -55,7 +50,7 @@ export function EducationEmploymentSection({
           </label>
           <select
             id="seniority"
-            className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none rounded-none text-[0.78rem] uppercase cursor-pointer"
+            className="w-full p-3 bg-card border border-foreground focus:outline-none rounded-none text-[0.78rem] uppercase cursor-pointer"
             {...register("seniority")}
           >
             <option value="">Select Seniority</option>
@@ -78,7 +73,7 @@ export function EducationEmploymentSection({
           </label>
           <select
             id="employmentStatus"
-            className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none rounded-none text-[0.78rem] uppercase cursor-pointer"
+            className="w-full p-3 bg-card border border-foreground focus:outline-none rounded-none text-[0.78rem] uppercase cursor-pointer"
             {...register("employmentStatus")}
           >
             <option value="">Select Status</option>
@@ -103,8 +98,8 @@ export function EducationEmploymentSection({
             id="currentEmployer"
             type="text"
             disabled={!showEmployerField}
-            className={`w-full p-3 border border-[#0E0E0D] focus:outline-none rounded-none uppercase text-[0.78rem] ${
-              showEmployerField ? "bg-[#FAF8F5]" : "bg-gray-200 cursor-not-allowed opacity-50"
+            className={`w-full p-3 border border-foreground focus:outline-none rounded-none uppercase text-[0.78rem] ${
+              showEmployerField ? "bg-card" : "bg-gray-200 cursor-not-allowed opacity-50"
             }`}
             placeholder={showEmployerField ? "e.g. Google" : "Not Employed"}
             {...register("currentEmployer")}

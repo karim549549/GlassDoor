@@ -14,7 +14,6 @@ model User {
   githubUrl     String?
   linkedinUrl   String?
   portfolioUrl  String?
-  rating        Int        @default(0)
   lastActiveAt  DateTime?
   emailVerified Boolean    @default(false)
   avatarUrl     String?
@@ -28,6 +27,12 @@ model User {
   arenaInvitationsSent   ArenaInvitation[]   @relation("SentInvitations")
   arenaInvitationsRecv   ArenaInvitation[]   @relation("ReceivedInvitations")
   arenaTeamsJoined       ArenaTeamMember[]
+  arenaEntries           ArenaEntry[]
+  companyMemberships     CompanyMember[]
+  judgingRoles           ArenaJudge[]
+  judgeConflicts         JudgeConflict[]
+  ratingStates           RatingState[]
+  ratingEvents           RatingEvent[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 

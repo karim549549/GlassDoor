@@ -1,6 +1,7 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma";
+import { logger } from "../logger";
 
 /**
  * Synchronize a Supabase authenticated user with our public PostgreSQL database and assign a role.
@@ -17,8 +18,22 @@ export async function syncUser(params: {
   fullName?: string;
   roleName?: "ADMIN" | "USER" | "COMPANY";
   emailVerified?: boolean;
+  /**
+   * Opt in to the destructive stale-row reconciliation in the P2002 catch
+   * below. Defaults to false so the dangerous path is never reached by
+   * accident - only callers holding a verified Supabase session (login,
+   * OAuth callback) should pass true.
+   */
+  allowStaleEmailReconciliation?: boolean;
 }) {
-  const { id, email, fullName, roleName = "USER", emailVerified = false } = params;
+  const {
+    id,
+    email,
+    fullName,
+    roleName = "USER",
+    emailVerified = false,
+    allowStaleEmailReconciliation = false,
+  } = params;
 
   const role = await prisma.role.findUniqueOrThrow({
     where: { name: roleName },
@@ -59,8 +74,24 @@ export async function syncUser(params: {
     // for identity, so the stale row is safe to replace with one matching
     // the current session id.
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      // GUARD: this branch DELETES a real user row, so it must only ever run
+      // for a genuine Supabase identity. Supabase returns a success-shaped
+      // response with a throwaway id when signUp is called for an
+      // already-registered address; reaching here with such an id would let an
+      // unauthenticated caller destroy the profile and role assignments of any
+      // account whose email they knew. Callers are responsible for not passing
+      // a throwaway id (app/api/auth/signup/route.ts checks `identities`), and
+      // this refuses to guess if the caller opts out of the reconciliation.
+      if (!allowStaleEmailReconciliation) {
+        logger.warn("Refusing stale-row reconciliation for an unverified identity", { userId: id });
+        throw err;
+      }
       const staleUser = await prisma.user.findUnique({ where: { email } });
       if (staleUser && staleUser.id !== id) {
+        logger.warn("Replacing stale user row after Supabase identity change", {
+          staleUserId: staleUser.id,
+          newUserId: id,
+        });
         await prisma.userRole.deleteMany({ where: { userId: staleUser.id } });
         await prisma.user.delete({ where: { id: staleUser.id } });
         const [user] = await syncTransaction();

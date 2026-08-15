@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
+import { logger } from "@/lib/client/logger";
 import { CairoBillboard } from "@/components/arena/CairoBillboard";
 import { ArenaHeader } from "@/components/arena/ArenaHeader";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
@@ -10,18 +11,21 @@ import { ArenasFilterSidebar } from "@/components/arena/list/ArenasFilterSidebar
 import { ArenasRegistry } from "@/components/arena/list/ArenasRegistry";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
+import { deriveArenaStatus } from "@/lib/arena/status";
 import type { ArenaStatusFilter, ArenaAccessFilter, ArenaSortOption } from "@/lib/arena/schema";
 
 interface ArenasListClientProps {
   initialArenas: SerializedArenaListItem[];
   initialTotalPages: number;
   initialTotalCount: number;
+  initialMyCount: number | null;
 }
 
 export function ArenasListClient({
   initialArenas,
   initialTotalPages,
-  initialTotalCount
+  initialTotalCount,
+  initialMyCount
 }: ArenasListClientProps) {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<"all" | "my">("all");
@@ -38,7 +42,18 @@ export function ArenasListClient({
   const [arenas, setArenas] = useState<SerializedArenaListItem[]>(initialArenas);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
+  const [myCount, setMyCount] = useState<number | null>(initialMyCount);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  // Bumped by the retry button. The filter values are unchanged on a retry, so
+  // without a dedicated dep the effect would not re-run.
+  const [retryNonce, setRetryNonce] = useState(0);
+
+  // app/arena/page.tsx already server-rendered page 1 with exactly these
+  // defaults, so the first run of the effect below would re-request identical
+  // data - two full list queries on every visit. Skip it and let the effect
+  // take over from the first real filter change onward.
+  const isInitialRender = useRef(true);
 
   // Only the free-text search needs debouncing; the other filters are
   // discrete/select-driven and can trigger a fetch immediately.
@@ -46,10 +61,18 @@ export function ArenasListClient({
 
   // Sync API state updates when search queries or filters alter
   useEffect(() => {
-    let cancelled = false;
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    // Aborts the in-flight request rather than just ignoring its result, so a
+    // fast sequence of filter changes does not leave stale requests running.
+    const controller = new AbortController();
 
     (async () => {
       setIsLoading(true);
+      setLoadError(null);
       try {
         const queryParams = new URLSearchParams({
           page: currentPage.toString(),
@@ -62,45 +85,67 @@ export function ArenasListClient({
           ...(selectedTag ? { tag: selectedTag } : {}),
         });
 
-        const res = await fetch(`/api/arena?${queryParams}`);
-        if (res.ok && !cancelled) {
-          const data = await res.json();
-          setArenas(data.arenas);
-          setTotalPages(data.totalPages);
-          setTotalCount(data.total);
+        const res = await fetch(`/api/arena?${queryParams}`, { signal: controller.signal });
+        if (!res.ok) {
+          throw new Error(`Request failed with status ${res.status}`);
         }
+        const data = await res.json();
+        setArenas(data.arenas);
+        setTotalPages(data.totalPages);
+        setTotalCount(data.total);
+        setMyCount(data.myCount ?? null);
       } catch (err) {
-        console.error("API fetch error:", err);
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        logger.error("Arena list fetch failed", {
+          error: err instanceof Error ? err.message : String(err),
+        });
+        // Surface it - the previous version logged and left stale results on
+        // screen, so a failed filter looked like a filter that matched nothing.
+        setLoadError("Could not load arenas. Check your connection and try again.");
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     })();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
-  }, [currentPage, statusFilter, accessFilter, debouncedSearch, sortBy, activeTab, selectedTag]);
+  }, [currentPage, statusFilter, accessFilter, debouncedSearch, sortBy, activeTab, selectedTag, retryNonce]);
 
-  // Billboard Arenas (10 items teaser ranks based on initial data count)
+  // Ranks the arenas currently on screen. Previously built from initialArenas,
+  // so it kept describing page 1 after the user filtered or paginated away.
   const billboardArenas = useMemo(() => {
-    return initialArenas.map((a, idx) => ({
-      id: a.id,
-      title: a.title,
-      isPrivate: a.isPrivate,
-      status: a.status,
-      participantCount: (a.teams.length * 3) + (idx * 4) + 12
-    })).sort((a, b) => b.participantCount - a.participantCount);
-  }, [initialArenas]);
+    const now = new Date();
+    return arenas
+      .map((a, idx) => {
+        const derived = deriveArenaStatus(
+          {
+            registrationStart: new Date(a.registrationStart),
+            registrationEnd: new Date(a.registrationEnd),
+            ideaPhaseStart: new Date(a.ideaPhaseStart),
+            ideaPhaseEnd: new Date(a.ideaPhaseEnd),
+            implPhaseStart: new Date(a.implPhaseStart),
+            implPhaseEnd: new Date(a.implPhaseEnd),
+            publishedAt: a.publishedAt ? new Date(a.publishedAt) : null,
+            canceledAt: a.canceledAt ? new Date(a.canceledAt) : null,
+            resultsPublishedAt: a.resultsPublishedAt ? new Date(a.resultsPublishedAt) : null,
+          },
+          now
+        );
+        const participantCount = a.isTeam
+          ? a.teams.length * 3 + idx * 4 + 12
+          : a.entries?.filter((e) => !e.withdrawnAt).length || idx * 4 + 12;
 
-  // "My Arenas" tab count — derived from the initial snapshot + current user
-  const myCount = useMemo(() => {
-    if (!user?.id) return 0;
-    return initialArenas.filter(
-      (a) =>
-        a.creatorId === user.id ||
-        a.teams.some((team) => team.members.some((m) => m.userId === user.id))
-    ).length;
-  }, [initialArenas, user]);
+        return {
+          id: a.id,
+          title: a.title,
+          isPrivate: a.isPrivate,
+          status: derived,
+          participantCount,
+        };
+      })
+      .sort((a, b) => b.participantCount - a.participantCount);
+  }, [arenas]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -162,8 +207,8 @@ export function ArenasListClient({
                 onSearchChange={handleSearchChange}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
-                allCount={initialArenas.length}
-                myCount={myCount}
+                allCount={totalCount}
+                myCount={myCount ?? 0}
                 statusFilter={statusFilter}
                 onStatusChange={handleStatusChange}
                 accessFilter={accessFilter}
@@ -179,16 +224,36 @@ export function ArenasListClient({
             </div>
 
             {/* Right Column: Registry Listing Grid (Width 9/12 on large screens) */}
-            <ArenasRegistry
+            <div className="lg:col-span-9 space-y-4">
+              {loadError && (
+                <div
+                  role="alert"
+                  className="border-2 border-destructive bg-card p-4 flex items-center justify-between gap-4"
+                >
+                  <p className="font-mono text-[0.6rem] uppercase tracking-wider text-destructive font-bold">
+                    [Error] {loadError}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setRetryNonce((n) => n + 1)}
+                    className="px-4 py-2 border-2 border-foreground bg-foreground text-background font-mono text-[0.55rem] font-bold tracking-wider uppercase hover:bg-orange transition-colors shrink-0"
+                  >
+                    [Retry]
+                  </button>
+                </div>
+              )}
+
+              <ArenasRegistry
               arenas={arenas}
               totalCount={totalCount}
               currentPage={currentPage}
               totalPages={totalPages}
               isLoading={isLoading}
               onPageChange={handlePageChange}
-              activeTab={activeTab}
-              isUserLoggedIn={!!user?.id}
-            />
+                activeTab={activeTab}
+                isUserLoggedIn={!!user?.id}
+              />
+            </div>
 
           </div>
         </ArenaContainer>

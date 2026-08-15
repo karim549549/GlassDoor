@@ -35,7 +35,7 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
   const isEditRoute = pathname === `/user/${profile.id}/edit`;
 
   return (
-    <div className="min-h-screen bg-[#F1EFE9] text-[#0E0E0D] pb-16 relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground pb-16 relative overflow-hidden">
       {/* Blueprint Grid Backdrop */}
       <BackgroundGrid />
 

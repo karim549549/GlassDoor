@@ -14,7 +14,7 @@ export interface UserProfile {
   firstName?: string | null;
   lastName?: string | null;
   handle: string | null;
-  email: string;
+  // Intentionally no `email` - the public profile endpoint does not return one.
   avatarUrl: string | null;
   coverUrl: string | null;
   bio?: string | null;

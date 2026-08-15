@@ -7,14 +7,13 @@ export function Footer() {
             Devs Arena
           </span>
           <span className="font-mono text-[0.6rem] text-muted-foreground">
-            Egypt tech salary transparency - 2024
+            Developer competitions &amp; verified hiring credentials — 2026
           </span>
         </div>
         <div className="font-mono text-[0.6rem] flex gap-6 text-muted-foreground">
-          <a href="#" className="hover:text-foreground transition-colors">About</a>
-          <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-          <a href="#" className="hover:text-foreground transition-colors">Submit data</a>
-          <a href="#" className="hover:text-foreground transition-colors">API</a>
+          <a href="/arena" className="hover:text-foreground transition-colors">Arenas</a>
+          <a href="/companies" className="hover:text-foreground transition-colors">Companies</a>
+          <a href="/billboard" className="hover:text-foreground transition-colors">Billboard</a>
         </div>
       </div>
     </footer>

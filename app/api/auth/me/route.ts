@@ -23,16 +23,23 @@ export async function GET() {
       });
     }
 
-    // Non-gating: only used to read the refresh token for the client's
-    // saved-accounts convenience feature, not for any authorization decision.
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
     const roles = await getUserRoles(user.id);
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { avatarUrl: true, coverUrl: true, lastActiveAt: true },
+      select: {
+        avatarUrl: true,
+        coverUrl: true,
+        lastActiveAt: true,
+        companyMemberships: {
+          select: {
+            companyId: true,
+            role: true,
+            company: {
+              select: { id: true, name: true, slug: true, logoUrl: true },
+            },
+          },
+        },
+      },
     });
 
     // Only write lastActiveAt if it's stale - this endpoint fires on every
@@ -60,11 +67,9 @@ export async function GET() {
         fullName: user.user_metadata.full_name || null,
         avatarUrl: dbUser?.avatarUrl || null,
         coverUrl: dbUser?.coverUrl || null,
+        companyMemberships: dbUser?.companyMemberships || [],
       },
       roles: roles.length > 0 ? roles : ["USER"],
-      session: {
-        refreshToken: session?.refresh_token || null,
-      },
     });
   } catch (error) {
     logger.error("Auth status query failed (Supabase or database unconfigured/down)", {

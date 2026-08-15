@@ -11,9 +11,15 @@ html {
   --font-size: 16px;
   --background: #F1EFE9;
   --foreground: #0E0E0D;
-  --card: #FAFAF8;
+  /* Reconciled from two near-identical off-whites that had drifted apart:
+     #FAFAF8 (used by card/popover/accent-foreground/destructive-foreground)
+     and #FAF8F5 (hardcoded in components, 86 uses). Settled on #FAF8F5 - the
+     value the components actually render - so the token migration is a no-op
+     on screen. The gap was ~2/255 per channel, below the perceptual
+     threshold and not worth carrying two names for. */
+  --card: #FAF8F5;
   --card-foreground: #0E0E0D;
-  --popover: #FAFAF8;
+  --popover: #FAF8F5;
   --popover-foreground: #0E0E0D;
   --primary: #0E0E0D;
   --primary-foreground: #F1EFE9;
@@ -22,9 +28,9 @@ html {
   --muted: #E4E1D9;
   --muted-foreground: #6A6860;
   --accent: #C11A1A;
-  --accent-foreground: #FAFAF8;
+  --accent-foreground: #FAF8F5;
   --destructive: #C11A1A;
-  --destructive-foreground: #FAFAF8;
+  --destructive-foreground: #FAF8F5;
   --border: rgba(14, 14, 13, 0.13);
   --input: transparent;
   --input-background: #E4E1D9;

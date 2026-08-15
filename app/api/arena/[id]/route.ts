@@ -12,6 +12,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
   return withApiErrorHandling("Arena detail API error", async () => {
     const { id: slugParam } = await context.params;
     const uuid = extractUuidFromSlug(decodeURIComponent(slugParam));
+    // A slug that doesn't end in a well-formed UUID can't match anything -
+    // answer 404 without touching the database.
+    if (!uuid) {
+      return NextResponse.json({ error: "Arena not found." }, { status: 404 });
+    }
 
     // Optionally get the authenticated user (not required — public page)
     const user = await getOptionalUser();

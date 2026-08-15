@@ -33,7 +33,7 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
       {/* 2-Column Section: Active Main Image (Left) + Vertical Scrollable Thumbnail Column (Right) */}
       <div className="flex gap-2 h-[200px] sm:h-[220px] md:h-[240px]">
         {/* Main Active Image Frame */}
-        <div className="relative flex-1 h-full bg-[#0E0E0D] border-2 border-[#F1EFE9]/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden group">
+        <div className="relative flex-1 h-full bg-foreground border-2 border-background/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden group">
           <Image
             src={currentImage}
             alt={`${title} screenshot ${activeIndex + 1}`}
@@ -47,14 +47,14 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
           {/* Counter Indicator */}
-          <div className="absolute top-2 left-2 z-10 bg-[#0E0E0D]/85 text-[#F1EFE9] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-widest border border-white/20">
+          <div className="absolute top-2 left-2 z-10 bg-foreground/85 text-background px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-widest border border-white/20">
             {activeIndex + 1} / {images.length}
           </div>
 
           {/* Lightbox Trigger */}
           <button
             onClick={() => setIsLightboxOpen(true)}
-            className="absolute top-2 right-2 z-10 p-1.5 bg-[#0E0E0D]/85 hover:bg-[#0E0E0D] text-[#F1EFE9] border border-white/20 transition-all opacity-0 group-hover:opacity-100"
+            className="absolute top-2 right-2 z-10 p-1.5 bg-foreground/85 hover:bg-foreground text-background border border-white/20 transition-all opacity-0 group-hover:opacity-100"
             title="Enlarge Image"
           >
             <Maximize2 className="w-3 h-3" />
@@ -67,7 +67,7 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
                 onClick={() =>
                   setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
                 }
-                className="absolute left-1.5 top-1/2 -translate-y-1/2 z-10 p-1 bg-[#0E0E0D]/80 hover:bg-[#0E0E0D] text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute left-1.5 top-1/2 -translate-y-1/2 z-10 p-1 bg-foreground/80 hover:bg-foreground text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -75,7 +75,7 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
                 onClick={() =>
                   setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
                 }
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 p-1 bg-[#0E0E0D]/80 hover:bg-[#0E0E0D] text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 p-1 bg-foreground/80 hover:bg-foreground text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -85,14 +85,14 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
 
         {/* RIGHT SIDE VERTICAL SCROLLABLE THUMBNAIL COLUMN (Exact height of active image) */}
         {images.length > 1 && (
-          <div className="w-20 sm:w-24 h-full overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-orange scrollbar-track-[#0E0E0D] shrink-0">
+          <div className="w-20 sm:w-24 h-full overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-orange scrollbar-track-foreground shrink-0">
             {images.map((imgUrl, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveIndex(idx)}
                 className={`relative w-full aspect-[4/3] border-2 transition-all duration-200 overflow-hidden block ${
                   idx === activeIndex
-                    ? "border-orange shadow-[2px_2px_0px_0px_#0E0E0D] opacity-100 scale-[0.98]"
+                    ? "border-orange shadow-[2px_2px_0px_0px_var(--foreground)] opacity-100 scale-[0.98]"
                     : "border-white/20 opacity-60 hover:opacity-100 hover:border-white/60"
                 }`}
               >
@@ -119,7 +119,7 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
               className={`transition-all duration-200 ${
                 idx === activeIndex
                   ? "w-2.5 h-2.5 rounded-full bg-orange scale-110 shadow-[0_0_8px_rgba(255,87,34,0.6)]"
-                  : "w-2 h-2 rounded-full bg-[#F1EFE9]/40 hover:bg-[#F1EFE9]/80"
+                  : "w-2 h-2 rounded-full bg-background/40 hover:bg-background/80"
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
@@ -130,13 +130,13 @@ export function ArenaCarousel({ images, title }: ArenaCarouselProps) {
       {/* Lightbox Modal */}
       {isLightboxOpen && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md p-4 md:p-8 flex flex-col justify-between">
-          <div className="flex justify-between items-center text-[#F1EFE9]">
+          <div className="flex justify-between items-center text-background">
             <span className="font-mono text-xs text-orange tracking-widest uppercase font-bold">
               {title} — MEDIA {activeIndex + 1}/{images.length}
             </span>
             <button
               onClick={() => setIsLightboxOpen(false)}
-              className="p-2 text-[#F1EFE9]/80 hover:text-white bg-white/10 hover:bg-white/20 transition-colors"
+              className="p-2 text-background/80 hover:text-white bg-white/10 hover:bg-white/20 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

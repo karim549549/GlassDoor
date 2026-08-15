@@ -81,7 +81,7 @@ export function ArenaTimelineStepper({
   ];
 
   return (
-    <div className="w-full bg-[#0E0E0D] text-[#F1EFE9] border-y-2 border-[#0E0E0D] py-4 px-6 md:px-12">
+    <div className="w-full bg-foreground text-background border-y-2 border-foreground py-4 px-6 md:px-12">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="font-mono text-[0.6rem] uppercase tracking-[0.25em] text-orange font-bold shrink-0 flex items-center gap-2">
           <Clock className="w-3.5 h-3.5" />
@@ -94,10 +94,10 @@ export function ArenaTimelineStepper({
               key={step.key}
               className={`p-2.5 border transition-all duration-200 ${
                 step.isCurrent
-                  ? "bg-[#F1EFE9] text-[#0E0E0D] border-orange shadow-[3px_3px_0px_0px_#FF5722]"
+                  ? "bg-background text-foreground border-orange shadow-[3px_3px_0px_0px_#FF5722]"
                   : step.isCompleted
                   ? "bg-white/5 border-emerald-500/40 text-emerald-400"
-                  : "bg-white/5 border-white/10 text-[#F1EFE9]/50"
+                  : "bg-white/5 border-white/10 text-background/50"
               }`}
             >
               <div className="flex items-center justify-between gap-1 mb-1">

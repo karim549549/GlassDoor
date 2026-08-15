@@ -17,7 +17,7 @@ interface CoverImageUploaderProps {
   register: UseFormRegister<ArenaFormInput>;
   errors: FieldErrors<ArenaFormInput>;
   setValue: UseFormSetValue<ArenaFormInput>;
-  watchCoverImageUrl: string;
+  watchCoverImageUrl?: string | null;
 }
 
 export function CoverImageUploader({ register, errors, setValue, watchCoverImageUrl }: CoverImageUploaderProps) {
@@ -26,12 +26,13 @@ export function CoverImageUploader({ register, errors, setValue, watchCoverImage
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
+      <label htmlFor="coverImageFile" className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
         Upload Cover Image (Required)
       </label>
 
       <div className="border-2 border-dashed border-foreground/30 bg-secondary/20 p-5 text-center relative hover:bg-secondary/40 transition-colors">
         <input
+          id="coverImageFile"
           type="file"
           accept="image/*"
           onChange={handleFileSelect}
@@ -51,7 +52,7 @@ export function CoverImageUploader({ register, errors, setValue, watchCoverImage
             <img
               src={watchCoverImageUrl}
               alt="Uploaded cover preview"
-              className="w-48 aspect-[4/1] object-cover border border-foreground/20 shadow-[2px_2px_0px_0px_#0E0E0D]"
+              className="w-48 aspect-[4/1] object-cover border border-foreground/20 shadow-[2px_2px_0px_0px_var(--foreground)]"
             />
             <span className="font-mono text-[0.55rem] uppercase tracking-wider text-orange font-bold">
               [✓] IMAGE UPLOADED (CLICK TO CHANGE)
@@ -60,7 +61,7 @@ export function CoverImageUploader({ register, errors, setValue, watchCoverImage
         ) : (
           <div className="flex flex-col items-center justify-center py-2">
             <ImageIcon className="h-6 w-6 text-muted-foreground/40 mb-1.5" />
-            <span className="font-mono text-[0.58rem] uppercase tracking-wider text-[#0E0E0D] font-bold block">
+            <span className="font-mono text-[0.58rem] uppercase tracking-wider text-foreground font-bold block">
               Drag & drop image file or Click to browse
             </span>
             <span className="font-mono text-[0.48rem] uppercase tracking-widest text-muted-foreground block mt-0.5">

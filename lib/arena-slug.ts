@@ -26,12 +26,26 @@ export function buildArenaSlug(title: string, id: string): string {
   return slug ? `${slug}-${id}` : id;
 }
 
-/** Extract the UUID from an arena slug (last 36 chars) */
-export function extractUuidFromSlug(slug: string): string {
-  // UUID v4 is always 36 characters: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  if (slug.length >= 36) {
-    return slug.slice(-36);
+/**
+ * Canonical UUID shape: 8-4-4-4-12 hex, with the version/variant nibbles left
+ * unconstrained so a v4 id and a v7 id both parse.
+ */
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Extract the UUID from an arena slug, or null when the slug doesn't end in one.
+ *
+ * Returns null rather than a best guess: this value goes straight into a Prisma
+ * `where: { id }`, and the previous implementation returned `slug.slice(-36)`
+ * with no validation at all (and the whole slug when shorter). That handed
+ * arbitrary caller-controlled strings to the query layer and made a malformed
+ * URL indistinguishable from a genuine miss. Callers should treat null as a
+ * 404 without touching the database.
+ */
+export function extractUuidFromSlug(slug: string): string | null {
+  if (slug.length < 36) {
+    return null;
   }
-  // Fallback: treat the entire slug as the id
-  return slug;
+  const candidate = slug.slice(-36);
+  return UUID_PATTERN.test(candidate) ? candidate.toLowerCase() : null;
 }

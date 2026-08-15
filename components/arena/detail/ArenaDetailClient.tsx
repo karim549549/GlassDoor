@@ -6,8 +6,10 @@ import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaDetailHero } from "./ArenaDetailHero";
 import { ArenaOverviewTab } from "./ArenaOverviewTab";
-import { ArenaLeaderboardTab } from "./ArenaLeaderboardTab";
-import { ArenaCommentsSection } from "./ArenaCommentsSection";
+import { ArenaTimelineStepper } from "./ArenaTimelineStepper";
+import { ArenaActionCard } from "./ArenaActionCard";
+import { ArenaHostCard } from "./ArenaHostCard";
+import { ComingSoonPanel } from "./ComingSoonPanel";
 import { Footer } from "@/components/home/Footer";
 import { CheckCircle2 } from "lucide-react";
 
@@ -25,6 +27,9 @@ interface ArenaDetailClientProps {
     minTeamSize: number;
     maxTeamSize: number;
     maxParticipants: number | null;
+    locationType: "ONLINE" | "IN_PERSON";
+    locationName: string | null;
+    googleMapsUrl: string | null;
     registrationStart: string;
     registrationEnd: string;
     ideaPhaseStart: string;
@@ -39,7 +44,7 @@ interface ArenaDetailClientProps {
     creator: {
       id: string;
       fullName: string | null;
-      handle: string;
+      handle: string | null;
       avatarUrl: string | null;
     };
     tags: {
@@ -56,15 +61,16 @@ interface ArenaDetailClientProps {
     isRegistered: boolean;
     totalParticipants: number;
   };
+  /** True when nobody is signed in, so join actions redirect to login instead. */
+  isGuest: boolean;
 }
 
-export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
-  const isGuest = false;
+export function ArenaDetailClient({ arena, meta, isGuest }: ArenaDetailClientProps) {
   const [isJoined, setIsJoined] = useState<boolean>(meta.isRegistered);
   const isHost = meta.isOwner;
 
   const [totalParticipants, setTotalParticipants] = useState<number>(
-    meta.totalParticipants || 24
+    meta.totalParticipants
   );
 
   const [notification, setNotification] = useState<string | null>(null);
@@ -80,37 +86,73 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
     }
   };
 
-  const handleJoin = () => {
-    setIsJoined(true);
-    setTotalParticipants((prev) => prev + 1);
-    triggerNotification("Successfully joined the arena!");
+  const handleJoin = async () => {
+    try {
+      const res = await fetch(`/api/arena/${arena.id}/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        triggerNotification(data.error || "Failed to join arena.");
+        return;
+      }
+      setIsJoined(true);
+      setTotalParticipants((prev) => prev + 1);
+      triggerNotification("Successfully joined the arena!");
+    } catch {
+      triggerNotification("Network error. Could not join arena.");
+    }
   };
 
-  const handleQuit = () => {
-    setIsJoined(false);
-    setTotalParticipants((prev) => Math.max(0, prev - 1));
-    triggerNotification("You have quit the arena.");
+  const handleQuit = async () => {
+    try {
+      const res = await fetch(`/api/arena/${arena.id}/leave`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        triggerNotification(data.error || "Failed to leave arena.");
+        return;
+      }
+      setIsJoined(false);
+      setTotalParticipants((prev) => Math.max(0, prev - 1));
+      triggerNotification("You have left the arena.");
+    } catch {
+      triggerNotification("Network error. Could not leave arena.");
+    }
   };
 
-  const handleResign = () => {
-    setIsJoined(false);
-    triggerNotification("You have resigned from this active competition.");
+  const handleResign = async () => {
+    await handleQuit();
   };
 
-  const handleRequestPrivateJoin = (_code?: string) => {
-    setIsJoined(true);
-    setTotalParticipants((prev) => prev + 1);
-    const msg = _code ? `Code ${_code} verified! Joined private arena.` : "Access granted to private arena!";
-    triggerNotification(msg);
+  const handleRequestPrivateJoin = async (code?: string) => {
+    try {
+      const res = await fetch(`/api/arena/${arena.id}/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inviteCode: code }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        triggerNotification(data.error || "Invalid invitation code.");
+        return;
+      }
+      setIsJoined(true);
+      setTotalParticipants((prev) => prev + 1);
+      triggerNotification("Access granted! Joined private arena.");
+    } catch {
+      triggerNotification("Network error. Could not verify code.");
+    }
   };
-
-
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-background text-foreground font-sans relative overflow-x-hidden pt-0 pb-0">
       {/* Notification Toast */}
       {notification && (
-        <div className="fixed top-4 right-4 z-50 bg-[#0E0E0D] text-[#F1EFE9] border-2 border-orange shadow-[4px_4px_0px_0px_#FF5722] p-4 max-w-md font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
+        <div className="fixed top-4 right-4 z-50 bg-foreground text-background border-2 border-orange shadow-[4px_4px_0px_0px_#FF5722] p-4 max-w-md font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
           <CheckCircle2 className="w-5 h-5 text-orange shrink-0" />
           <span>{notification}</span>
         </div>
@@ -134,6 +176,10 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
           inviteCode={arena.inviteCode}
           registrationStart={arena.registrationStart}
           registrationEnd={arena.registrationEnd}
+          locationType={arena.locationType}
+          locationName={arena.locationName}
+          venueName={null}
+          googleMapsUrl={arena.googleMapsUrl}
           creator={arena.creator}
           tags={arena.tags}
           isGuest={isGuest}
@@ -151,62 +197,113 @@ export function ArenaDetailClient({ arena, meta }: ArenaDetailClientProps) {
         <ArenaContainer className="py-10">
           <BackgroundGrid opacity={0.05} />
           <div className="relative z-10 max-w-7xl mx-auto space-y-12">
-            {/* Full Markdown Description */}
-            <section id="arena-description" className="space-y-4 pt-2">
-              <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
-                CHALLENGE OVERVIEW &amp; OBJECTIVES
-              </h2>
-              <article className="bg-white border-2 border-[#0E0E0D] shadow-[6px_6px_0px_0px_#0E0E0D] p-6 sm:p-8">
-                <div className="prose max-w-none font-sans text-foreground leading-relaxed
-                  prose-headings:font-display prose-headings:italic prose-headings:uppercase prose-headings:tracking-tight prose-headings:text-[#0E0E0D]
-                  prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-h2:mt-6 prose-h2:mb-3 prose-h3:mt-4 prose-h3:mb-2
-                  prose-p:font-sans prose-p:text-[#0E0E0D]/85 prose-p:my-3
-                  prose-strong:font-bold prose-strong:text-[#0E0E0D]
-                  prose-code:font-mono prose-code:text-xs prose-code:bg-[#0E0E0D]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:border-[#0E0E0D]/20
-                  prose-pre:bg-[#0E0E0D] prose-pre:text-[#F1EFE9] prose-pre:p-4 prose-pre:border-2 prose-pre:border-[#0E0E0D]
-                  prose-ul:list-disc prose-ul:pl-5 prose-ol:list-decimal prose-ol:pl-5
-                  prose-li:font-sans prose-li:text-sm prose-li:text-[#0E0E0D]/85
-                  prose-a:text-orange prose-a:no-underline hover:prose-a:underline
-                  prose-blockquote:border-l-4 prose-blockquote:border-orange prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-[#0E0E0D]/60">
-                  <ReactMarkdown>{arena.description}</ReactMarkdown>
-                </div>
-              </article>
-            </section>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column (8 cols): Description & Deliverables */}
+              <div className="lg:col-span-8 space-y-10">
+                {/* Full Markdown Description */}
+                <section id="arena-description" className="space-y-4 pt-2">
+                  <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-foreground/15 pb-2">
+                    CHALLENGE OVERVIEW &amp; OBJECTIVES
+                  </h2>
+                  <article className="bg-white border-2 border-foreground shadow-[6px_6px_0px_0px_var(--foreground)] p-6 sm:p-8">
+                    <div className="prose max-w-none font-sans text-foreground leading-relaxed
+                      prose-headings:font-display prose-headings:italic prose-headings:uppercase prose-headings:tracking-tight prose-headings:text-foreground
+                      prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-h2:mt-6 prose-h2:mb-3 prose-h3:mt-4 prose-h3:mb-2
+                      prose-p:font-sans prose-p:text-foreground/85 prose-p:my-3
+                      prose-strong:font-bold prose-strong:text-foreground
+                      prose-code:font-mono prose-code:text-xs prose-code:bg-foreground/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:border-foreground/20
+                      prose-pre:bg-foreground prose-pre:text-background prose-pre:p-4 prose-pre:border-2 prose-pre:border-foreground
+                      prose-ul:list-disc prose-ul:pl-5 prose-ol:list-decimal prose-ol:pl-5
+                      prose-li:font-sans prose-li:text-sm prose-li:text-foreground/85
+                      prose-a:text-orange prose-a:no-underline hover:prose-a:underline
+                      prose-blockquote:border-l-4 prose-blockquote:border-orange prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-foreground/60">
+                      <ReactMarkdown>{arena.description}</ReactMarkdown>
+                    </div>
+                  </article>
+                </section>
 
-            {/* Deliverables & Official Rules */}
-            <section className="space-y-4 pt-2 border-t border-[#0E0E0D]/10">
-              <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-[#0E0E0D]/15 pb-2">
-                REQUIRED DELIVERABLES &amp; OFFICIAL RULES
-              </h2>
-              <ArenaOverviewTab
-                description={arena.description}
-                rulesText={arena.rulesText}
-                requireGithubUrl={arena.requireGithubUrl}
-                requireFigmaUrl={arena.requireFigmaUrl}
-                requireVideoUrl={arena.requireVideoUrl}
-                requireWriteup={arena.requireWriteup}
-              />
-            </section>
+                {/* Deliverables & Official Rules */}
+                <section className="space-y-4 pt-2 border-t border-foreground/10">
+                  <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-orange font-bold border-b border-foreground/15 pb-2">
+                    REQUIRED DELIVERABLES &amp; OFFICIAL RULES
+                  </h2>
+                  <ArenaOverviewTab
+                    description={arena.description}
+                    rulesText={arena.rulesText}
+                    requireGithubUrl={arena.requireGithubUrl}
+                    requireFigmaUrl={arena.requireFigmaUrl}
+                    requireVideoUrl={arena.requireVideoUrl}
+                    requireWriteup={arena.requireWriteup}
+                  />
+                </section>
+              </div>
 
-            {/* Side-by-Side 2-Column Grid: Discussion (2/3 width = 8 cols) vs Leaderboard (1/3 width = 4 cols) */}
-            <div className="pt-6 border-t-2 border-[#0E0E0D] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column (8/12 = 66.67%): Community Discussion &amp; Q&amp;A */}
-              <div className="lg:col-span-8 space-y-4">
-                <ArenaCommentsSection
+              {/* Right Column (4 cols): Action Card, Timeline Stepper & Host Card */}
+              <div className="lg:col-span-4 space-y-6">
+                <ArenaActionCard
+                  isPrivate={arena.isPrivate}
+                  isTeam={arena.isTeam}
+                  minTeamSize={arena.minTeamSize}
+                  maxTeamSize={arena.maxTeamSize}
+                  maxParticipants={arena.maxParticipants}
+                  totalParticipants={totalParticipants}
+                  status={arena.status}
+                  inviteCode={arena.inviteCode}
                   isGuest={isGuest}
+                  isJoined={isJoined}
+                  isHost={isHost}
+                  onJoin={handleJoin}
+                  onQuit={handleQuit}
+                  onResign={handleResign}
                   onLoginRedirect={handleLoginRedirect}
+                  onRequestPrivateJoin={handleRequestPrivateJoin}
+                />
+
+                <ArenaTimelineStepper
+                  status={arena.status}
+                  registrationStart={arena.registrationStart}
+                  registrationEnd={arena.registrationEnd}
+                  ideaPhaseStart={arena.ideaPhaseStart}
+                  ideaPhaseEnd={arena.ideaPhaseEnd}
+                  implPhaseStart={arena.implPhaseStart}
+                  implPhaseEnd={arena.implPhaseEnd}
+                />
+
+                <ArenaHostCard
+                  creator={{
+                    id: arena.creator.id,
+                    fullName: arena.creator.fullName,
+                    handle: arena.creator.handle || "host",
+                    avatarUrl: arena.creator.avatarUrl,
+                  }}
+                  isPrivate={arena.isPrivate}
+                  inviteCode={arena.inviteCode}
+                />
+              </div>
+            </div>
+
+            {/* Discussion and Standings Panels */}
+            <div className="pt-6 border-t-2 border-foreground grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8">
+                <ComingSoonPanel
+                  label="[Discussion]"
+                  title="Discussion opens with registration"
+                  body="Questions and answers for this arena will appear here once the discussion thread is live."
                 />
               </div>
 
-              {/* Right Column (4/12 = 33.33%): Leaderboard Standings */}
-              <div className="lg:col-span-4 space-y-4">
-                <ArenaLeaderboardTab />
+              <div className="lg:col-span-4">
+                <ComingSoonPanel
+                  label="[Standings]"
+                  title="No results yet"
+                  body="Standings publish after judging closes."
+                />
               </div>
             </div>
           </div>
         </ArenaContainer>
       </main>
-      
+
       {/* Footer */}
       <Footer />
     </div>

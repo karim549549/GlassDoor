@@ -44,17 +44,17 @@ export function ArenaActionButtons({
 
   const handlePrivateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inviteCode && inputCode.trim() !== inviteCode.trim()) {
-      setCodeError("Invalid code.");
+    if (!inputCode.trim()) {
+      setCodeError("Please enter an invitation code.");
       return;
     }
     setCodeError("");
-    onRequestPrivateJoin(inputCode);
+    onRequestPrivateJoin(inputCode.trim());
   };
 
   if (isHost) {
     return (
-      <button className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-white hover:text-[#0E0E0D] text-[#F1EFE9] font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all cursor-pointer">
+      <button className="w-full py-3 px-4 bg-foreground hover:bg-white hover:text-foreground text-background font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all cursor-pointer">
         EDIT ARENA
       </button>
     );
@@ -65,7 +65,7 @@ export function ArenaActionButtons({
       return (
         <button
           disabled
-          className="w-full py-3 px-4 bg-[#0E0E0D]/60 text-white/50 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/10 cursor-not-allowed"
+          className="w-full py-3 px-4 bg-foreground/60 text-white/50 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/10 cursor-not-allowed"
         >
           ARENA COMPLETED
         </button>
@@ -76,7 +76,7 @@ export function ArenaActionButtons({
       return (
         <button
           onClick={onQuit}
-          className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
+          className="w-full py-3 px-4 bg-foreground hover:bg-red-950 text-background hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
         >
           <LogOut className="w-3.5 h-3.5 text-red-400" />
           <span>QUIT ARENA</span>
@@ -87,7 +87,7 @@ export function ArenaActionButtons({
     return (
       <button
         onClick={onResign}
-        className="w-full py-3 px-4 bg-[#0E0E0D] hover:bg-red-950 text-[#F1EFE9] hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
+        className="w-full py-3 px-4 bg-foreground hover:bg-red-950 text-background hover:text-red-300 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/30 hover:border-red-500/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
       >
         <Flag className="w-3.5 h-3.5 text-red-400" />
         <span>RESIGN</span>
@@ -99,7 +99,7 @@ export function ArenaActionButtons({
     return (
       <button
         disabled
-        className="w-full py-3 px-4 bg-[#0E0E0D]/60 text-gray-500 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/10 cursor-not-allowed"
+        className="w-full py-3 px-4 bg-foreground/60 text-gray-500 font-mono text-[0.68rem] uppercase tracking-[0.2em] font-bold border-2 border-white/10 cursor-not-allowed"
       >
         ARENA FULL
       </button>
@@ -114,7 +114,8 @@ export function ArenaActionButtons({
           value={inputCode}
           onChange={(e) => setInputCode(e.target.value)}
           placeholder="ENTER INVITE CODE..."
-          className="w-full px-3.5 py-2 border-2 border-white/30 font-mono text-xs uppercase bg-[#0E0E0D] text-white focus:outline-none focus:ring-2 focus:ring-orange"
+          aria-label="Invite code"
+          className="w-full px-3.5 py-2 border-2 border-white/30 font-mono text-xs uppercase bg-foreground text-white focus:outline-none focus:ring-2 focus:ring-orange"
         />
         {codeError && (
           <p className="font-mono text-[0.5rem] text-red-400 font-bold uppercase">{codeError}</p>

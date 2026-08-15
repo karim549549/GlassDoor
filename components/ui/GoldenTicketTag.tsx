@@ -31,36 +31,36 @@ export interface GoldenTicketTagProps {
 // Prime Color & Grey Accent Map from app/globals.css
 const VARIANT_ACCENTS: Record<GoldenTicketVariant, { slash: string; border: string }> = {
   coupon: {
-    slash: "bg-[#6A6860]", // Mid Grey (--muted-foreground)
-    border: "border-[#0E0E0D]",
+    slash: "bg-muted-foreground",
+    border: "border-foreground",
   },
   golden: {
-    slash: "bg-[#E8621A]", // Cairo Orange (--orange)
-    border: "border-[#0E0E0D]",
+    slash: "bg-orange",
+    border: "border-foreground",
   },
   emerald: {
-    slash: "bg-[#0E0E0D]", // Primary Dark (--primary)
-    border: "border-[#0E0E0D]",
+    slash: "bg-foreground",
+    border: "border-foreground",
   },
   cyan: {
-    slash: "bg-[#6A6860]", // Mid Grey (--muted-foreground)
-    border: "border-[#0E0E0D]",
+    slash: "bg-muted-foreground",
+    border: "border-foreground",
   },
   purple: {
-    slash: "bg-[#C11A1A]", // Accent Red (--accent)
-    border: "border-[#0E0E0D]",
+    slash: "bg-accent",
+    border: "border-foreground",
   },
   orange: {
-    slash: "bg-[#E8621A]", // Cairo Orange (--orange)
-    border: "border-[#0E0E0D]",
+    slash: "bg-orange",
+    border: "border-foreground",
   },
   ruby: {
-    slash: "bg-[#C11A1A]", // Accent Red (--accent)
-    border: "border-[#0E0E0D]",
+    slash: "bg-accent",
+    border: "border-foreground",
   },
   outline: {
-    slash: "bg-[#6A6860]", // Mid Grey (--muted-foreground)
-    border: "border-[#0E0E0D]",
+    slash: "bg-muted-foreground",
+    border: "border-foreground",
   },
 };
 
@@ -111,8 +111,8 @@ export function GoldenTicketTag({
     >
       {/* Outer Solid Ticket Frame with Masked Radial Semi-Circle Cutouts on Left & Right */}
       <div
-        className={`relative flex items-center justify-center overflow-hidden border-2 border-[#0E0E0D] ${
-          isSelected ? "bg-[#0E0E0D] text-[#FAFAF8]" : "bg-[#FAFAF8] text-[#0E0E0D]"
+        className={`relative flex items-center justify-center overflow-hidden border-2 border-foreground ${
+          isSelected ? "bg-foreground text-card" : "bg-card text-foreground"
         } ${sizeConfig.padding} ${sizeConfig.text}`}
         style={{
           // Radial gradient mask carving out inward semi-circle cutouts on left & right edges
@@ -130,7 +130,7 @@ export function GoldenTicketTag({
       >
         {/* Left Curved Notch Border Overlay */}
         <div
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-[#0E0E0D] bg-transparent pointer-events-none z-20"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-foreground bg-transparent pointer-events-none z-20"
           style={{
             width: sizeConfig.notch * 2 + "px",
             height: sizeConfig.notch * 2 + "px",
@@ -139,7 +139,7 @@ export function GoldenTicketTag({
 
         {/* Right Curved Notch Border Overlay */}
         <div
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full border-2 border-[#0E0E0D] bg-transparent pointer-events-none z-20"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full border-2 border-foreground bg-transparent pointer-events-none z-20"
           style={{
             width: sizeConfig.notch * 2 + "px",
             height: sizeConfig.notch * 2 + "px",
@@ -149,14 +149,14 @@ export function GoldenTicketTag({
         {/* Left Vertical Dashed Perforation Line */}
         <div
           className={`absolute top-0 bottom-0 left-3 sm:left-3.5 border-r-2 border-dashed ${
-            isSelected ? "border-[#FAFAF8]/50" : "border-[#0E0E0D]/40"
+            isSelected ? "border-card/50" : "border-foreground/40"
           } pointer-events-none z-20`}
         />
 
         {/* Right Vertical Dashed Perforation Line */}
         <div
           className={`absolute top-0 bottom-0 right-3 sm:right-3.5 border-l-2 border-dashed ${
-            isSelected ? "border-[#FAFAF8]/50" : "border-[#0E0E0D]/40"
+            isSelected ? "border-card/50" : "border-foreground/40"
           } pointer-events-none z-20`}
         />
 
@@ -168,13 +168,13 @@ export function GoldenTicketTag({
           {/* Slash 1 (::before) */}
           <span
             className={`absolute bottom-[-50%] left-[12%] w-[2px] h-[200%] ${
-              isSelected ? "bg-[#FAFAF8]/40" : accentTheme.slash
+              isSelected ? "bg-card/40" : accentTheme.slash
             } opacity-35 -rotate-[35deg] origin-bottom-left`}
           />
           {/* Slash 2 (::after) */}
           <span
             className={`absolute bottom-[-50%] left-[28%] w-[2px] h-[200%] ${
-              isSelected ? "bg-[#FAFAF8]/40" : accentTheme.slash
+              isSelected ? "bg-card/40" : accentTheme.slash
             } opacity-35 -rotate-[35deg] origin-bottom-left`}
           />
         </div>

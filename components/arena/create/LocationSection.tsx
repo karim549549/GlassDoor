@@ -66,7 +66,7 @@ export function LocationSection({
   }, [watchLocationType, watchGoogleMapsUrl, setValue]);
 
   return (
-    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_var(--foreground)]">
       <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
         <MapPin className="h-4 w-4 text-orange" /> 02. Location &amp; Venue Settings
       </h2>
@@ -87,8 +87,8 @@ export function LocationSection({
               }}
               className={`p-4 border-2 font-mono text-xs uppercase font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 watchLocationType === "ONLINE"
-                  ? "bg-orange text-white border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D]"
-                  : "bg-white text-[#0E0E0D] border-border hover:bg-gray-50"
+                  ? "bg-orange text-white border-foreground shadow-[3px_3px_0px_0px_var(--foreground)]"
+                  : "bg-white text-foreground border-border hover:bg-gray-50"
               }`}
             >
               <Globe className="w-4 h-4" />
@@ -102,8 +102,8 @@ export function LocationSection({
               }}
               className={`p-4 border-2 font-mono text-xs uppercase font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 watchLocationType === "IN_PERSON"
-                  ? "bg-orange text-white border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D]"
-                  : "bg-white text-[#0E0E0D] border-border hover:bg-gray-50"
+                  ? "bg-orange text-white border-foreground shadow-[3px_3px_0px_0px_var(--foreground)]"
+                  : "bg-white text-foreground border-border hover:bg-gray-50"
               }`}
             >
               <MapPin className="w-4 h-4" />
@@ -114,7 +114,7 @@ export function LocationSection({
 
         {/* In-Person Venue Fields */}
         {watchLocationType === "IN_PERSON" && (
-          <div className="p-5 border-2 border-dashed border-[#0E0E0D]/30 space-y-4 bg-amber-50/30">
+          <div className="p-5 border-2 border-dashed border-foreground/30 space-y-4 bg-amber-50/30">
             <Input
               label="Google Maps Location Link / Map Pin URL"
               placeholder="e.g. https://maps.google.com/?q=Cairo+Tech+Hub"
@@ -123,11 +123,11 @@ export function LocationSection({
             />
 
             {/* Resolved Location Name Display (Not manual input) */}
-            <div className="p-3 bg-white border border-[#0E0E0D] space-y-1">
-              <span className="font-mono text-[0.48rem] uppercase tracking-widest text-[#0E0E0D]/60 font-bold block">
+            <div className="p-3 bg-white border border-foreground space-y-1">
+              <span className="font-mono text-[0.48rem] uppercase tracking-widest text-foreground/60 font-bold block">
                 [ AUTO-RESOLVED LOCATION NAME ]
               </span>
-              <p className="font-mono text-xs font-bold text-[#0E0E0D]">
+              <p className="font-mono text-xs font-bold text-foreground">
                 {isResolving ? (
                   <span className="text-orange animate-pulse">RESOLVING LOCATION MAP PIN...</span>
                 ) : watchLocationName ? (

@@ -1,6 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { logger } from "@/lib/server/logger";
+
+const PROTECTED_PREFIXES = ["/admin", "/profile", "/user", "/arena/create"];
+
+function isProtected(pathname: string) {
+  return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+function redirectToLogin(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/login";
+  url.searchParams.set("redirectTo", request.nextUrl.pathname);
+  return NextResponse.redirect(url);
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -10,7 +25,9 @@ export async function proxy(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return supabaseResponse;
+    // Fail closed: without Supabase configured we cannot establish identity,
+    // so a protected route must not be served.
+    return isProtected(request.nextUrl.pathname) ? redirectToLogin(request) : supabaseResponse;
   }
 
   try {
@@ -41,19 +58,15 @@ export async function proxy(request: NextRequest) {
 
     // Optimistic auth check (cookie-based only, no DB call - see Next.js Proxy docs).
     // Real per-resource authorization still happens close to the data (page/route level).
-    const protectedPrefixes = ["/admin", "/profile", "/user"];
-    const isProtectedRoute = protectedPrefixes.some((prefix) =>
-      request.nextUrl.pathname.startsWith(prefix)
-    );
-
-    if (isProtectedRoute && !user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("redirectTo", request.nextUrl.pathname);
-      return NextResponse.redirect(url);
-    }
+    if (isProtected(request.nextUrl.pathname) && !user) return redirectToLogin(request);
   } catch (err) {
-    console.error("Proxy middleware error:", err);
+    logger.error("Proxy auth check failed", {
+      error: err instanceof Error ? err.message : String(err),
+      pathname: request.nextUrl.pathname,
+    });
+    // Fail closed - a Supabase outage must not silently disable the
+    // optimistic auth layer for protected routes.
+    if (isProtected(request.nextUrl.pathname)) return redirectToLogin(request);
   }
 
   return supabaseResponse;

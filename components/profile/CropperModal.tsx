@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useId, useState, useRef } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
@@ -29,6 +29,8 @@ export function CropperModal({
   const viewportRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [imgLayout, setImgLayout] = useState({ width: 0, height: 0 });
+  // Avatar and cover uploads can each mount their own cropper on one page.
+  const zoomSliderId = useId();
   const [lastResetImageSrc, setLastResetImageSrc] = useState<string | null>(null);
 
   // Reset crop position/zoom whenever a new image is loaded into the cropper.
@@ -153,10 +155,10 @@ export function CropperModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] md:max-w-4xl lg:max-w-5xl p-6 bg-[#F1EFE9] border border-[#0E0E0D] rounded-none shadow-2xl font-mono text-[0.65rem] uppercase tracking-wider text-[#0E0E0D] z-50">
+      <DialogContent className="w-[95vw] md:max-w-4xl lg:max-w-5xl p-6 bg-background border border-foreground rounded-none shadow-2xl font-mono text-[0.65rem] uppercase tracking-wider text-foreground z-50">
         <div className="space-y-5">
           <div>
-            <h3 className="font-display text-[1.1rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-[#0E0E0D]">
+            <h3 className="font-display text-[1.1rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-foreground">
               Reposition and crop image
             </h3>
             <p className="font-sans text-[0.58rem] text-muted-foreground leading-normal mt-1 lowercase first-letter:uppercase">
@@ -174,7 +176,7 @@ export function CropperModal({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleMouseUp}
-            className={`w-full overflow-hidden relative border border-[#0E0E0D]/65 bg-[#0E0E0D]/10 cursor-move ${
+            className={`w-full overflow-hidden relative border border-foreground/65 bg-foreground/10 cursor-move ${
               aspectRatio === 1 ? "aspect-square max-w-[320px] md:max-w-[450px] mx-auto" : "aspect-[4/1]"
             }`}
           >
@@ -198,26 +200,27 @@ export function CropperModal({
             />
 
             {/* Stark brutalist crosshair lines */}
-            <div className="absolute inset-0 pointer-events-none border border-dashed border-[#F1EFE9]/25 flex items-center justify-center">
-              <span className="w-4 h-px bg-[#F1EFE9]/40 absolute" />
-              <span className="h-4 w-px bg-[#F1EFE9]/40 absolute" />
+            <div className="absolute inset-0 pointer-events-none border border-dashed border-background/25 flex items-center justify-center">
+              <span className="w-4 h-px bg-background/40 absolute" />
+              <span className="h-4 w-px bg-background/40 absolute" />
             </div>
           </div>
 
           {/* Zoom Slider */}
           <div className="space-y-2">
             <div className="flex justify-between items-center text-[0.55rem]">
-              <span>Zoom</span>
+              <label htmlFor={zoomSliderId}>Zoom</label>
               <span>{Math.round(zoom * 100)}%</span>
             </div>
             <input
+              id={zoomSliderId}
               type="range"
               min="1"
               max="3"
               step="0.05"
               value={zoom}
               onChange={(e) => setZoom(parseFloat(e.target.value))}
-              className="w-full accent-orange cursor-pointer bg-[#0E0E0D]/15 h-1 border-none focus:outline-none"
+              className="w-full accent-orange cursor-pointer bg-foreground/15 h-1 border-none focus:outline-none"
             />
           </div>
 

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Calendar, Users, Trophy, ExternalLink } from "lucide-react";
 import { buildArenaSlug } from "@/lib/arena-slug";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
-
+import { deriveArenaStatus } from "@/lib/arena/status";
 import { GoldenTicketTag } from "@/components/ui/GoldenTicketTag";
 
 export interface ArenaCardProps {
@@ -60,7 +60,7 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
     <div className="flex flex-col gap-3">
 
       {/* Cover Image Block (Enforced 4:1 crop ratio for layout parity) */}
-      <div className="w-full aspect-[4/1] relative border border-[#0E0E0D]/10 bg-[#0E0E0D]/5 overflow-hidden shrink-0 flex items-center justify-center">
+      <div className="w-full aspect-[4/1] relative border border-foreground/10 bg-foreground/5 overflow-hidden shrink-0 flex items-center justify-center">
         {arena.coverImageUrl ? (
           <Image
             src={arena.coverImageUrl}
@@ -70,7 +70,7 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center p-2 text-center select-none text-[#0E0E0D]/20">
+          <div className="flex flex-col items-center justify-center p-2 text-center select-none text-foreground/20">
             <Trophy className="h-6 w-6 stroke-[1.25]" />
             <span className="font-mono text-[0.38rem] tracking-[0.2em] uppercase mt-1">NO COVER</span>
           </div>
@@ -78,7 +78,7 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
 
         {/* Cover Overlay status tag */}
         <div className="absolute top-1.5 left-1.5 flex flex-wrap gap-1">
-          <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-[#0E0E0D]">
+          <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-foreground">
             {arena.isPrivate ? "INVITE ONLY" : "PUBLIC"}
           </span>
         </div>
@@ -91,13 +91,13 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
             [{formattedStatus}]
           </span>
           {timeLeft && (
-            <span className="font-mono text-[0.42rem] font-bold uppercase tracking-widest text-[#0E0E0D]/60">
+            <span className="font-mono text-[0.42rem] font-bold uppercase tracking-widest text-foreground/60">
               {timeLeft}
             </span>
           )}
         </div>
 
-        <h3 className="font-display italic text-base leading-tight text-[#0E0E0D] uppercase group-hover:text-accent transition-colors duration-200 truncate">
+        <h3 className="font-display italic text-base leading-tight text-foreground uppercase group-hover:text-accent transition-colors duration-200 truncate">
           {arena.title}
         </h3>
 
@@ -120,7 +120,7 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
       </div>
 
       {/* Footer Details */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 mt-1 border-t border-dashed border-[#0E0E0D]/10">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 mt-1 border-t border-dashed border-foreground/10">
         <div className="flex items-center gap-2.5 font-mono text-[0.48rem] uppercase tracking-wider text-muted-foreground">
           <span className="flex items-center gap-0.5">
             <Users className="h-2.5 w-2.5" /> {arena.isTeam ? `Squad: ${arena.minTeamSize}-${arena.maxTeamSize} Devs` : "Solo Arena"}
@@ -132,12 +132,12 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
 
         <div className="flex gap-1 items-center">
           {arena.requireGithubUrl && (
-            <span className="font-mono text-[0.4rem] font-bold text-[#0E0E0D] bg-secondary border border-border px-1 py-0.5">
+            <span className="font-mono text-[0.4rem] font-bold text-foreground bg-secondary border border-border px-1 py-0.5">
               [GITHUB]
             </span>
           )}
           {arena.requireFigmaUrl && (
-            <span className="font-mono text-[0.4rem] font-bold text-[#0E0E0D] bg-secondary border border-border px-1 py-0.5">
+            <span className="font-mono text-[0.4rem] font-bold text-foreground bg-secondary border border-border px-1 py-0.5">
               [FIGMA]
             </span>
           )}
@@ -154,20 +154,35 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
 function ArenaCardImpl({ arena }: ArenaCardProps) {
   const [timeLeft, setTimeLeft] = useState("");
 
+  const status = deriveArenaStatus(
+    {
+      registrationStart: new Date(arena.registrationStart),
+      registrationEnd: new Date(arena.registrationEnd),
+      ideaPhaseStart: new Date(arena.ideaPhaseStart),
+      ideaPhaseEnd: new Date(arena.ideaPhaseEnd),
+      implPhaseStart: new Date(arena.implPhaseStart),
+      implPhaseEnd: new Date(arena.implPhaseEnd),
+      publishedAt: arena.publishedAt ? new Date(arena.publishedAt) : null,
+      canceledAt: arena.canceledAt ? new Date(arena.canceledAt) : null,
+      resultsPublishedAt: arena.resultsPublishedAt ? new Date(arena.resultsPublishedAt) : null,
+    },
+    new Date()
+  );
+
   useEffect(() => {
     const calculateTime = () => {
       const now = new Date().getTime();
       let targetTime = 0;
       let label = "";
 
-      if (arena.status === "REGISTRATION_OPEN") {
+      if (status === "REGISTRATION_OPEN") {
         targetTime = new Date(arena.registrationEnd).getTime();
         label = "Reg Closes In";
-      } else if (arena.status === "IMPLEMENTATION_PHASE" || arena.status === "IDEA_PHASE") {
+      } else if (status === "IMPLEMENTATION_PHASE" || status === "IDEA_PHASE") {
         targetTime = new Date(arena.implPhaseEnd).getTime();
         label = "Ends In";
       } else {
-        setTimeLeft("COMPLETED");
+        setTimeLeft(status);
         return;
       }
 
@@ -196,9 +211,9 @@ function ArenaCardImpl({ arena }: ArenaCardProps) {
   return (
     <Link
       href={`/arena/${buildArenaSlug(arena.title, arena.id)}`}
-      className="group block bg-white text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[4px_4px_0px_0px_#0E0E0D] hover:shadow-[6px_6px_0px_0px_#0E0E0D] hover:-translate-y-0.5 transition-all duration-200"
+      className="group block bg-white text-foreground border-2 border-foreground p-4 relative shadow-[4px_4px_0px_0px_var(--foreground)] hover:shadow-[6px_6px_0px_0px_var(--foreground)] hover:-translate-y-0.5 transition-all duration-200"
     >
-      <ArenaCardBody arena={arena} timeLeft={timeLeft} footerDate={arena.implPhaseStart} />
+      <ArenaCardBody arena={{ ...arena, status }} timeLeft={timeLeft} footerDate={arena.implPhaseStart} />
     </Link>
   );
 }
@@ -208,33 +223,33 @@ export const ArenaCard = React.memo(ArenaCardImpl);
 
 export function ArenaCardSkeleton() {
   return (
-    <div className="block bg-white text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[4px_4px_0px_0px_#0E0E0D] animate-pulse">
+    <div className="block bg-white text-foreground border-2 border-foreground p-4 relative shadow-[4px_4px_0px_0px_var(--foreground)] animate-pulse">
       <div className="flex flex-col gap-3">
         {/* Cover Image Block Placeholder */}
-        <div className="w-full aspect-[4/1] bg-[#0E0E0D]/10 border border-[#0E0E0D]/10" />
+        <div className="w-full aspect-[4/1] bg-foreground/10 border border-foreground/10" />
 
         {/* Card Main Info Placeholder */}
         <div className="min-w-0 flex flex-col gap-2">
           {/* Status Tag Placeholder */}
-          <div className="h-4 w-20 bg-[#0E0E0D]/10 border border-[#0E0E0D]/10" />
+          <div className="h-4 w-20 bg-foreground/10 border border-foreground/10" />
           
           {/* Title Placeholder */}
-          <div className="h-6 w-3/4 bg-[#0E0E0D]/10" />
+          <div className="h-6 w-3/4 bg-foreground/10" />
 
           {/* Description Placeholder */}
           <div className="space-y-1.5 mt-1">
-            <div className="h-3 w-full bg-[#0E0E0D]/10" />
-            <div className="h-3 w-5/6 bg-[#0E0E0D]/10" />
+            <div className="h-3 w-full bg-foreground/10" />
+            <div className="h-3 w-5/6 bg-foreground/10" />
           </div>
         </div>
 
         {/* Footer Details Placeholder */}
-        <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-dashed border-[#0E0E0D]/10">
+        <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-dashed border-foreground/10">
           <div className="flex gap-2">
-            <div className="h-3.5 w-16 bg-[#0E0E0D]/10" />
-            <div className="h-3.5 w-16 bg-[#0E0E0D]/10" />
+            <div className="h-3.5 w-16 bg-foreground/10" />
+            <div className="h-3.5 w-16 bg-foreground/10" />
           </div>
-          <div className="h-3.5 w-12 bg-[#0E0E0D]/10" />
+          <div className="h-3.5 w-12 bg-foreground/10" />
         </div>
       </div>
     </div>

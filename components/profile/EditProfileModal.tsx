@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
@@ -36,7 +36,7 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     reset,
     formState: { errors, isSubmitting },
@@ -110,15 +110,22 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
         skills: skillIds,
         jobTypes: jobTypeId ? [jobTypeId] : [],
       });
-      setErrorMsg(null);
     }
   }, [user, isOpen, reset]);
 
-  const watchEmploymentStatus = watch("employmentStatus") || "";
-  const watchEducation = watch("education") || "";
-  const watchLocation = watch("location") || "";
-  const watchSkills = watch("skills") || [];
-  const watchJobTypes = watch("jobTypes") || [];
+  // Drop any submit error on the way out, so a stale one from a previous
+  // session isn't showing the next time the modal opens. Done here rather
+  // than in the sync effect above, which would be a cascading render.
+  const handleClose = () => {
+    setErrorMsg(null);
+    onClose();
+  };
+
+  const watchEmploymentStatus = useWatch({ control, name: "employmentStatus" }) || "";
+  const watchEducation = useWatch({ control, name: "education" }) || "";
+  const watchLocation = useWatch({ control, name: "location" }) || "";
+  const watchSkills = useWatch({ control, name: "skills" }) || [];
+  const watchJobTypes = useWatch({ control, name: "jobTypes" }) || [];
 
   // Blank the employer field whenever the selected status no longer needs
   // one, mirroring the original's always-blank display for that disabled input.
@@ -149,7 +156,7 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
       }
 
       onSaveSuccess();
-      onClose();
+      handleClose();
     } catch (err) {
       logger.error("Failed to save profile", {
         error: err instanceof Error ? err.message : String(err),
@@ -159,11 +166,11 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl w-full max-h-[85vh] overflow-y-auto p-10 bg-[#F1EFE9] border-2 border-[#0E0E0D] rounded-none shadow-[6px_6px_0px_0px_#0E0E0D] font-mono text-[0.78rem] uppercase tracking-wider text-[#0E0E0D] z-50">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-4xl w-full max-h-[85vh] overflow-y-auto p-10 bg-background border-2 border-foreground rounded-none shadow-[6px_6px_0px_0px_var(--foreground)] font-mono text-[0.78rem] uppercase tracking-wider text-foreground z-50">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div>
-            <h3 className="font-display text-[1.5rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-[#0E0E0D]">
+            <h3 className="font-display text-[1.5rem] italic lowercase first-letter:uppercase font-bold tracking-tight text-foreground">
               Edit developer credentials
             </h3>
             <p className="font-sans text-[0.65rem] text-muted-foreground leading-normal mt-1 lowercase first-letter:uppercase">
@@ -172,7 +179,7 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 bg-accent text-[#F1EFE9] border border-[#0E0E0D] font-bold lowercase first-letter:uppercase">
+            <div className="p-3.5 bg-accent text-background border border-foreground font-bold lowercase first-letter:uppercase">
               ⚠️ {errorMsg}
             </div>
           )}
@@ -214,11 +221,11 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
           <input type="hidden" {...register("skills")} />
 
           {/* Modal Actions */}
-          <div className="grid grid-cols-2 gap-5 pt-4 border-t-2 border-[#0E0E0D]">
+          <div className="grid grid-cols-2 gap-5 pt-4 border-t-2 border-foreground">
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
               className="w-full py-4 text-[0.78rem]"
             >

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -23,6 +23,7 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const emailId = useId();
 
   const {
     register,
@@ -110,10 +111,11 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1 text-left">
-            <label className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
+            <label htmlFor={emailId} className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
               Email Address
             </label>
             <Input
+              id={emailId}
               type="email"
               placeholder="e.g., mail@example.com"
               {...register("email")}

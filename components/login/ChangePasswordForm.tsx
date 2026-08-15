@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,10 +8,15 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { KeyRound, CheckCircle } from "lucide-react";
 import { logger } from "@/lib/client/logger";
+import { passwordSchema } from "@/lib/auth/schema";
 
+// Uses the shared passwordSchema so this form cannot drift from what
+// /api/auth/change-password actually enforces. It previously required only 6
+// characters here while the route enforced its own separate rule, so a
+// password could pass client validation and then be rejected by the server.
 const schema = z
   .object({
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -29,6 +34,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const fieldId = useId();
 
   const {
     register,
@@ -106,10 +112,11 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1 text-left">
-            <label className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
+            <label htmlFor={`${fieldId}-password`} className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
               New Password
             </label>
             <Input
+              id={`${fieldId}-password`}
               type="password"
               placeholder="••••••••"
               {...register("password")}
@@ -123,10 +130,11 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
           </div>
 
           <div className="space-y-1 text-left">
-            <label className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
+            <label htmlFor={`${fieldId}-confirm-password`} className="font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
               Confirm Password
             </label>
             <Input
+              id={`${fieldId}-confirm-password`}
               type="password"
               placeholder="••••••••"
               {...register("confirmPassword")}

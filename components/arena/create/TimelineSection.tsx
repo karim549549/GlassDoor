@@ -12,7 +12,7 @@ interface TimelineSectionProps {
 
 export function TimelineSection({ register, errors }: TimelineSectionProps) {
   return (
-    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_var(--foreground)]">
       <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
         <Calendar className="h-4 w-4" /> 03. Timeline & Phases
       </h2>

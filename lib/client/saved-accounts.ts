@@ -1,21 +1,57 @@
-const STORAGE_KEY = "devs_arena_saved_users";
+// v2: the previous key stored a Supabase refresh token per account, which made
+// any XSS on this origin a permanent account takeover. Tokens are no longer
+// sent to the browser at all (see app/api/auth/*). This key holds only the
+// email and display name needed to prefill the login form.
+const STORAGE_KEY = "devs_arena_saved_users_v2";
+const LEGACY_STORAGE_KEY = "devs_arena_saved_users";
 
 export interface SavedAccount {
   email: string;
   name: string;
-  refreshToken?: string | null;
 }
 
-// NOTE: refreshToken is stored client-side in localStorage to power the
-// "saved accounts" quick-switch feature. This is accepted short-term debt -
-// a refresh token readable by any XSS on the page outlives the httpOnly
-// session cookie Supabase already manages. Moving this server-side is a
-// separate follow-up task, not part of this refactor.
+/**
+ * Deletes the pre-v2 blob, which may still hold refresh tokens in browsers that
+ * signed in before this key was versioned. Ignoring the old key would leave
+ * those tokens readable by any script on the origin indefinitely.
+ */
+function purgeLegacyStorage() {
+  try {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch (e) {
+    console.error("Failed to purge legacy saved accounts", e);
+  }
+}
+
+/**
+ * localStorage is attacker-writable, so the parsed blob is treated as untrusted
+ * input and mapped field by field - anything else it carries (a leftover
+ * refreshToken, say) is dropped here rather than round-tripped by the next
+ * upsert.
+ */
+function toSavedAccounts(parsed: unknown): SavedAccount[] {
+  if (!Array.isArray(parsed)) return [];
+
+  return parsed.reduce<SavedAccount[]>((accounts, entry) => {
+    if (typeof entry !== "object" || entry === null) return accounts;
+
+    const { email, name } = entry as { email?: unknown; name?: unknown };
+    if (typeof email !== "string" || email.length === 0) return accounts;
+
+    accounts.push({
+      email,
+      name: typeof name === "string" ? name : email.split("@")[0],
+    });
+    return accounts;
+  }, []);
+}
 
 export function getSavedAccounts(): SavedAccount[] {
+  purgeLegacyStorage();
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    return stored ? toSavedAccounts(JSON.parse(stored)) : [];
   } catch (e) {
     console.error("Failed to load saved accounts", e);
     return [];

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useId, useRef } from "react";
 
 export interface DropdownOption {
   id: string;
@@ -27,7 +27,12 @@ export function SearchableDropdown({
   disabled = false,
 }: SearchableDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  // null means "nothing typed yet in this open session" - the input then falls
+  // back to the selected option's display text.
+  const [typedQuery, setTypedQuery] = useState<string | null>(null);
+  // Several of these render on the same form, so the label association needs a
+  // per-instance id rather than a hardcoded one.
+  const inputId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -45,12 +50,9 @@ export function SearchableDropdown({
   const selectedOption = normalizedOptions.find((opt) => opt.id === value);
   const displayValue = selectedOption ? selectedOption.name : value || "";
 
-  // Update input text when value changes
-  useEffect(() => {
-    if (!isOpen) {
-      setSearchQuery(displayValue);
-    }
-  }, [value, displayValue, isOpen]);
+  // Input text is derived, not stored: while closed it always mirrors the
+  // selected value, while open it shows whatever the user has typed so far.
+  const searchQuery = isOpen ? (typedQuery ?? displayValue) : displayValue;
 
   // Handle clicking outside the dropdown container
   useEffect(() => {
@@ -64,7 +66,6 @@ export function SearchableDropdown({
 
           if (matched) {
             onChange(matched.id);
-            setSearchQuery(matched.name);
           } else {
             // If they typed something but it doesn't match, we set to what they typed
             // and let Yup validation handle validation error.
@@ -74,6 +75,7 @@ export function SearchableDropdown({
               onChange(searchQuery);
             }
           }
+          setTypedQuery(null);
           setIsOpen(false);
         }
       }
@@ -91,6 +93,7 @@ export function SearchableDropdown({
 
   const handleInputFocus = () => {
     if (disabled) return;
+    setTypedQuery(null);
     setIsOpen(true);
     if (inputRef.current) {
       inputRef.current.select();
@@ -99,23 +102,24 @@ export function SearchableDropdown({
 
   const handleOptionClick = (option: DropdownOption) => {
     onChange(option.id);
-    setSearchQuery(option.name);
+    setTypedQuery(null);
     setIsOpen(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    setTypedQuery(e.target.value);
     setIsOpen(true);
   };
 
   return (
-    <div ref={containerRef} className="space-y-2 relative w-full font-mono text-[0.78rem] uppercase tracking-wider text-[#0E0E0D]">
-      <label className="font-bold text-[0.72rem] tracking-widest text-muted-foreground block">
+    <div ref={containerRef} className="space-y-2 relative w-full font-mono text-[0.78rem] uppercase tracking-wider text-foreground">
+      <label htmlFor={inputId} className="font-bold text-[0.72rem] tracking-widest text-muted-foreground block">
         {label}
       </label>
-      
+
       <div className="relative">
         <input
+          id={inputId}
           ref={inputRef}
           type="text"
           disabled={disabled}
@@ -123,7 +127,7 @@ export function SearchableDropdown({
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           placeholder={placeholder}
-          className={`w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.78rem] transition-colors ${
+          className={`w-full p-3 bg-card border border-foreground focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.78rem] transition-colors ${
             disabled ? "opacity-50 cursor-not-allowed bg-gray-100" : "cursor-text"
           }`}
         />
@@ -131,15 +135,19 @@ export function SearchableDropdown({
         {/* Toggle Indicator Arrow */}
         <button
           type="button"
-          onClick={() => !disabled && setIsOpen(!isOpen)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0E0E0D] hover:text-[#0E0E0D]/60 focus:outline-none p-1 cursor-pointer"
+          onClick={() => {
+            if (disabled) return;
+            setTypedQuery(null);
+            setIsOpen(!isOpen);
+          }}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground hover:text-foreground/60 focus:outline-none p-1 cursor-pointer"
         >
           {isOpen ? "▲" : "▼"}
         </button>
 
         {/* Dropdown Options List */}
         {isOpen && (
-          <div className="absolute left-0 right-0 top-full mt-1 bg-[#F1EFE9] border border-[#0E0E0D] z-50 max-h-48 overflow-y-auto divide-y divide-[#0E0E0D]/10 shadow-[4px_4px_0px_0px_#0E0E0D] select-none">
+          <div className="absolute left-0 right-0 top-full mt-1 bg-background border border-foreground z-50 max-h-48 overflow-y-auto divide-y divide-foreground/10 shadow-[4px_4px_0px_0px_var(--foreground)] select-none">
             {filteredOptions.length === 0 ? (
               <div className="p-3.5 text-muted-foreground text-[0.7rem] normal-case italic">
                 No matching options found
@@ -154,7 +162,7 @@ export function SearchableDropdown({
                     className={`p-3 cursor-pointer flex items-center justify-between transition-colors ${
                       selected
                         ? "bg-orange/15 font-bold text-orange hover:bg-orange/20"
-                        : "hover:bg-[#0E0E0D]/5"
+                        : "hover:bg-foreground/5"
                     }`}
                   >
                     <span>{opt.name}</span>

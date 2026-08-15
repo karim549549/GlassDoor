@@ -1,0 +1,139 @@
+enum AppealStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Rubric {
+  id          String            @id @default(uuid()) @db.Uuid
+  arenaId     String            @db.Uuid
+  arena       Arena             @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  version     Int               @default(1)
+  isImmutable Boolean           @default(false)
+  
+  criteria    RubricCriterion[]
+
+  createdAt   DateTime          @default(now())
+
+  @@unique([arenaId, version])
+  @@index([arenaId])
+  @@map("rubrics")
+}
+
+model RubricCriterion {
+  id          String       @id @default(uuid()) @db.Uuid
+  rubricId    String       @db.Uuid
+  rubric      Rubric       @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String       @db.Text
+  weight      Float        @default(1.0)
+  maxScore    Float        @default(10.0)
+
+  scores      JudgeScore[]
+
+  createdAt   DateTime     @default(now())
+
+  @@index([rubricId])
+  @@map("rubric_criteria")
+}
+
+model ArenaJudge {
+  id          String            @id @default(uuid()) @db.Uuid
+  arenaId     String            @db.Uuid
+  arena       Arena             @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  userId      String            @db.Uuid
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  invitedAt   DateTime          @default(now())
+  isAccepted  Boolean           @default(false)
+
+  assignments JudgeAssignment[]
+  conflicts   JudgeConflict[]
+
+  @@unique([arenaId, userId])
+  @@index([arenaId])
+  @@index([userId])
+  @@map("arena_judges")
+}
+
+model JudgeAssignment {
+  id           String          @id @default(uuid()) @db.Uuid
+  submissionId String          @db.Uuid
+  submission   ArenaSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  judgeId      String          @db.Uuid
+  judge        ArenaJudge      @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+
+  assignedAt   DateTime        @default(now())
+
+  scores       JudgeScore[]
+  verdict      JudgeVerdict?
+
+  @@unique([submissionId, judgeId])
+  @@index([submissionId])
+  @@index([judgeId])
+  @@map("judge_assignments")
+}
+
+model JudgeScore {
+  id            String          @id @default(uuid()) @db.Uuid
+  assignmentId  String          @db.Uuid
+  assignment    JudgeAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  criterionId   String          @db.Uuid
+  criterion     RubricCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+
+  score         Float
+  justification String          @db.Text
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([assignmentId, criterionId])
+  @@index([assignmentId])
+  @@index([criterionId])
+  @@map("judge_scores")
+}
+
+model JudgeVerdict {
+  id           String          @id @default(uuid()) @db.Uuid
+  assignmentId String          @unique @db.Uuid
+  assignment   JudgeAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  finalScore   Float
+  feedbackText String?         @db.Text
+  submittedAt  DateTime        @default(now())
+
+  @@map("judge_verdicts")
+}
+
+model Appeal {
+  id             String          @id @default(uuid()) @db.Uuid
+  submissionId   String          @unique @db.Uuid
+  submission     ArenaSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  reasonText     String          @db.Text
+  status         AppealStatus    @default(PENDING)
+  resolutionText String?         @db.Text
+  resolvedAt     DateTime?
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("appeals")
+}
+
+model JudgeConflict {
+  id        String     @id @default(uuid()) @db.Uuid
+  judgeId   String     @db.Uuid
+  judge     ArenaJudge @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  userId    String     @db.Uuid
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  reason    String     @db.Text
+  createdAt DateTime   @default(now())
+
+  @@unique([judgeId, userId])
+  @@index([judgeId])
+  @@index([userId])
+  @@map("judge_conflicts")
+}

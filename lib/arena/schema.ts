@@ -9,14 +9,46 @@ import * as z from "zod";
 export const arenaBaseSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  coverImageUrl: z.string().min(1, "Cover image upload is required").url("Must be a valid URL"),
+  coverImageUrl: z.string().url("Must be a valid URL").optional().nullable(),
   isPrivate: z.boolean().default(false),
   inviteCode: z.string().optional().nullable(),
+
+  // Format, Authority, Domain & Difficulty
+  format: z.enum(["REP", "LIVE", "ARENA"]).default("ARENA"),
+  authority: z.enum(["OFFICIAL", "COMPANY", "COMMUNITY"]).default("COMMUNITY"),
+  intent: z.enum(["HIRING_ASSESSMENT", "BRAND_HACKATHON", "COMMUNITY_FUN"]).default("COMMUNITY_FUN"),
+  domain: z
+    .enum([
+      "FULL_STACK_WEB",
+      "BACKEND_DISTRIBUTED",
+      "FRONTEND_MOBILE",
+      "AI_MACHINE_LEARNING",
+      "DATA_ENGINEERING",
+      "CYBERSECURITY_ETHICAL_HACKING",
+      "SYSTEMS_DEV_OPS",
+      "EMBEDDED_IOT",
+      "BLOCKCHAIN_WEB3",
+    ])
+    .default("FULL_STACK_WEB"),
+  difficulty: z.enum(["NOVICE", "INTERMEDIATE", "ADVANCED", "GRANDMASTER"]).default("INTERMEDIATE"),
 
   // Location
   locationType: z.enum(["ONLINE", "IN_PERSON"]).default("ONLINE"),
   locationName: z.string().optional().nullable(),
   googleMapsUrl: z.string().optional().nullable(),
+
+  // Prize Pool
+  hasPrizePool: z.boolean().default(false),
+  totalPrizePool: z.coerce.number().optional().nullable(),
+  prizeCurrency: z.enum(["EGP", "USD", "EUR", "SAR", "AED"]).default("EGP"),
+  firstPlacePrize: z.coerce.number().optional().nullable(),
+  secondPlacePrize: z.coerce.number().optional().nullable(),
+  thirdPlacePrize: z.coerce.number().optional().nullable(),
+  prizeDisbursementTerms: z.string().optional().nullable(),
+  requireHiringConsent: z.boolean().default(false),
+
+  // Company association
+  companyId: z.string().uuid().optional().nullable(),
 
   // Timeline
   registrationStart: z.string().min(1, "Registration start date is required"),
@@ -38,7 +70,7 @@ export const arenaBaseSchema = z.object({
   requireFigmaUrl: z.boolean().default(false),
   requireVideoUrl: z.boolean().default(false),
   requireWriteup: z.boolean().default(true),
-  rulesText: z.string().min(10, "Please provide some rules for the arena"),
+  rulesText: z.string().default(""),
 
   // Tags (IDs or Slugs)
   tags: z.array(z.string()).default([]),
@@ -47,8 +79,7 @@ export const arenaBaseSchema = z.object({
 /**
  * Single source of truth for arena create/update validation, consumed by
  * both the client form (app/arena/create/page.tsx) and the API route
- * (app/api/arena/route.ts). Cover image is required to match the create
- * flow's UX.
+ * (app/api/arena/route.ts).
  */
 export const arenaSchema = arenaBaseSchema
   .refine(

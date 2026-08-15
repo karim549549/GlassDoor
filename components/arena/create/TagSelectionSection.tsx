@@ -56,7 +56,7 @@ export function TagSelectionSection({ setValue, watch }: TagSelectionSectionProp
   };
 
   return (
-    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_#0E0E0D]">
+    <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_var(--foreground)]">
       <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
         <h2 className="font-mono text-[0.7rem] uppercase tracking-wider flex items-center gap-2 font-bold text-foreground">
           <TagIcon className="h-4 w-4 text-orange" /> Golden Ticket Arena Categories & Tags

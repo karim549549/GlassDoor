@@ -1,0 +1,80 @@
+model ArenaSubmission {
+  id           String                    @id @default(uuid()) @db.Uuid
+  arenaId      String                    @db.Uuid
+  arena        Arena                     @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  entryId      String                    @unique @db.Uuid
+  entry        ArenaEntry                @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  
+  githubUrl    String
+  figmaUrl     String?
+  videoUrl     String?
+  writeupText  String                    @db.Text
+  
+  finalScore   Float?
+  feedbackText String?                   @db.Text
+  submittedAt  DateTime                  @default(now())
+  withdrawnAt  DateTime?
+
+  revisions    ArenaSubmissionRevision[]
+  commits      SubmissionCommit[]
+  assignments  JudgeAssignment[]
+  appeal       Appeal?
+  proofPacket  ProofPacket?
+
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  @@index([arenaId])
+  @@map("arena_submissions")
+}
+
+model ArenaSubmissionRevision {
+  id             String          @id @default(uuid()) @db.Uuid
+  submissionId   String          @db.Uuid
+  submission     ArenaSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  revisionNumber Int             @default(1)
+  
+  githubUrl      String
+  figmaUrl       String?
+  videoUrl       String?
+  writeupText    String          @db.Text
+
+  createdAt      DateTime        @default(now())
+
+  @@index([submissionId])
+  @@map("arena_submission_revisions")
+}
+
+model SubmissionCommit {
+  id           String          @id @default(uuid()) @db.Uuid
+  submissionId String          @db.Uuid
+  submission   ArenaSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  
+  sha          String
+  message      String?
+  author       String?
+  committedAt  DateTime
+  rawPayload   Json?
+
+  createdAt    DateTime        @default(now())
+
+  @@unique([submissionId, sha])
+  @@index([submissionId])
+  @@map("submission_commits")
+}
+
+model ArenaRequirement {
+  id          String    @id @default(uuid()) @db.Uuid
+  arenaId     String    @db.Uuid
+  arena       Arena     @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  title       String
+  description String    @db.Text
+  releasedAt  DateTime  @default(now())
+  weight      Float     @default(1.0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([arenaId])
+  @@map("arena_requirements")
+}

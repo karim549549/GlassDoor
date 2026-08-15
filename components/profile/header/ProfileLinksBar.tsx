@@ -41,15 +41,15 @@ export const ProfileLinksBar = React.memo(function ProfileLinksBar({
   lastActiveAt,
 }: ProfileLinksBarProps) {
   return (
-    <div className="w-full border-t border-[#F1EFE9]/15 bg-[#FAF8F5]/5 backdrop-blur-sm select-text z-20 relative">
-      <div className="w-full px-8 md:px-12 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-mono text-[0.55rem] uppercase tracking-wider text-[#F1EFE9]/85">
+    <div className="w-full border-t border-background/15 bg-card/5 backdrop-blur-sm select-text z-20 relative">
+      <div className="w-full px-8 md:px-12 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-mono text-[0.55rem] uppercase tracking-wider text-background/85">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           {githubUrl ? (
             <a
               href={githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/30 hover:border-orange pb-0.5"
+              className="hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-background/30 hover:border-orange pb-0.5"
             >
               GITHUB
             </a>
@@ -58,7 +58,7 @@ export const ProfileLinksBar = React.memo(function ProfileLinksBar({
               <button
                 type="button"
                 onClick={onEditClick}
-                className="text-[#F1EFE9]/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
+                className="text-background/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-background/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
               >
                 + ADD GITHUB
               </button>
@@ -69,7 +69,7 @@ export const ProfileLinksBar = React.memo(function ProfileLinksBar({
               href={linkedinUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/30 hover:border-orange pb-0.5"
+              className="hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-background/30 hover:border-orange pb-0.5"
             >
               LINKEDIN
             </a>
@@ -78,7 +78,7 @@ export const ProfileLinksBar = React.memo(function ProfileLinksBar({
               <button
                 type="button"
                 onClick={onEditClick}
-                className="text-[#F1EFE9]/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
+                className="text-background/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-background/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
               >
                 + ADD LINKEDIN
               </button>
@@ -89,7 +89,7 @@ export const ProfileLinksBar = React.memo(function ProfileLinksBar({
               href={portfolioUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/30 hover:border-orange pb-0.5"
+              className="hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-background/30 hover:border-orange pb-0.5"
             >
               WEBSITE
             </a>
@@ -98,19 +98,19 @@ export const ProfileLinksBar = React.memo(function ProfileLinksBar({
               <button
                 type="button"
                 onClick={onEditClick}
-                className="text-[#F1EFE9]/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-[#F1EFE9]/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
+                className="text-background/40 hover:text-orange transition-colors flex items-center gap-1 border-b border-dashed border-background/20 hover:border-orange pb-0.5 cursor-pointer bg-transparent border-none p-0 font-mono text-[0.55rem] font-bold"
               >
                 + ADD WEBSITE
               </button>
             )
           )}
 
-          <div className="h-3.5 w-px bg-[#F1EFE9]/25 hidden sm:block" />
+          <div className="h-3.5 w-px bg-background/25 hidden sm:block" />
 
-          <span className="font-bold text-[#F1EFE9]">
+          <span className="font-bold text-background">
             RATING: <span className="text-orange">{rating || 0}</span>
           </span>
-          <span className="font-bold text-[#F1EFE9]">
+          <span className="font-bold text-background">
             FOLLOWERS: <span className="text-orange">{followersCount}</span>
           </span>
           <span>REGISTERED: {new Date(createdAt).toLocaleDateString()}</span>

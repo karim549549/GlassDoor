@@ -32,7 +32,7 @@ export function SkillsSection({ register, errors, dbSkills, selectedSkills, onTo
 
   return (
     <div className="space-y-5">
-      <h4 className="font-bold border-b-2 border-[#0E0E0D] pb-1 text-[#0E0E0D] text-[0.85rem]">
+      <h4 className="font-bold border-b-2 border-foreground pb-1 text-foreground text-[0.85rem]">
         3. About & Tech Skills
       </h4>
       <div className="space-y-2">
@@ -42,7 +42,7 @@ export function SkillsSection({ register, errors, dbSkills, selectedSkills, onTo
         <textarea
           id="bio"
           rows={3}
-          className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none text-[0.78rem] normal-case"
+          className="w-full p-3 bg-card border border-foreground focus:outline-none placeholder-muted-foreground/60 rounded-none text-[0.78rem] normal-case"
           placeholder="Brief summary of your development experience..."
           {...register("bio")}
         />
@@ -63,7 +63,7 @@ export function SkillsSection({ register, errors, dbSkills, selectedSkills, onTo
           role="button"
           tabIndex={0}
           aria-labelledby="skills-label"
-          className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] min-h-[42px] flex flex-wrap gap-2 items-center cursor-pointer select-none"
+          className="w-full p-3 bg-card border border-foreground min-h-[42px] flex flex-wrap gap-2 items-center cursor-pointer select-none"
         >
           {selectedSkills.length === 0 ? (
             <span className="text-muted-foreground/65">Click to select skills</span>
@@ -73,7 +73,7 @@ export function SkillsSection({ register, errors, dbSkills, selectedSkills, onTo
               return (
                 <span
                   key={id}
-                  className="px-2.5 py-1 bg-orange text-[#FAF8F5] flex items-center gap-1.5 hover:bg-[#0E0E0D] transition-colors"
+                  className="px-2.5 py-1 bg-orange text-card flex items-center gap-1.5 hover:bg-foreground transition-colors"
                 >
                   {skillName}
                   <button
@@ -93,7 +93,7 @@ export function SkillsSection({ register, errors, dbSkills, selectedSkills, onTo
         </div>
 
         {skillsDropdownOpen && (
-          <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#F1EFE9] border border-[#0E0E0D] z-50 max-h-48 overflow-y-auto divide-y divide-[#0E0E0D]/10 shadow-lg">
+          <div className="absolute left-0 right-0 top-full mt-1.5 bg-background border border-foreground z-50 max-h-48 overflow-y-auto divide-y divide-foreground/10 shadow-lg">
             {dbSkills.map((skill) => {
               const selected = selectedSkills.includes(skill.id);
               return (
@@ -101,7 +101,7 @@ export function SkillsSection({ register, errors, dbSkills, selectedSkills, onTo
                   key={skill.id}
                   onClick={() => onToggleSkill(skill.id)}
                   className={`p-3.5 cursor-pointer flex items-center justify-between transition-colors ${
-                    selected ? "bg-orange/15 font-bold text-orange hover:bg-orange/20" : "hover:bg-[#0E0E0D]/5"
+                    selected ? "bg-orange/15 font-bold text-orange hover:bg-orange/20" : "hover:bg-foreground/5"
                   }`}
                 >
                   <span>{skill.name}</span>

@@ -12,13 +12,13 @@ interface ArenaTabsProps {
 
 export function ArenaTabs({ activeTab, setActiveTab, allCount, myCount }: ArenaTabsProps) {
   return (
-    <div className="flex border-b border-[#0E0E0D]/20 gap-3 pb-0.5">
+    <div className="flex border-b border-foreground/20 gap-3 pb-0.5">
       <button
         onClick={() => setActiveTab("all")}
-        className={`px-4 py-2 border-2 border-b-0 border-[#0E0E0D] font-mono text-[0.62rem] font-bold uppercase tracking-widest transition-all duration-150 flex items-center gap-2 -mb-[2px] relative z-10 ${
+        className={`px-4 py-2 border-2 border-b-0 border-foreground font-mono text-[0.62rem] font-bold uppercase tracking-widest transition-all duration-150 flex items-center gap-2 -mb-[2px] relative z-10 ${
           activeTab === "all"
-            ? "bg-[#FAF8F5] text-[#0E0E0D] shadow-[2px_-2px_0px_0px_#0E0E0D]"
-            : "bg-[#E4E1D9]/40 text-muted-foreground hover:bg-[#E4E1D9] hover:text-[#0E0E0D]"
+            ? "bg-card text-foreground shadow-[2px_-2px_0px_0px_var(--foreground)]"
+            : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
         }`}
       >
         <Folder className="h-3.5 w-3.5" />
@@ -30,10 +30,10 @@ export function ArenaTabs({ activeTab, setActiveTab, allCount, myCount }: ArenaT
 
       <button
         onClick={() => setActiveTab("my")}
-        className={`px-4 py-2 border-2 border-b-0 border-[#0E0E0D] font-mono text-[0.62rem] font-bold uppercase tracking-widest transition-all duration-150 flex items-center gap-2 -mb-[2px] relative z-10 ${
+        className={`px-4 py-2 border-2 border-b-0 border-foreground font-mono text-[0.62rem] font-bold uppercase tracking-widest transition-all duration-150 flex items-center gap-2 -mb-[2px] relative z-10 ${
           activeTab === "my"
-            ? "bg-[#FAF8F5] text-[#0E0E0D] shadow-[2px_-2px_0px_0px_#0E0E0D]"
-            : "bg-[#E4E1D9]/40 text-muted-foreground hover:bg-[#E4E1D9] hover:text-[#0E0E0D]"
+            ? "bg-card text-foreground shadow-[2px_-2px_0px_0px_var(--foreground)]"
+            : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
         }`}
       >
         <Heart className="h-3.5 w-3.5" />

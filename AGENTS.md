@@ -30,9 +30,13 @@ Every protected route used to repeat the same `createClient()` → `getUser()` �
 
 `lib/server/logger.ts` (server) and `lib/client/logger.ts` (client) — `error`/`warn` only, nothing on the success path. `withApiErrorHandling` and `requireUser()` already log through these; don't add a duplicate log around a call to either.
 
-## Frontend/backend boundary — pages never touch Prisma or Supabase directly for data
+## Frontend/backend boundary — the service layer is the seam, not HTTP
 
-This app is one Next.js codebase today but is intentionally being kept ready to split into a separately-deployed backend later. So `app/api/**` is treated as if it already were a different service: pages and components (including Server Components) fetch it over HTTP via `fetchInternalApi` in `lib/server/api-client.ts` — they don't import `prisma`, construct a Supabase client, or call a `lib/<domain>/service.ts` function directly for business data. If the route doesn't exist yet, create it instead of taking the direct-call shortcut. See `.agents/rules/architecture.md` for the full rule, including the one confirmed exception (statically-generated/ISR pages can't self-fetch at build time — verified by an actual failed build — so they call the service function directly, same as the API route does).
+This app is one Next.js codebase today but is intentionally kept ready to split into a separately-deployed backend later. The seam that makes that possible is `lib/<domain>/service.ts`: all data logic lives there, and nothing else talks to Prisma.
+
+Server Components call those service functions directly. `app/api/**` is a parallel thin adapter over the *same* functions, for client components and future external consumers — neither calls the other. Pages and components still must never import `prisma`, construct a Supabase client for business data, or inline a query; that restriction is unchanged and is what this rule actually protects.
+
+**Changed 2026-08-15** (was: Server Components HTTP-fetch their own `/api/*` routes via `fetchInternalApi`). That function derived its target URL from the client-controlled `Host` header while forwarding the caller's session cookie — a request-forgery primitive — and cost an extra hop plus a second serverless invocation per render. It has been deleted. Full reasoning in `.agents/rules/architecture.md`. For absolute URLs that must not come from the request, use `getSiteUrl()` from `lib/site-url.ts`.
 
 ## Component decomposition
 

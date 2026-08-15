@@ -1,11 +1,21 @@
 import { create } from "zustand";
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   email: string;
   fullName: string | null;
   avatarUrl?: string | null;
   coverUrl?: string | null;
+  companyMemberships?: Array<{
+    companyId: string;
+    role: string;
+    company: {
+      id: string;
+      name: string;
+      slug: string;
+      logoUrl: string | null;
+    };
+  }>;
 }
 
 export interface NotificationItem {
@@ -30,6 +40,9 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   roles: ["GUEST"],
+  // True until AuthProvider's /api/auth/me call resolves. Components that
+  // branch on auth should render a neutral state while this is true rather
+  // than assuming signed-out.
   isLoading: true,
   notifications: [],
   setAuth: (user, roles) =>

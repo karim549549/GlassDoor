@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { validateImageUpload, uploadImageToStorage } from "@/lib/server/upload";
 import { requireUser } from "@/lib/server/auth/require-user";
 import { withApiErrorHandling } from "@/lib/server/api-route";
+import { checkRateLimit, rateLimitResponse } from "@/lib/server/rate-limit";
 
 export async function POST(request: NextRequest) {
   return withApiErrorHandling(
@@ -9,6 +10,13 @@ export async function POST(request: NextRequest) {
     async () => {
       const auth = await requireUser();
       if ("response" in auth) return auth.response;
+      const { user } = auth;
+
+      // Keyed on the authenticated user rather than the IP: every upload writes
+      // up to 5MB to a fresh, never-collected UUID path via the service-role
+      // client, so an unlimited caller is an unbounded storage-cost amplifier.
+      const limit = checkRateLimit(`upload-arena:${user.id}`, { limit: 20, windowMs: 3_600_000 });
+      if (!limit.ok) return rateLimitResponse(limit.retryAfterSeconds);
 
       const formData = await request.formData();
       const file = formData.get("file") as File | null;
@@ -26,17 +34,11 @@ export async function POST(request: NextRequest) {
       const randomId = crypto.randomUUID();
       const filePath = `arenas/covers/${randomId}.jpg`;
 
-      let publicUrl: string;
-      try {
-        ({ publicUrl } = await uploadImageToStorage({ file, path: filePath }));
-      } catch (uploadError) {
-        console.error("Supabase Storage Upload Error (Arena):", uploadError);
-        const message = uploadError instanceof Error ? uploadError.message : "Upload failed.";
-        return NextResponse.json({ error: message }, { status: 500 });
-      }
+      const { publicUrl } = await uploadImageToStorage({ file, path: filePath });
 
       return NextResponse.json({ success: true, url: publicUrl });
     },
-    "An unexpected error occurred during upload."
+    "An unexpected error occurred during upload.",
+    request
   );
 }

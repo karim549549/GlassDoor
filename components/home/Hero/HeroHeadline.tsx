@@ -1,7 +1,7 @@
 export function HeroHeadline() {
   return (
     <div
-      className="absolute z-20 text-left text-[#0E0E0D]"
+      className="absolute z-20 text-left text-foreground"
       style={{
         bottom: "clamp(45px, 9vh, 75px)",
         left: "clamp(1rem, 3vw, 2.5rem)",
@@ -17,7 +17,7 @@ export function HeroHeadline() {
         className="font-display text-muted-foreground mt-2"
         style={{ fontStyle: "italic", fontSize: "clamp(0.75rem, 1.1vw, 1rem)", lineHeight: 1.35 }}
       >
-        Salaries. Arenas. Profiles. One platform.
+        Competitions. Credentials. Profiles. One platform.
       </div>
 
       <div className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-[0.2em] mt-4 border-t border-border/30 pt-3.5">

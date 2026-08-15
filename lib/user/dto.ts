@@ -17,7 +17,8 @@ export const userProfileDtoSchema = z.object({
   firstName: z.string().nullable(),
   lastName: z.string().nullable(),
   handle: z.string().nullable(),
-  email: z.email(),
+  // No `email` field: this DTO is the public profile contract and the service's
+  // select no longer fetches one. See USER_PROFILE_SELECT in ./service.ts.
   avatarUrl: z.string().nullable(),
   coverUrl: z.string().nullable(),
   bio: z.string().nullable(),
@@ -30,6 +31,14 @@ export const userProfileDtoSchema = z.object({
   linkedinUrl: z.string().nullable(),
   portfolioUrl: z.string().nullable(),
   rating: z.number(),
+  ratingStates: z.array(
+    z.object({
+      domain: z.string(),
+      rating: z.number(),
+      deviation: z.number(),
+      volatility: z.number(),
+    })
+  ).default([]),
   createdAt: z.date(),
   lastActiveAt: z.date().nullable(),
   skills: z.array(z.object({ id: z.string(), name: z.string() })),
@@ -42,8 +51,14 @@ export const userProfileDtoSchema = z.object({
 export type UserProfileDto = z.infer<typeof userProfileDtoSchema>;
 
 export function toUserProfileDto(raw: RawUserProfile): UserProfileDto {
+  const primaryRating = raw.ratingStates?.[0]?.rating
+    ? Math.round(raw.ratingStates[0].rating)
+    : 1500;
+
   return userProfileDtoSchema.parse({
     ...raw,
+    rating: primaryRating,
+    ratingStates: raw.ratingStates || [],
     skills: raw.skills.map((s) => s.skill),
     jobTypes: raw.jobTypes.map((j) => j.jobType),
   });

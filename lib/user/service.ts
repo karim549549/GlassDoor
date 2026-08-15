@@ -15,7 +15,12 @@ export const USER_PROFILE_SELECT = {
   firstName: true,
   lastName: true,
   handle: true,
-  email: true,
+  // email is deliberately NOT selected. This allow-list feeds the PUBLIC
+  // profile endpoint, so including it published every user's email address to
+  // any unauthenticated visitor - both a privacy problem under Egypt's PDPL
+  // and a giveaway of the exact contact detail the platform intends to gate
+  // behind verified recruiter access. A viewer's own email is available from
+  // the session via /api/auth/me; it never needs to come from here.
   avatarUrl: true,
   coverUrl: true,
   bio: true,
@@ -27,7 +32,7 @@ export const USER_PROFILE_SELECT = {
   githubUrl: true,
   linkedinUrl: true,
   portfolioUrl: true,
-  rating: true,
+  ratingStates: { select: { domain: true, rating: true, deviation: true, volatility: true } },
   createdAt: true,
   lastActiveAt: true,
   skills: { select: { skill: { select: { id: true, name: true } } } },

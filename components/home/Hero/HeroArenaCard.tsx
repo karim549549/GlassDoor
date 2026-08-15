@@ -36,18 +36,18 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             ref={(el) => {
               cardRefs.current[idx] = el;
             }}
-            className={`md:absolute md:inset-0 relative w-full bg-[#FAF8F5] text-[#0E0E0D] border-4 border-double border-[#0E0E0D] p-5 md:p-7 md:cursor-pointer md:select-none flex flex-col justify-between md:pointer-events-auto ${zIndexClass}`}
+            className={`md:absolute md:inset-0 relative w-full bg-card text-foreground border-4 border-double border-foreground p-5 md:p-7 md:cursor-pointer md:select-none flex flex-col justify-between md:pointer-events-auto ${zIndexClass}`}
             style={{
               boxShadow: shadowStyle,
             }}
           >
             {/* Outline grids */}
-            <div className="absolute inset-1 border border-[#0E0E0D]/15 pointer-events-none" />
-            <div className="absolute inset-1.5 border border-dashed border-[#0E0E0D]/10 pointer-events-none" />
+            <div className="absolute inset-1 border border-foreground/15 pointer-events-none" />
+            <div className="absolute inset-1.5 border border-dashed border-foreground/10 pointer-events-none" />
 
             {/* Card Header / Title Lockup */}
             <div className="space-y-3.5 text-left">
-              <div className="font-display italic text-[clamp(1.15rem,2.8vw,1.85rem)] leading-[1.1] text-[#0E0E0D] tracking-tight">
+              <div className="font-display italic text-[clamp(1.15rem,2.8vw,1.85rem)] leading-[1.1] text-foreground tracking-tight">
                 <span className="text-orange font-bold not-italic font-mono text-[0.6rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2.5 align-middle -translate-y-0.5">
                   [{card.tag}]
                 </span>
@@ -60,8 +60,8 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             </div>
 
             {/* Organizer Badge (Mobile Only, hidden on desktop since the viewfinder shows it) */}
-            <div className="flex md:hidden items-center gap-2 mt-4 pt-3 border-t border-dashed border-[#0E0E0D]/15">
-              <div className="w-6 h-6 rounded-full border border-[#0E0E0D] flex items-center justify-center font-mono text-[0.5rem] font-bold bg-[#FAF8F5] text-[#0E0E0D]">
+            <div className="flex md:hidden items-center gap-2 mt-4 pt-3 border-t border-dashed border-foreground/15">
+              <div className="w-6 h-6 rounded-full border border-foreground flex items-center justify-center font-mono text-[0.5rem] font-bold bg-card text-foreground">
                 {initials}
               </div>
               <div className="text-left">
@@ -75,14 +75,14 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             </div>
 
             {/* Bottom Content Row */}
-            <div className="flex flex-row items-end justify-between gap-4 pt-3 md:pt-4 border-t border-dashed border-[#0E0E0D]/20 mt-3 md:mt-4 text-left">
+            <div className="flex flex-row items-end justify-between gap-4 pt-3 md:pt-4 border-t border-dashed border-foreground/20 mt-3 md:mt-4 text-left">
 
               {/* Bottom Left: Countdown */}
               <div className="flex flex-col">
                 <span className="font-mono text-[0.42rem] uppercase tracking-[0.25em] text-muted-foreground mb-1 block font-bold">
                   [{card.timeLabel}]
                 </span>
-                <div className={`font-mono text-sm md:text-[1.1rem] font-bold leading-none tracking-widest ${card.isLive ? "text-[#0E0E0D]" : "text-muted-foreground"}`}>
+                <div className={`font-mono text-sm md:text-[1.1rem] font-bold leading-none tracking-widest ${card.isLive ? "text-foreground" : "text-muted-foreground"}`}>
                   {card.isLive ? (
                     <>
                       {activeTimer.split(":")[0]}
@@ -102,7 +102,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
                 {card.tech.map((tech) => (
                   <span
                     key={tech}
-                    className="font-mono text-[0.42rem] md:text-[0.48rem] uppercase tracking-wider text-[#0E0E0D] font-bold"
+                    className="font-mono text-[0.42rem] md:text-[0.48rem] uppercase tracking-wider text-foreground font-bold"
                   >
                     [{tech}]
                   </span>
@@ -122,14 +122,14 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
       >
         <button
           onClick={() => handleCycleStack("prev")}
-          className="w-10 h-10 border-2 border-[#0E0E0D] bg-[#FAF8F5] text-[#0E0E0D] flex items-center justify-center font-mono font-bold text-xs hover:bg-[#0E0E0D] hover:text-[#FAF8F5] transition-colors shadow-[2px_2px_0px_0px_rgba(14,14,13,1)] active:translate-y-0.5 pointer-events-auto"
+          className="w-10 h-10 border-2 border-foreground bg-card text-foreground flex items-center justify-center font-mono font-bold text-xs hover:bg-foreground hover:text-card transition-colors shadow-[2px_2px_0px_0px_var(--foreground)] active:translate-y-0.5 pointer-events-auto"
           title="Previous Poster"
         >
           [←]
         </button>
         <button
           onClick={() => handleCycleStack("next")}
-          className="w-10 h-10 border-2 border-[#0E0E0D] bg-[#FAF8F5] text-[#0E0E0D] flex items-center justify-center font-mono font-bold text-xs hover:bg-[#0E0E0D] hover:text-[#FAF8F5] transition-colors shadow-[2px_2px_0px_0px_rgba(14,14,13,1)] active:translate-y-0.5 pointer-events-auto"
+          className="w-10 h-10 border-2 border-foreground bg-card text-foreground flex items-center justify-center font-mono font-bold text-xs hover:bg-foreground hover:text-card transition-colors shadow-[2px_2px_0px_0px_var(--foreground)] active:translate-y-0.5 pointer-events-auto"
           title="Next Poster"
         >
           [→]

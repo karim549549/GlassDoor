@@ -1,140 +1,116 @@
 "use client";
 
-import React, { useState } from "react";
-import dynamic from "next/dynamic";
-import { useRouter, usePathname } from "next/navigation";
-import { useAuthStore } from "@/lib/client/useAuthStore";
-import type { Company, Comment } from "@/lib/companies/types";
-import { INITIAL_MOCK_COMMENTS } from "@/lib/companies/mockComments";
-import { CommentSection } from "./CommentSection";
+import React from "react";
+import Link from "next/link";
+import { Building2, Code2, Trophy, ArrowRight, Plus } from "lucide-react";
+import type { Company } from "@/lib/companies/types";
 import { CompanyHeroHeader } from "./CompanyHeroHeader";
-import { SalaryBenchmarkSection } from "./SalaryBenchmarkSection";
-
-// The submit-salary modal is only ever shown after a user clicks "Submit Salary" -
-// dynamically importing it keeps its JS out of the initial page bundle.
-const SubmitSalaryModal = dynamic(() => import("./SubmitSalaryModal"));
 
 interface CompanyDetailViewProps {
   company: Company;
 }
 
 export function CompanyDetailView({ company }: CompanyDetailViewProps) {
-  const { user } = useAuthStore();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const [comments, setComments] = useState<Comment[]>(INITIAL_MOCK_COMMENTS);
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-
-  const handleAddRootComment = (content: string) => {
-    if (!user) return;
-    const author = user.fullName || user.email.split("@")[0];
-    const newComment: Comment = {
-      id: `rc-${Date.now()}`,
-      author,
-      content,
-      date: "Just now",
-      replies: [],
-    };
-    setComments([newComment, ...comments]);
-  };
-
-  const handleAddReply = (targetCommentId: string, replyText: string) => {
-    if (!user) return;
-    const author = user.fullName || user.email.split("@")[0];
-    const newReply: Comment = {
-      id: `rep-${Date.now()}`,
-      author,
-      content: replyText,
-      date: "Just now",
-      replies: [],
-    };
-
-    const addReplyRecursive = (list: Comment[]): Comment[] => {
-      return list.map((c) => {
-        if (c.id === targetCommentId) {
-          return {
-            ...c,
-            replies: [...c.replies, newReply],
-          };
-        } else if (c.replies.length > 0) {
-          return {
-            ...c,
-            replies: addReplyRecursive(c.replies),
-          };
-        }
-        return c;
-      });
-    };
-
-    setComments(addReplyRecursive(comments));
-  };
-
-  const handleOpenSubmitSalaryModal = () => {
-    if (!user) {
-      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
-      return;
-    }
-    setIsSubmitModalOpen(true);
-  };
-
-  const handleSubmitSalaryFeedback = (data: {
-    position: string;
-    seniority: string;
-    salary: number;
-    startDate: string;
-    endDate: string;
-    isCurrent: boolean;
-    ratings: { salary: number; learning: number; vibes: number };
-    comment: string;
-  }) => {
-    if (!user) return;
-    const author = user.fullName || user.email.split("@")[0];
-
-    const commentText = data.comment
-      ? data.comment
-      : `Verified my salary details: ${data.salary.toLocaleString()} EGP/month base net. Worked from ${data.startDate} to ${data.endDate}.`;
-
-    const newComment: Comment = {
-      id: `fb-${Date.now()}`,
-      author,
-      content: commentText,
-      date: "Just now",
-      role: data.position,
-      seniority: data.seniority,
-      ratings: data.ratings,
-      replies: [],
-    };
-
-    setComments([newComment, ...comments]);
-  };
+  const techStack = company.techStack ?? ["TypeScript", "Next.js", "PostgreSQL", "TailwindCSS"];
 
   return (
-    <div className="w-full">
-      {/* 1. Header Cover Background & Content Overlay */}
-      <CompanyHeroHeader company={company} onSubmitSalary={handleOpenSubmitSalaryModal} />
+    <div className="w-full flex flex-col items-center">
+      <CompanyHeroHeader company={company} />
 
-      {/* 2. Interactive Salaries Graph Section */}
-      <SalaryBenchmarkSection roles={company.roles} />
+      <div className="w-full max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Main Left Column (8 cols): About & Active Challenges */}
+          <div className="lg:col-span-8 space-y-8 text-left">
+            {/* About Box */}
+            <div className="border-2 border-foreground bg-card p-6">
+              <div className="flex items-center gap-2 pb-3 mb-4 border-b border-border/40">
+                <Building2 className="h-4 w-4 text-orange" />
+                <h2 className="font-mono text-sm uppercase tracking-wider font-bold text-foreground">
+                  About {company.name}
+                </h2>
+              </div>
+              <p className="font-sans text-sm text-foreground/80 leading-relaxed">
+                {company.bio ??
+                  company.description ??
+                  `${company.name} is an active technology employer in Egypt hosting competitive engineering arenas, take-home evaluation challenges, and hiring sprints on Devs Arena.`}
+              </p>
+            </div>
 
-      {/* 3. Community Feed & Infinite Nested Replies */}
-      <div className="max-w-7xl mx-auto px-6 pb-24">
-        <div className="border-t-2 border-foreground pt-12">
-          <CommentSection
-            comments={comments}
-            onAddRootComment={handleAddRootComment}
-            onAddReply={handleAddReply}
-          />
+            {/* Hosted Arenas & Sprints */}
+            <div className="border-2 border-foreground bg-card p-6">
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-border/40">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-orange" />
+                  <h2 className="font-mono text-sm uppercase tracking-wider font-bold text-foreground">
+                    Hosted Arenas & Hiring Sprints
+                  </h2>
+                </div>
+                <Link
+                  href="/arena/create"
+                  className="font-mono text-[0.6rem] text-orange hover:underline uppercase flex items-center gap-1"
+                >
+                  <Plus className="h-3 w-3" /> Host New Arena
+                </Link>
+              </div>
+
+              <div className="border border-dashed border-border p-8 text-center bg-card/20">
+                <p className="font-mono text-xs text-muted-foreground uppercase">
+                  No active public arenas currently open for this company.
+                </p>
+                <div className="mt-4">
+                  <Link
+                    href="/arena"
+                    className="inline-flex items-center gap-2 font-mono text-xs text-foreground hover:text-orange uppercase tracking-wider border border-border px-4 py-2 hover:border-foreground transition-colors"
+                  >
+                    Browse All Active Arenas <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (4 cols): Tech Stack & Company Info */}
+          <div className="lg:col-span-4 space-y-6 text-left">
+            {/* Tech Stack */}
+            <div className="border-2 border-foreground bg-card p-6">
+              <div className="flex items-center gap-2 pb-3 mb-4 border-b border-border/40">
+                <Code2 className="h-4 w-4 text-orange" />
+                <h3 className="font-mono text-xs uppercase tracking-wider font-bold text-foreground">
+                  Primary Tech Stack
+                </h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {techStack.map((tech) => (
+                  <span
+                    key={tech}
+                    className="font-mono text-[0.65rem] uppercase px-2.5 py-1 bg-muted text-foreground border border-border"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Sourcing Overview */}
+            <div className="border-2 border-foreground bg-card p-6">
+              <h3 className="font-mono text-xs uppercase tracking-wider font-bold text-foreground mb-3 pb-2 border-b border-border/40">
+                Talent Sourcing
+              </h3>
+              <p className="font-mono text-[0.65rem] text-muted-foreground uppercase leading-relaxed mb-4">
+                Are you an engineering recruiter at {company.name}? Host a customized arena to evaluate real candidate code submissions.
+              </p>
+              <Link
+                href="/arena/create"
+                className="w-full text-center block bg-foreground text-background hover:bg-orange hover:text-foreground font-mono text-[0.65rem] uppercase font-bold py-3 tracking-wider transition-colors border-2 border-foreground"
+              >
+                Launch Hiring Arena
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Submit Salary Dialogue Modal */}
-      <SubmitSalaryModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-        onSubmit={handleSubmitSalaryFeedback}
-      />
     </div>
   );
 }
+
 export default CompanyDetailView;

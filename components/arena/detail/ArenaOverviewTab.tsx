@@ -60,13 +60,13 @@ export function ArenaOverviewTab({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       {/* LEFT COLUMN (2/3 Width = lg:col-span-7): REQUIRED DELIVERABLES CHECKLIST */}
       <div className="lg:col-span-7 space-y-4">
-        <div className="bg-white border-2 border-[#0E0E0D] shadow-[5px_5px_0px_0px_#0E0E0D] p-5 space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-[#0E0E0D]/10 pb-3">
+        <div className="bg-white border-2 border-foreground shadow-[5px_5px_0px_0px_var(--foreground)] p-5 space-y-4">
+          <div className="flex items-center justify-between border-b-2 border-foreground/10 pb-3">
             <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-orange font-bold">
               <CheckSquare className="w-4 h-4 text-orange" />
               <span>REQUIRED SUBMISSION DELIVERABLES</span>
             </div>
-            <span className="font-mono text-[0.5rem] uppercase tracking-widest text-[#0E0E0D]/50 font-bold">
+            <span className="font-mono text-[0.5rem] uppercase tracking-widest text-foreground/50 font-bold">
               CRITERIA CHECKLIST
             </span>
           </div>
@@ -79,8 +79,8 @@ export function ArenaOverviewTab({
                   key={idx}
                   className={`p-4 border-2 transition-all duration-200 flex flex-col justify-between space-y-3 ${
                     req.required
-                      ? "bg-white border-[#0E0E0D] shadow-[3px_3px_0px_0px_#0E0E0D] hover:translate-x-[-1px] hover:translate-y-[-1px]"
-                      : "bg-[#0E0E0D]/5 border-[#0E0E0D]/20 opacity-60"
+                      ? "bg-white border-foreground shadow-[3px_3px_0px_0px_var(--foreground)] hover:translate-x-[-1px] hover:translate-y-[-1px]"
+                      : "bg-foreground/5 border-foreground/20 opacity-60"
                   }`}
                 >
                   <div className="space-y-2">
@@ -100,12 +100,12 @@ export function ArenaOverviewTab({
                       </span>
                     </div>
 
-                    <h4 className="font-mono text-xs font-bold uppercase text-[#0E0E0D] flex items-center gap-1.5 pt-1">
+                    <h4 className="font-mono text-xs font-bold uppercase text-foreground flex items-center gap-1.5 pt-1">
                       <Icon className="w-3.5 h-3.5 text-orange shrink-0" />
                       <span>{req.label}</span>
                     </h4>
 
-                    <p className="font-sans text-xs text-[#0E0E0D]/70 leading-relaxed">
+                    <p className="font-sans text-xs text-foreground/70 leading-relaxed">
                       {req.desc}
                     </p>
                   </div>
@@ -118,7 +118,7 @@ export function ArenaOverviewTab({
 
       {/* RIGHT COLUMN (1/3 Width = lg:col-span-5): OFFICIAL RULES & TOURNAMENT PROTOCOL */}
       <div className="lg:col-span-5 space-y-4">
-        <div className="bg-[#0E0E0D] text-[#F1EFE9] border-2 border-[#0E0E0D] shadow-[5px_5px_0px_0px_#FF5722] p-5 space-y-4">
+        <div className="bg-foreground text-background border-2 border-foreground shadow-[5px_5px_0px_0px_#FF5722] p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-white/15 pb-3">
             <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-orange font-bold">
               <ShieldAlert className="w-4 h-4 text-orange" />
@@ -137,13 +137,13 @@ export function ArenaOverviewTab({
                   <span className="font-mono text-[0.55rem] font-bold text-orange tracking-widest shrink-0 pt-0.5">
                     [{String(idx + 1).padStart(2, "0")}]
                   </span>
-                  <p className="font-mono text-[0.68rem] text-[#F1EFE9]/90 leading-normal">
+                  <p className="font-mono text-[0.68rem] text-background/90 leading-normal">
                     {rule.replace(/^\d+\.\s*/, "")}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-[#F1EFE9]/60 text-xs">Standard platform rules apply to this arena.</p>
+              <p className="text-background/60 text-xs">Standard platform rules apply to this arena.</p>
             )}
           </div>
         </div>

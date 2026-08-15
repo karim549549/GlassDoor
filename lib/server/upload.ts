@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/server/supabase/admin";
+import { logger } from "@/lib/server/logger";
 import { ACCEPTED_IMAGE_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/upload-constants";
 
 export type ValidateImageResult = { ok: true } | { ok: false; error: string };
@@ -41,7 +42,10 @@ export async function uploadImageToStorage({
   });
 
   if (uploadError) {
-    throw new Error(`Upload failed: ${uploadError.message}. Make sure the '${bucket}' bucket exists.`);
+    // The bucket name and the raw Supabase message stay in the logs - surfacing
+    // them to the caller leaked storage internals (e.g. a missing bucket).
+    logger.error("Supabase storage upload failed", { bucket, path, error: uploadError.message });
+    throw new Error("Upload failed.");
   }
 
   const { data: urlData } = admin.storage.from(bucket).getPublicUrl(path);

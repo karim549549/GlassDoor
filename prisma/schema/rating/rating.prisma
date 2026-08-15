@@ -1,0 +1,48 @@
+model RatingState {
+  id               String       @id @default(uuid()) @db.Uuid
+  userId           String       @db.Uuid
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain           RatingDomain
+  rating           Float        @default(1500.0)
+  deviation        Float        @default(350.0)
+  volatility       Float        @default(0.06)
+  lastActivePeriod Int          @default(0)
+
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([userId, domain])
+  @@index([userId])
+  @@index([domain, rating])
+  @@map("rating_states")
+}
+
+model RatingEvent {
+  id            String       @id @default(uuid()) @db.Uuid
+  userId        String       @db.Uuid
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain        RatingDomain
+  period        Int
+  arenaId       String?      @db.Uuid
+  delta         Float
+  preRating     Float
+  postRating    Float
+  preDeviation  Float
+  postDeviation Float
+
+  createdAt     DateTime     @default(now())
+
+  @@index([userId, domain])
+  @@index([period])
+  @@map("rating_events")
+}
+
+model RatingPeriod {
+  period      Int      @id
+  startedAt   DateTime
+  closedAt    DateTime
+  isProcessed Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+
+  @@map("rating_periods")
+}

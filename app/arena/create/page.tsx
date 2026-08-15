@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { arenaSchema, arenaBaseSchema, type ArenaFormInput, type ArenaFormOutput } from "@/lib/arena/schema";
 import { Button } from "@/components/ui/Button";
@@ -61,60 +61,49 @@ export default function CreateArenaPage() {
     register,
     handleSubmit,
     watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<ArenaFormInput, unknown, ArenaFormOutput>({
     resolver: zodResolver(arenaSchema),
     defaultValues: {
-      title: "CYBERPUNK ALGORITHM BATTLE 2026",
-      description:
-        "Architect and implement high-throughput real-time distributed systems under simulated cyber-threat scenarios. Compete in teams or solo to build resilient microservices with Next.js, Prisma, and WebSockets.",
-      coverImageUrl:
-        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
       locationType: "ONLINE",
-      locationName: "CAIRO TECH INNOVATION HUB",
-      googleMapsUrl: "https://maps.google.com/?q=Cairo+Tech+Hub",
       isPrivate: false,
-      inviteCode: "",
-      registrationStart: "2026-08-15T00:00",
-      registrationEnd: "2026-08-25T23:59",
-      ideaPhaseStart: "2026-08-26T00:00",
-      ideaPhaseEnd: "2026-09-05T23:59",
-      implPhaseStart: "2026-09-06T00:00",
-      implPhaseEnd: "2026-09-15T23:59",
-      isTeam: true,
-      minTeamSize: 2,
-      maxTeamSize: 4,
-      maxParticipants: 50,
+      isTeam: false,
+      minTeamSize: 1,
+      maxTeamSize: 1,
       allowLeaderAccessControl: true,
       requireGithubUrl: true,
-      requireFigmaUrl: true,
-      requireVideoUrl: true,
+      requireFigmaUrl: false,
+      requireVideoUrl: false,
       requireWriteup: true,
-      rulesText:
-        "1. Code must be original and created during the official implementation window.\n2. Open-source libraries are permitted, but core logic must be custom.\n3. All entries must include a working GitHub repository and 2-minute video demonstration.\n4. Respect team members, play fair, and build awesome software!",
+      tags: [],
     },
   });
 
-  const watchIsPrivate = watch("isPrivate") as boolean;
-  const watchIsTeam = watch("isTeam") as boolean;
-  const watchLocationType = (watch("locationType") as "ONLINE" | "IN_PERSON") || "ONLINE";
-  const watchGoogleMapsUrl = watch("googleMapsUrl") as string | null;
-  const watchLocationName = watch("locationName") as string | null;
+  const watchIsPrivate = useWatch({ control, name: "isPrivate" }) ?? false;
+  const watchIsTeam = useWatch({ control, name: "isTeam" }) ?? false;
+  const watchLocationType = useWatch({ control, name: "locationType" }) || "ONLINE";
+  const watchGoogleMapsUrl = useWatch({ control, name: "googleMapsUrl" });
+  const watchLocationName = useWatch({ control, name: "locationName" });
 
-  const watchTitle = watch("title") as string;
-  const watchDescription = watch("description") as string;
-  const watchCoverImageUrl = watch("coverImageUrl") as string;
-  const watchInviteCode = watch("inviteCode") as string;
-  const watchMinTeam = watch("minTeamSize") as number;
-  const watchMaxTeam = watch("maxTeamSize") as number;
-  const watchRegStart = watch("registrationStart") as string;
-  const watchRegEnd = watch("registrationEnd") as string;
-  const watchIdeaStart = watch("ideaPhaseStart") as string;
-  const watchIdeaEnd = watch("ideaPhaseEnd") as string;
-  const watchImplStart = watch("implPhaseStart") as string;
-  const watchImplEnd = watch("implPhaseEnd") as string;
-  const watchRulesText = watch("rulesText") as string;
+  const watchTitle = useWatch({ control, name: "title" });
+  const watchDescription = useWatch({ control, name: "description" });
+  const watchCoverImageUrl = useWatch({ control, name: "coverImageUrl" });
+  const watchInviteCode = useWatch({ control, name: "inviteCode" });
+  // minTeamSize/maxTeamSize are `z.coerce.number()`, so their form-input type is
+  // `unknown` and the raw registered <input type="number"> hands back a string.
+  // Coerce here the same way the schema does, so the comparisons below are
+  // numeric rather than lexicographic.
+  const watchMinTeam = Number(useWatch({ control, name: "minTeamSize" }));
+  const watchMaxTeam = Number(useWatch({ control, name: "maxTeamSize" }));
+  const watchRegStart = useWatch({ control, name: "registrationStart" });
+  const watchRegEnd = useWatch({ control, name: "registrationEnd" });
+  const watchIdeaStart = useWatch({ control, name: "ideaPhaseStart" });
+  const watchIdeaEnd = useWatch({ control, name: "ideaPhaseEnd" });
+  const watchImplStart = useWatch({ control, name: "implPhaseStart" });
+  const watchImplEnd = useWatch({ control, name: "implPhaseEnd" });
+  const watchRulesText = useWatch({ control, name: "rulesText" });
 
   const isGeneralValid = generalSectionSchema.safeParse({
     title: watchTitle,
@@ -183,12 +172,12 @@ export default function CreateArenaPage() {
           description: "masthead-desc opacity-0",
         }}
       >
-        <div className="border-2 border-dashed border-[#F1EFE9]/25 bg-[#F1EFE9]/5 p-4 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(241,239,233,0.06)]">
-          <span className="font-mono text-[0.45rem] text-[#F1EFE9]/50 uppercase tracking-[0.25em] font-bold block mb-2">
+        <div className="border-2 border-dashed border-background/25 bg-background/5 p-4 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(241,239,233,0.06)]">
+          <span className="font-mono text-[0.45rem] text-background/50 uppercase tracking-[0.25em] font-bold block mb-2">
             [LIVE CARD PREVIEW]
           </span>
 
-          <div className="group block bg-[#FAF8F5] text-[#0E0E0D] border-2 border-[#0E0E0D] p-4 relative shadow-[2px_2px_0px_0px_#0E0E0D] pointer-events-none">
+          <div className="group block bg-card text-foreground border-2 border-foreground p-4 relative shadow-[2px_2px_0px_0px_var(--foreground)] pointer-events-none">
             <ArenaCardBody
               arena={{
                 title: watchTitle || "UNTITLED ARENA",
@@ -249,12 +238,12 @@ export default function CreateArenaPage() {
                 isRulesValid={isRulesValid}
               />
 
-              <div className="border-2 border-[#0E0E0D] bg-[#FAF8F5] p-5 shadow-[4px_4px_0px_0px_#0E0E0D] relative overflow-hidden flex flex-col gap-3">
+              <div className="border-2 border-foreground bg-card p-5 shadow-[4px_4px_0px_0px_var(--foreground)] relative overflow-hidden flex flex-col gap-3">
                 <Button
                   type="submit"
                   variant="primary"
                   isLoading={isSubmitting}
-                  className="w-full py-3 bg-orange text-white hover:bg-transparent hover:text-[#0E0E0D] hover:border-[#0E0E0D] font-mono text-[0.62rem] font-bold tracking-[0.2em] uppercase border border-orange shadow-[2px_2px_0px_0px_rgba(14,14,13,1)] hover:shadow-none active:translate-y-0.5 transition-all duration-150"
+                  className="w-full py-3 bg-orange text-white hover:bg-transparent hover:text-foreground hover:border-foreground font-mono text-[0.62rem] font-bold tracking-[0.2em] uppercase border border-orange shadow-[2px_2px_0px_0px_var(--foreground)] hover:shadow-none active:translate-y-0.5 transition-all duration-150"
                 >
                   Create Arena <ArrowRight className="h-3.5 w-3.5 ml-1 inline-block align-middle" />
                 </Button>
@@ -263,7 +252,7 @@ export default function CreateArenaPage() {
                   variant="outline"
                   onClick={() => router.back()}
                   disabled={isSubmitting}
-                  className="w-full py-2.5 font-mono text-[0.58rem] font-bold tracking-wider uppercase border-2 border-[#0E0E0D] bg-[#FAF8F5] text-[#0E0E0D] hover:bg-[#0E0E0D] hover:text-[#FAF8F5] shadow-[2px_2px_0px_0px_rgba(14,14,13,1)] hover:shadow-none active:translate-y-0.5 transition-all duration-150"
+                  className="w-full py-2.5 font-mono text-[0.58rem] font-bold tracking-wider uppercase border-2 border-foreground bg-card text-foreground hover:bg-foreground hover:text-card shadow-[2px_2px_0px_0px_var(--foreground)] hover:shadow-none active:translate-y-0.5 transition-all duration-150"
                 >
                   Cancel
                 </Button>

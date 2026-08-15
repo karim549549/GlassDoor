@@ -106,7 +106,10 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
           setAuth(
             {
               id: profile.id,
-              email: profile.email,
+              // The viewed profile no longer carries an email (it is not public
+              // data); the signed-in viewer's own address already lives in the
+              // store from /api/auth/me, so carry it through unchanged.
+              email: user?.email ?? "",
               fullName: profile.fullName,
               avatarUrl: cropType === "avatar" ? result.url : profile.avatarUrl,
               coverUrl: cropType === "cover" ? result.url : profile.coverUrl,
@@ -185,24 +188,24 @@ export function ProfileHeader({ userProfile, isOwner, onEditClick, onUpdateSucce
   };
 
   return (
-    <div className="w-full relative bg-[#0E0E0D] border-b border-[#0E0E0D] overflow-hidden pt-14 select-none">
+    <div className="w-full relative bg-foreground border-b border-foreground overflow-hidden pt-14 select-none">
       {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
         accept="image/jpeg,image/png,image/webp"
+        aria-label="Upload profile image"
         className="hidden"
       />
 
       <ProfileCoverImage coverUrl={profile.coverUrl} isOwner={isOwner} onEditClick={() => handleEditClick("cover")} />
 
       {/* Overlay Content Container (full-width left aligned) */}
-      <div className="relative z-20 w-full px-8 md:px-12 pt-24 pb-8 sm:pt-32 sm:pb-10 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 text-[#F1EFE9] text-center sm:text-left">
+      <div className="relative z-20 w-full px-8 md:px-12 pt-24 pb-8 sm:pt-32 sm:pb-10 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 text-background text-center sm:text-left">
         <ProfileIdentityCard
           fullName={profile.fullName}
           handle={profile.handle}
-          email={profile.email}
           avatarUrl={profile.avatarUrl}
           isOwner={isOwner}
           onEditClick={() => handleEditClick("avatar")}

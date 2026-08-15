@@ -1,0 +1,98 @@
+enum CompanyRole {
+  OWNER
+  ADMIN
+  RECRUITER
+  BILLING_MANAGER
+}
+
+enum IndustryType {
+  FINTECH
+  ARTIFICIAL_INTELLIGENCE
+  HEALTH_TECH
+  E_COMMERCE
+  ED_TECH
+  LOGISTICS_SUPPLY_CHAIN
+  CYBERSECURITY
+  DEVELOPER_TOOLS
+  GAMING_ENTERTAINMENT
+  ENTERPRISE_SAAS
+  TELECOMMUNICATIONS
+  GREEN_TECH
+  OTHER
+}
+
+enum CompanySize {
+  SEED
+  STARTUP
+  GROWTH
+  MID_MARKET
+  ENTERPRISE
+}
+
+model Company {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @unique
+  slug             String            @unique
+  domain           String            @unique
+  logoUrl          String?
+  bio              String?           @db.Text
+  websiteUrl       String?
+  locationName     String?
+  governorate      String?           @default("Cairo")
+  country          String            @default("Egypt")
+  industry         IndustryType      @default(DEVELOPER_TOOLS)
+  size             CompanySize       @default(STARTUP)
+  techStack        String[]
+  isVerified       Boolean           @default(false)
+
+  // Subscriptions & Limits
+  subscriptionTier String            @default("FREE")
+  maxRecruiters    Int               @default(2)
+
+  // Relations
+  members          CompanyMember[]
+  arenas           Arena[]
+  sponsorships     ArenaSponsor[]
+
+  isDeleted        Boolean           @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([industry])
+  @@map("companies")
+}
+
+model CompanyMember {
+  id          String        @id @default(uuid()) @db.Uuid
+  companyId   String        @db.Uuid
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId      String        @db.Uuid
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        CompanyRole   @default(RECRUITER)
+
+  inviteTokenHash String?   @unique
+  isAccepted      Boolean   @default(false)
+  isApproved      Boolean   @default(true)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([companyId, userId])
+  @@map("company_members")
+}
+
+model ArenaSponsor {
+  id          String   @id @default(uuid()) @db.Uuid
+  arenaId     String   @db.Uuid
+  arena       Arena    @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  companyId   String   @db.Uuid
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tier        String   @default("STANDARD") // "TITLE", "GOLD", "STANDARD"
+  customBadge String?
+
+  createdAt   DateTime @default(now())
+
+  @@unique([arenaId, companyId])
+  @@map("arena_sponsors")
+}

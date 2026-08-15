@@ -11,9 +11,9 @@ export function NavBrand({ isScrolled, isDarkTheme }: NavBrandProps) {
     <div className="flex items-center gap-3">
       <Logo />
       <span className={`font-mono text-[0.6rem] opacity-35 border-l pl-3 hidden sm:block transition-colors duration-300 ${
-        isDarkTheme ? "border-[#F1EFE9]/20" : "border-[#0E0E0D]/20"
+        isDarkTheme ? "border-background/20" : "border-foreground/20"
       }`}>
-        Egypt tech · salary transparency
+        Developer competitions &bull; hiring credentials
       </span>
     </div>
   );

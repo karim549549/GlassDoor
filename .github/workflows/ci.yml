@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pinned to 20.x to match the version this project is developed on.
+      # Note: `node --test` only gained glob-pattern support in Node 22, which
+      # is why package.json's test script lists test files explicitly rather
+      # than using "lib/**/*.test.ts". Bump both together if you upgrade.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # `prisma generate` needs no database connection - only migrate/deploy
+      # does - so the client can be generated here for tsc to resolve
+      # @prisma/client types without any secret being available to the job.
+      - run: npx prisma generate
+
+      - run: npx tsc --noEmit
+
+      - run: npx eslint app components lib prisma proxy.ts
+
+      - run: npm test

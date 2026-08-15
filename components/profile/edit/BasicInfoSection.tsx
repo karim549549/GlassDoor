@@ -22,7 +22,7 @@ export function BasicInfoSection({
 }: BasicInfoSectionProps) {
   return (
     <div className="space-y-5">
-      <h4 className="font-bold border-b-2 border-[#0E0E0D] pb-1 text-[#0E0E0D] text-[0.85rem]">
+      <h4 className="font-bold border-b-2 border-foreground pb-1 text-foreground text-[0.85rem]">
         1. Personal Credentials
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -33,7 +33,7 @@ export function BasicInfoSection({
           <input
             id="fullName"
             type="text"
-            className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.78rem]"
+            className="w-full p-3 bg-card border border-foreground focus:outline-none placeholder-muted-foreground/60 rounded-none uppercase text-[0.78rem]"
             placeholder="e.g. Karim Khaled"
             {...register("fullName")}
           />
@@ -50,7 +50,7 @@ export function BasicInfoSection({
           <input
             id="handle"
             type="text"
-            className="w-full p-3 bg-[#FAF8F5] border border-[#0E0E0D] focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
+            className="w-full p-3 bg-card border border-foreground focus:outline-none placeholder-muted-foreground/60 rounded-none lowercase text-[0.78rem]"
             placeholder="e.g. karim_99"
             {...register("handle")}
           />

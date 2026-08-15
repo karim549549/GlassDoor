@@ -63,7 +63,7 @@ export function NavUserMenu({ isDarkTheme }: NavUserMenuProps) {
       ) : (
         <Link
           href="/signup"
-          className="px-3.5 py-1.5 bg-orange text-[#FAF8F5] border border-orange font-mono text-[0.6rem] font-bold tracking-wider uppercase hover:bg-transparent hover:text-current transition-colors shadow-[2px_2px_0px_0px_currentColor] hover:shadow-[3px_3px_0px_0px_currentColor] active:translate-y-0.5"
+          className="px-3.5 py-1.5 bg-orange text-card border border-orange font-mono text-[0.6rem] font-bold tracking-wider uppercase hover:bg-transparent hover:text-current transition-colors shadow-[2px_2px_0px_0px_currentColor] hover:shadow-[3px_3px_0px_0px_currentColor] active:translate-y-0.5"
         >
           Join Us
         </Link>
