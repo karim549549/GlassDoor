@@ -29,7 +29,6 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
       vy: number;
       size: number;
       alpha: number;
-      baseAlpha: number;
       seed: number;
     }[] = [];
 
@@ -44,7 +43,6 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
         vy: -0.3 - Math.random() * 0.6,
         size: 0.8 + Math.random() * 1.6,
         alpha: 0.2 + Math.random() * 0.7,
-        baseAlpha: 0.3 + Math.random() * 0.5,
         seed: Math.random() * 100,
       });
     }
@@ -115,13 +113,13 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
 
   return (
     <div className="absolute inset-0 pointer-events-none z-1 flex items-center justify-center overflow-hidden">
-      {/* High-Resolution Glowing Neon Nine-Tailed Fox Artwork Layer */}
-      <div className="relative w-[min(960px,94vw)] h-[min(680px,84vh)] pointer-events-none select-none">
+      {/* High-Resolution Glowing Neon Nine-Tailed Fox Artwork Layer (Fade-In via ScrollTrigger) */}
+      <div className="fox-neon-art relative w-[min(960px,94vw)] h-[min(680px,84vh)] pointer-events-none select-none opacity-0 will-change-[opacity,transform,filter]">
         <Image
           src="/artwork/devsarena-fox-background.png"
           alt="DevsArena Nine-Tailed Fox Neon Background"
           fill
-          className="object-contain filter drop-shadow-[0_0_40px_rgba(255,107,0,0.55)] opacity-90"
+          className="object-contain"
           priority
         />
       </div>

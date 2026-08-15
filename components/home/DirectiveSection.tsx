@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Section 3 — The Directive Statement with the Nine-Tailed Fox Neon Background.
- * Matches the reference design mockup with 100% precision.
+ * Synchronized scroll-driven fade-in for both the glowing fox artwork and the typography.
  */
 
 const STATEMENT_LINES = [
@@ -32,25 +32,49 @@ export function DirectiveSection() {
 
     const ctx = gsap.context(() => {
       const lines = textEl.querySelectorAll<HTMLElement>(".directive-line");
-      if (lines.length === 0) return;
 
+      // 1. Glowing Neon Fox Image Scroll Fade-In & Ambient Bloom
       gsap.fromTo(
-        lines,
-        { opacity: 0.15, y: 30 },
+        ".fox-neon-art",
         {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          stagger: 0.15,
+          opacity: 0,
+          scale: 0.88,
+          filter: "drop-shadow(0 0 10px rgba(255,107,0,0.1))",
+        },
+        {
+          opacity: 0.95,
+          scale: 1,
+          filter: "drop-shadow(0 0 45px rgba(255,107,0,0.65))",
           ease: "power2.out",
           scrollTrigger: {
             trigger: section,
-            start: "top 70%",
-            end: "center 45%",
-            scrub: 0.6,
+            start: "top 78%",
+            end: "center 42%",
+            scrub: 0.8,
           },
         }
       );
+
+      // 2. Synchronized Text Lines Staggered Fade-In
+      if (lines.length > 0) {
+        gsap.fromTo(
+          lines,
+          { opacity: 0.12, y: 32 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            stagger: 0.14,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: section,
+              start: "top 70%",
+              end: "center 42%",
+              scrub: 0.6,
+            },
+          }
+        );
+      }
     }, sectionRef);
 
     return () => ctx.revert();
@@ -73,10 +97,10 @@ export function DirectiveSection() {
         </svg>
       </div>
 
-      {/* Centered Glowing Neon Nine-Tailed Fox Artwork & Floating Embers */}
+      {/* Centered Glowing Neon Nine-Tailed Fox Artwork (Scroll-Linked Fade-In) */}
       <FoxBackground sectionRef={sectionRef} />
 
-      {/* Centered Headline Lockup matching Reference Design */}
+      {/* Centered Headline Lockup */}
       <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center text-center px-4">
         <h2
           ref={textRef}
