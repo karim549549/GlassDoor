@@ -3,8 +3,15 @@
 @import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
 
+/* `scroll-behavior: smooth` is deliberately NOT set here.
+   GSAP ScrollTrigger is incompatible with it: the browser animates the scroll
+   position behind ScrollTrigger's back, so pinned sections resolve their
+   start/end against a scroll offset that is still in flight. On this homepage
+   that left the directive section pinned to stale coordinates and stuck at the
+   end of its own timeline. Use GSAP's ScrollToPlugin for smooth anchor jumps
+   instead of the CSS property. */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 :root {

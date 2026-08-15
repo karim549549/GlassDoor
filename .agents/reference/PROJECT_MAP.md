@@ -6,7 +6,7 @@
 Auto-derived inventory of Devs Arena. Read this before exploring the codebase —
 it exists so an agent does not spend tokens rediscovering structure.
 
-Generated from 38 models, 28 API routes, 13 pages, 8 test files.
+Generated from 38 models, 34 API routes, 14 pages, 10 test files.
 
 ## Data model (38 models, 13 migrations)
 
@@ -60,7 +60,7 @@ Generated from 38 models, 28 API routes, 13 pages, 8 test files.
 - `20260815180000_proof_packets_tamper_evident_credentials`
 - `20260815190000_comments_governance_defense_and_coi_trigger`
 
-## API routes (28)
+## API routes (34)
 
 | Route | Methods | Auth | Rate limited |
 |---|---|---|---|
@@ -68,11 +68,14 @@ Generated from 38 models, 28 API routes, 13 pages, 8 test files.
 | `/api/arena/[id]` | GET | optional | no |
 | `/api/arena/[id]/comments` | GET, POST | requireUser | yes |
 | `/api/arena/[id]/commits` | POST, GET | requireUser | yes |
+| `/api/arena/[id]/defense` | GET, POST | requireUser | yes |
 | `/api/arena/[id]/join` | POST | requireUser | yes |
 | `/api/arena/[id]/judge/assignments` | GET | requireUser | no |
 | `/api/arena/[id]/judge/score` | POST | requireUser | yes |
 | `/api/arena/[id]/leaderboard` | GET | public | no |
 | `/api/arena/[id]/leave` | POST | requireUser | yes |
+| `/api/arena/[id]/requirements` | GET, POST, PATCH | requireUser | yes |
+| `/api/arena/[id]/rubric` | GET, POST, PATCH | requireUser | yes |
 | `/api/arena/[id]/submit` | POST, GET | requireUser | yes |
 | `/api/arena/[id]/teams` | POST | requireUser | yes |
 | `/api/arena/tags` | GET | public | no |
@@ -87,13 +90,16 @@ Generated from 38 models, 28 API routes, 13 pages, 8 test files.
 | `/api/auth/signup` | POST | public | yes |
 | `/api/companies` | GET | public | no |
 | `/api/cron/rating-period` | POST | public | no |
+| `/api/disputes` | POST, GET, PATCH | requireRole | yes |
+| `/api/notifications` | GET, PATCH | requireUser | yes |
 | `/api/profile/metadata` | GET | public | no |
 | `/api/profile/update` | POST | requireUser | no |
 | `/api/profile/upload` | POST | requireUser | yes |
+| `/api/recruiter/pipeline` | GET, POST | requireUser | yes |
 | `/api/user/[id]` | GET | optional | no |
 | `/api/user/follow` | POST | requireUser | no |
 
-## Pages (13)
+## Pages (14)
 
 - `/`
 - `/admin`
@@ -107,15 +113,16 @@ Generated from 38 models, 28 API routes, 13 pages, 8 test files.
 - `/profile`
 - `/proof`
 - `/proof/[slug]`
+- `/recruiter`
 - `/user/[id]`
 
 ## Domain libraries
 
-- `lib/arena/` — comment-dto.ts, comment-service.ts, commit-sync.ts, defense-service.ts, formats.ts, judging-service.ts, leaderboard-service.ts, participation-service.ts, requirement-service.ts, schema.ts, service.ts, status.ts, submission-service.ts, types.ts, useCoverImageUpload.ts
+- `lib/arena/` — comment-dto.ts, comment-service.ts, commit-sync.ts, defense-service.ts, formats.ts, judging-service.ts, leaderboard-service.ts, participation-service.ts, requirement-service.ts, rubric-service.ts, schema.ts, service.ts, status.ts, submission-service.ts, types.ts, useCoverImageUpload.ts
 - `lib/auth/` — schema.ts
 - `lib/client/` — logger.ts, saved-accounts.ts, useAuthStore.ts, useDebouncedValue.ts, useRecentSearches.ts
 - `lib/companies/` — data.ts, dto.ts, format.ts, schema.ts, service.ts, types.ts
-- `lib/governance/` — audit-service.ts, dispute-service.ts, notification-service.ts, schema.ts
+- `lib/governance/` — audit-service.ts, dispute-service.ts, dto.ts, notification-service.ts, schema.ts
 - `lib/profile/` — constants.ts, schema.ts, service.ts
 - `lib/proof/` — hash.ts, proof-service.ts
 - `lib/rating/` — glicko2.ts, rating-service.ts
@@ -125,10 +132,12 @@ Generated from 38 models, 28 API routes, 13 pages, 8 test files.
 - `lib/taxonomy/` — seniority.ts
 - `lib/user/` — dto.ts, service.ts
 
-## Tests (8 files)
+## Tests (10 files)
 
 - `lib/arena-slug.test.ts`
+- `lib/arena/commit-sync.test.ts`
 - `lib/arena/formats.test.ts`
+- `lib/arena/schema.test.ts`
 - `lib/arena/status.test.ts`
 - `lib/json-ld.test.ts`
 - `lib/proof/hash.test.ts`

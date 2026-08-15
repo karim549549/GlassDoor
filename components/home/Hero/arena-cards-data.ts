@@ -1,3 +1,7 @@
+import { buildArenaSlug } from "@/lib/arena-slug";
+import { deriveArenaStatus } from "@/lib/arena/status";
+import type { ArenaListItem } from "@/lib/arena/types";
+
 export interface ArenaCardData {
   id: string;
   tag: string;
@@ -7,40 +11,158 @@ export interface ArenaCardData {
   timeLabel: string;
   timeValue: string;
   isLive: boolean;
+  /** Where the card goes when clicked. Null for the placeholder cards. */
+  href: string | null;
+  /** Shown in the block beneath the docked card. */
+  trackLabel: string;
+  trackInitials: string;
 }
 
+/**
+ * Shown only when the board is genuinely empty, so the section still has a
+ * composition to hold. These are placeholders and deliberately link nowhere -
+ * a card that looks real and goes nowhere is worse than one that does not
+ * pretend.
+ */
 export const ARENA_CARDS: ArenaCardData[] = [
-  // Card 3 (Bottom card in stack, index 0 in render to layer below)
   {
     id: "card-database",
     tag: "Database Speedrun",
     title: "MIGRATE 10M RECORDS LIVE",
     description: "Optimize migration scripts to sync a database with zero downtime under load.",
     tech: ["POSTGRES", "PYTHON", "PRISMA"],
-    timeLabel: "STARTS IN",
-    timeValue: "3 DAYS",
+    timeLabel: "EXAMPLE",
+    timeValue: "—",
     isLive: false,
+    href: null,
+    trackLabel: "Backend & Cloud",
+    trackInitials: "BC",
   },
-  // Card 2 (Middle card in stack, index 1 in render to layer middle)
   {
     id: "card-devops",
     tag: "DevOps Sprint",
     title: "SCALE WEBSOCKET CLUSTER TO 10K",
     description: "Deploy and load-test a distributed messaging server with high availability.",
     tech: ["REDIS", "GO", "DOCKER"],
-    timeLabel: "STARTS IN",
-    timeValue: "24 HOURS",
+    timeLabel: "EXAMPLE",
+    timeValue: "—",
     isLive: false,
+    href: null,
+    trackLabel: "DevOps & Mesh",
+    trackInitials: "DM",
   },
-  // Card 1 (Top card in stack, index 2 in render to layer on top)
   {
     id: "card-frontend",
     tag: "Arena Challenge",
     title: "BUILD A REAL-TIME DEVELOPER MAP",
     description: "Create an interactive map tracking live developer profiles and statuses during a 6-hour sprint.",
     tech: ["REACT", "NODE.JS", "WEBSOCKETS"],
-    timeLabel: "TIME REGISTRY",
-    timeValue: "05:12:43", // Will update dynamically for this active card
-    isLive: true,
+    timeLabel: "EXAMPLE",
+    timeValue: "—",
+    isLive: false,
+    href: null,
+    trackLabel: "Frontend",
+    trackInitials: "FE",
   },
 ];
+
+/** "3 DAYS" / "24 HOURS" / "18 MIN", or null once the target has passed. */
+function until(target: Date, now: Date): string | null {
+  const ms = target.getTime() - now.getTime();
+  if (ms <= 0) return null;
+
+  const minutes = Math.floor(ms / 60_000);
+  if (minutes < 60) return `${Math.max(1, minutes)} MIN`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours} ${hours === 1 ? "HOUR" : "HOURS"}`;
+
+  return `${Math.floor(hours / 24)} DAYS`;
+}
+
+function initialsOf(label: string): string {
+  const words = label.replace(/[^A-Za-z ]/g, " ").trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "DA";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+/**
+ * Maps a real arena onto the card design.
+ *
+ * The stack previously rendered three hardcoded cards that linked nowhere while
+ * the database held a hundred real arenas, so the first thing a visitor clicked
+ * was fiction. The visual design is unchanged; only the content is now true.
+ *
+ * `now` is passed in rather than read here, for the same reason
+ * `deriveArenaStatus` takes it: an arena sitting on a phase boundary must not
+ * derive one status on the server and a different one in the browser.
+ */
+export function toArenaCardData(arena: ArenaListItem, now: Date): ArenaCardData {
+  const status = deriveArenaStatus(arena, now);
+  const primaryTag = arena.tags[0]?.tag;
+
+  let timeLabel = "STATUS";
+  let timeValue = "—";
+  let isLive = false;
+
+  switch (status) {
+    case "REGISTRATION_OPEN": {
+      timeLabel = "ENTRY CLOSES IN";
+      timeValue = until(arena.registrationEnd, now) ?? "SOON";
+      break;
+    }
+    case "SCHEDULED": {
+      timeLabel = "OPENS IN";
+      timeValue = until(arena.registrationStart, now) ?? "SOON";
+      break;
+    }
+    case "IDEA_PHASE": {
+      timeLabel = "PLANNING ENDS IN";
+      timeValue = until(arena.ideaPhaseEnd, now) ?? "SOON";
+      break;
+    }
+    case "IMPLEMENTATION_PHASE": {
+      timeLabel = "TIME REGISTRY";
+      timeValue = until(arena.implPhaseEnd, now) ?? "ENDING";
+      isLive = true;
+      break;
+    }
+    case "UNDER_JUDGING": {
+      timeLabel = "STATUS";
+      timeValue = "BEING JUDGED";
+      break;
+    }
+    case "COMPLETED": {
+      timeLabel = "STATUS";
+      timeValue = "RESULTS OUT";
+      break;
+    }
+    default: {
+      timeLabel = "STATUS";
+      timeValue = status.replace(/_/g, " ");
+    }
+  }
+
+  // Prefer the arena's own tag, then its rating domain. "Devs Arena" is the
+  // last resort only - three cards all labelled with the platform name tell a
+  // reader nothing about what is being built.
+  const trackLabel =
+    primaryTag?.name ??
+    (arena.domain ? arena.domain.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : null) ??
+    (arena.isTeam ? "Team Arena" : "Solo Arena");
+
+  return {
+    id: arena.id,
+    tag: primaryTag?.category ?? (arena.isTeam ? "Team Arena" : "Solo Arena"),
+    title: arena.title,
+    description: arena.description ?? "",
+    tech: arena.tags.slice(0, 3).map((t) => t.tag.name.toUpperCase()),
+    timeLabel,
+    timeValue,
+    isLive,
+    href: `/arena/${buildArenaSlug(arena.title, arena.id)}`,
+    trackLabel,
+    trackInitials: initialsOf(trackLabel),
+  };
+}

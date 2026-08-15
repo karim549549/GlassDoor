@@ -2,10 +2,10 @@ import { HeroStatBlocks } from "./HeroStatBlocks";
 import { HeroPlatformCta } from "./HeroPlatformCta";
 import { HeroActivityTicker } from "./HeroActivityTicker";
 
-export function HeroCoverNotes() {
+export function HeroCoverNotes({ openCount = 0 }: { openCount?: number }) {
   return (
     <>
-      <HeroStatBlocks />
+      <HeroStatBlocks openCount={openCount} />
       <HeroPlatformCta />
       <HeroActivityTicker />
     </>

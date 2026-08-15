@@ -8,18 +8,25 @@ import { ThreeSidedPerspective } from "./ThreeSidedPerspective";
 import { InteractiveProofVisualizer } from "./InteractiveProofVisualizer";
 import { GlickoLedgerExplorer } from "./GlickoLedgerExplorer";
 import { ConversionTerminal } from "./ConversionTerminal";
+import type { ArenaCardData } from "./Hero/arena-cards-data";
 
-export function HeroAndArenas() {
+export function HeroAndArenas({
+  cards,
+  openCount = 0,
+}: {
+  cards?: ArenaCardData[];
+  openCount?: number;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const arenasRef = useRef<HTMLDivElement>(null);
 
   return (
     <div ref={containerRef} className="relative overflow-visible bg-background">
       {/* SECTION 1: Magazine Editorial Hero Section */}
-      <HeroSection />
+      <HeroSection openCount={openCount} />
 
       {/* SECTION 2: Pinned 3-Card Docking Arenas Section (Dark Mode #0E0E0D) */}
-      <ArenasSection ref={arenasRef} containerRef={containerRef} />
+      <ArenasSection ref={arenasRef} containerRef={containerRef} cards={cards} />
 
       {/* SECTION 3: Pinned Directive Statement with Character-by-Character Scrub (Dark Mode #0E0E0D) */}
       <DirectiveSection />

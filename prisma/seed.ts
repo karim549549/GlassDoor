@@ -138,8 +138,21 @@ async function main() {
     console.log(`Upserted Golden Ticket Tag: ${t.name}`);
   }
 
+  // Idempotency guard. Everything above this line upserts, so the seed can be
+  // re-run safely to pick up new roles/skills/tags. The arena block below uses
+  // `create` with a deterministic `inviteCode`, which is UNIQUE - so a second
+  // run crashed with a unique-constraint violation partway through, leaving the
+  // seed half-applied. Skipping when arenas already exist keeps `db seed`
+  // re-runnable, which is what makes it useful for adding reference data later.
+  const existingArenas = await prisma.arena.count();
+  if (existingArenas > 0) {
+    console.log(`Skipping mock arenas: ${existingArenas} already exist.`);
+    console.log("Seeding finished successfully.");
+    return;
+  }
+
   console.log("Seeding 102 mock arenas...");
-  
+
   // Find creator
   let creator = await prisma.user.findFirst();
   if (!creator) {

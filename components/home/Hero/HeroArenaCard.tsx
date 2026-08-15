@@ -1,24 +1,33 @@
 "use client";
 
 import React from "react";
-import { ARENA_CARDS } from "./arena-cards-data";
+import Link from "next/link";
+import { ARENA_CARDS, type ArenaCardData } from "./arena-cards-data";
 import { useArenaCardAnimations } from "./useArenaCardAnimations";
 
 interface HeroArenaCardProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
   arenasRef: React.RefObject<HTMLDivElement | null>;
+  /** Real arenas from the database. Falls back to placeholders when empty. */
+  cards?: ArenaCardData[];
 }
 
-export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
+export function HeroArenaCard({ containerRef, arenasRef, cards }: HeroArenaCardProps) {
   const { stackRef, cardRefs, activeTimer, showCarouselControls, handleCycleStack } =
     useArenaCardAnimations({ containerRef, arenasRef });
+
+  // The choreography positions exactly three cards, so the stack always renders
+  // three: real arenas first, topped up with placeholders only if the board is
+  // short.
+  const deck = (cards && cards.length > 0 ? cards : ARENA_CARDS).slice(0, 3);
+  const stack = deck.length === 3 ? deck : [...deck, ...ARENA_CARDS.slice(deck.length)].slice(0, 3);
 
   return (
     <div
       ref={stackRef}
       className="relative w-full flex flex-col gap-6 px-4 md:px-0 py-6 max-w-[480px] mx-auto md:absolute md:left-1/2 md:z-25 md:w-[min(480px,88vw)] md:min-h-[290px] md:pointer-events-none md:overflow-visible md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2"
     >
-      {ARENA_CARDS.map((card, idx) => {
+      {stack.map((card, idx) => {
         const zIndexClass = idx === 0 ? "z-10" : idx === 1 ? "z-20" : "z-30";
         const shadowStyle = idx === 0
           ? "2px 2px 0px 0px rgba(14,14,13,0.75)"
@@ -26,9 +35,11 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
             ? "3px 3px 0px 0px rgba(14,14,13,0.85)"
             : "4px 4px 0px 0px rgba(14,14,13,0.9)";
 
-        // Match organizers based on idx
-        const initials = idx === 0 ? "CC" : idx === 1 ? "SO" : "DA";
-        const organizer = idx === 0 ? "Coon Cluster" : idx === 1 ? "StackOps" : "Devs Arena";
+        // Was three invented organizer names hardcoded by index. The arena list
+        // query carries no company name, so the block now shows the arena's own
+        // track, which is real data and needs no invention.
+        const initials = card.trackInitials;
+        const organizer = card.trackLabel;
 
         return (
           <div
@@ -66,7 +77,7 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
               </div>
               <div className="text-left">
                 <span className="font-mono text-[0.35rem] text-muted-foreground uppercase tracking-widest block font-bold leading-none mb-0.5">
-                  [ORGANIZER]
+                  [TRACK]
                 </span>
                 <span className="font-mono text-[0.45rem] font-bold uppercase tracking-wider leading-none">
                   {organizer}
@@ -110,6 +121,16 @@ export function HeroArenaCard({ containerRef, arenasRef }: HeroArenaCardProps) {
               </div>
 
             </div>
+
+            {/* Whole-card hit area. Placeholder cards carry no href and stay
+                inert rather than leading nowhere. */}
+            {card.href && (
+              <Link
+                href={card.href}
+                aria-label={`Open arena: ${card.title}`}
+                className="absolute inset-0 z-40 focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-accent"
+              />
+            )}
           </div>
         );
       })}

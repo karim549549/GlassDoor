@@ -3,7 +3,7 @@ import { HeroCoverNotes } from "./HeroCoverNotes";
 import { HeroHeadline } from "./HeroHeadline";
 import { BackgroundGrid } from "../../ui/BackgroundGrid";
 
-export function HeroSection() {
+export function HeroSection({ openCount = 0 }: { openCount?: number }) {
   return (
     <section
       className="hero-section-container relative bg-background text-foreground border-b border-border overflow-visible h-screen min-h-screen"
@@ -19,7 +19,7 @@ export function HeroSection() {
 
       {/* Scattered Magazine Typographic Layers */}
       <HeroMasthead />
-      <HeroCoverNotes />
+      <HeroCoverNotes openCount={openCount} />
       <HeroHeadline />
     </section>
   );
