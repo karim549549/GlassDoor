@@ -169,24 +169,20 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
         pinTimeline.to(".arena-organizer-block", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75)
                    .to(".arena-enter-button", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.75);
 
-        // Trigger 4: Transition cards as user scrolls from ArenasSection down into the PinkSection.
-        // The cards stack back up and align on the right column (desktop) or center (mobile) at y: 100vh.
+        // Trigger 4: Fade and slide cards smoothly out as user scrolls from ArenasSection down into Section 3
         const pinkTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: ".pink-section-container",
-            start: "top bottom", // Starts as soon as pink section enters from bottom
-            end: "top top",      // Ends when pink section fills the viewport
+            start: "top bottom", // Starts as soon as section enters from bottom
+            end: "top 40%",      // Fades out gracefully behind section
             scrub: true,
           }
         });
 
-        // Cards stack back up on the right, scale back to their original Hero scale (1.5)
-        pinkTimeline.to(cards[0], { y: "100vh", x: 420, rotate: -4, scale: 1.5, ease: "power1.inOut" }, 0);
-        pinkTimeline.to(cards[1], { y: "100vh", x: 420, rotate: 3, scale: 1.5, ease: "power1.inOut" }, 0);
-        pinkTimeline.to(cards[2], { y: "100vh", x: 420, rotate: -1.5, scale: 1.5, ease: "power1.inOut" }, 0);
-
-        // Slide the carousel controls container down to Section 3 in sync with cards
-        pinkTimeline.to(".arena-carousel-controls", { y: "100vh", x: 420, ease: "power1.inOut" }, 0);
+        // Cards smoothly transition and fade out behind Section 3
+        pinkTimeline.to(cards[0], { y: "40vh", opacity: 0, scale: 0.8, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[1], { y: "40vh", opacity: 0, scale: 0.8, ease: "power1.inOut" }, 0);
+        pinkTimeline.to(cards[2], { y: "40vh", opacity: 0, scale: 0.8, ease: "power1.inOut" }, 0);
 
         // Maintain unified seamless dark mode across Sections 2 and 3 (#0E0E0D)
         pinkTimeline.to(".pink-section-container", {
