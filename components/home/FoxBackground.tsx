@@ -119,6 +119,7 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
           src="/artwork/devsarena-fox-background.png"
           alt="DevsArena Nine-Tailed Fox Neon Background"
           fill
+          sizes="(max-width: 768px) 94vw, (max-width: 1200px) 90vw, 960px"
           className="object-contain"
           priority
         />
