@@ -22,7 +22,7 @@ export function DirectiveStatementSection() {
     if (!section || !textEl) return;
 
     const ctx = gsap.context(() => {
-      const letters = textEl.querySelectorAll(".reveal-letter");
+      const letters = textEl.querySelectorAll(".scrub-char");
       if (!letters || letters.length === 0) return;
 
       const mm = gsap.matchMedia();
@@ -33,10 +33,11 @@ export function DirectiveStatementSection() {
           scrollTrigger: {
             trigger: section,
             start: "top top",
-            end: "+=1400",
+            end: "+=1200",
             pin: true,
-            scrub: 0.8,
+            scrub: 0.6,
             anticipatePin: 1,
+            invalidateOnRefresh: true,
           },
         });
 
@@ -44,50 +45,58 @@ export function DirectiveStatementSection() {
           letters,
           {
             opacity: 0.12,
-            y: 10,
+            y: 8,
           },
           {
             opacity: 1,
             y: 0,
-            stagger: 0.025,
-            ease: "power1.inOut",
+            stagger: 0.02,
+            ease: "none",
           }
         );
       });
 
-      // Mobile: Smooth scrub without full pin lock
+      // Mobile: Progressive scrub without screen lock
       mm.add("(max-width: 767px)", () => {
         gsap.fromTo(
           letters,
           {
             opacity: 0.15,
-            y: 6,
+            y: 4,
           },
           {
             opacity: 1,
             y: 0,
-            stagger: 0.015,
+            stagger: 0.01,
             ease: "none",
             scrollTrigger: {
               trigger: section,
               start: "top 75%",
               end: "bottom 35%",
-              scrub: 0.5,
+              scrub: 0.4,
             },
           }
         );
       });
     }, sectionRef);
 
-    return () => ctx.revert();
+    // Refresh ScrollTrigger to calculate exact offsets relative to Section 2
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      ctx.revert();
+    };
   }, []);
 
   return (
     <section
       ref={sectionRef}
-      className="pink-section-container relative min-h-screen bg-[#0E0E0D] text-[#F1EFE9] w-full border-t border-white/15 flex flex-col justify-center items-center py-20 px-6 md:px-12 z-20 overflow-hidden text-center select-none"
+      className="relative min-h-screen bg-[#0E0E0D] text-[#F1EFE9] w-full border-t border-white/15 flex flex-col justify-center items-center py-20 px-6 md:px-12 z-20 overflow-hidden text-center select-none"
     >
-      {/* Blueprint Grid Overlay */}
+      {/* Subtle Blueprint Grid Backdrop */}
       <div className="absolute inset-0 opacity-[0.06] pointer-events-none z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -106,7 +115,7 @@ export function DirectiveStatementSection() {
           <span>DEVS ARENA CORE DIRECTIVE // CAIRO PROTOCOL // 30.0444° N</span>
         </div>
 
-        {/* Large Bold Italic Headline with Character-by-Character Pinned Scrub */}
+        {/* Large Bold Italic Headline with Letter-by-Letter Scrub Reveal */}
         <h2
           ref={textRef}
           className="font-display italic text-[clamp(2.2rem,5.5vw,4.8rem)] font-normal uppercase tracking-tight leading-[1.08] text-[#F1EFE9] text-balance"
@@ -123,7 +132,7 @@ export function DirectiveStatementSection() {
               {part.text.split("").map((char, cIdx) => (
                 <span
                   key={cIdx}
-                  className="reveal-letter inline-block opacity-[0.12] will-change-[opacity,transform]"
+                  className="scrub-char inline-block opacity-[0.12] will-change-[opacity,transform]"
                   style={{ whiteSpace: char === " " ? "pre" : "normal" }}
                 >
                   {char}
@@ -133,7 +142,7 @@ export function DirectiveStatementSection() {
           ))}
         </h2>
 
-        {/* Sub Telemetry Readout */}
+        {/* Sub-telemetry readout */}
         <div className="flex flex-wrap items-center justify-center gap-6 font-mono text-[0.55rem] text-[#F1EFE9]/60 uppercase tracking-[0.2em] pt-4 border-t border-white/10">
           <span>&gt; AUTOMATED CODE RUNNER VERIFICATION</span>
           <span>&bull;</span>
