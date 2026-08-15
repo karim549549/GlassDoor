@@ -4,48 +4,137 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ShieldCheck, Lock, CheckCircle2, FileCode, Video, Award, ExternalLink, Hash, Copy, Check } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle2, FileCode, Video, Award, ExternalLink, Hash, ChevronLeft, ChevronRight } from "lucide-react";
+import { ARENA_CARDS, type ArenaCardData } from "./Hero/arena-cards-data";
 
 gsap.registerPlugin(ScrollTrigger);
 
 type ProofLayer = "hash" | "rubric" | "git" | "verifier";
 
-export function InteractiveProofVisualizer() {
+export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] }) {
   const [activeLayer, setActiveLayer] = useState<ProofLayer>("hash");
-  const [copied, setCopied] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeTimer, setActiveTimer] = useState("24:00:00");
+  const [showCarouselControls, setShowCarouselControls] = useState(false);
 
+  const sectionRef = useRef<HTMLElement>(null);
+  const stackWrapperRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const stackOrder = useRef<number[]>([0, 1, 2]); // Tracks DOM z-index layer order
+  const isAnimating = useRef(false);
+
+  const displayCards = (cards && cards.length >= 3 ? cards : ARENA_CARDS).slice(0, 3);
+
+  // Live countdown timer
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+      const diff = endOfDay.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+      const pad = (n: number) => n.toString().padStart(2, "0");
+      setActiveTimer(`${pad(hours)}:${pad(mins)}:${pad(secs)}`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // GSAP ScrollTrigger Choreography
   useEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
+    const cardEls = cardRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (!section || cardEls.length < 3) return;
 
     const ctx = gsap.context(() => {
-      // Background color morph: starts in Black (#0E0E0D) and transitions to Cream White (#F1EFE9) in the middle of the section
+      const mm = gsap.matchMedia();
+
+      // 1. Background transition: Starts at 'top bottom' and morphs to 'top top' (unified with Section 2)
       gsap.fromTo(
         section,
         {
           backgroundColor: "#0E0E0D",
           color: "#F1EFE9",
+          borderColor: "rgba(241, 239, 233, 0.15)",
         },
         {
           backgroundColor: "#F1EFE9",
           color: "#0E0E0D",
-          ease: "power1.inOut",
+          borderColor: "rgba(14, 14, 13, 0.15)",
+          ease: "none",
           scrollTrigger: {
             trigger: section,
-            start: "top 60%",
-            end: "center 40%",
-            scrub: 0.8,
+            start: "top bottom",
+            end: "top 15%",
+            scrub: 1,
+            invalidateOnRefresh: true,
           },
         }
       );
 
-      // Section header and cards reveal animation
+      // 2. Cards Assembly Timeline: Cards glide down from the upper dark sections, regroup, and stack into the carousel dock
+      mm.add("(min-width: 768px)", () => {
+        const stackTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: "top bottom",
+            end: "top 10%",
+            scrub: 0.8,
+            invalidateOnRefresh: true,
+            onToggle: (self) => {
+              setShowCarouselControls(self.isActive || self.progress >= 0.8);
+            },
+            onUpdate: (self) => {
+              setShowCarouselControls(self.progress >= 0.6);
+            },
+          },
+        });
+
+        // Initial offscreen positions (descending from upper black sections)
+        gsap.set(cardEls[0], { y: -380, x: -80, rotate: -18, scale: 0.88, opacity: 0 });
+        gsap.set(cardEls[1], { y: -320, x: 60, rotate: 22, scale: 0.88, opacity: 0 });
+        gsap.set(cardEls[2], { y: -260, x: -30, rotate: -12, scale: 0.88, opacity: 0 });
+
+        // Smooth convergence into the 3-card layered brutalist stack
+        stackTimeline
+          .to(cardEls[0], { y: 0, x: 0, rotate: -4, scale: 1.0, opacity: 1, ease: "power2.out", duration: 0.7 }, 0)
+          .to(cardEls[1], { y: 14, x: 10, rotate: 3, scale: 0.96, opacity: 0.9, ease: "power2.out", duration: 0.75 }, 0.05)
+          .to(cardEls[2], { y: 28, x: 20, rotate: -1.5, scale: 0.92, opacity: 0.8, ease: "power2.out", duration: 0.8 }, 0.1);
+      });
+
+      // Mobile Assembly
+      mm.add("(max-width: 767px)", () => {
+        const stackTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: "top bottom",
+            end: "top 20%",
+            scrub: 0.8,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              setShowCarouselControls(self.progress >= 0.5);
+            },
+          },
+        });
+
+        gsap.set(cardEls[0], { y: -200, opacity: 0 });
+        gsap.set(cardEls[1], { y: -160, opacity: 0 });
+        gsap.set(cardEls[2], { y: -120, opacity: 0 });
+
+        stackTimeline
+          .to(cardEls[0], { y: 0, rotate: -3, scale: 1.0, opacity: 1, ease: "power2.out" }, 0)
+          .to(cardEls[1], { y: 12, rotate: 2, scale: 0.96, opacity: 0.9, ease: "power2.out" }, 0.05)
+          .to(cardEls[2], { y: 24, rotate: -1, scale: 0.92, opacity: 0.8, ease: "power2.out" }, 0.1);
+      });
+
+      // 3. Section Header & Navigation Reveal
       const revealElements = section.querySelectorAll(".proof-reveal-el");
       gsap.fromTo(
         revealElements,
-        { opacity: 0, y: 30 },
+        { opacity: 0, y: 32 },
         {
           opacity: 1,
           y: 0,
@@ -64,16 +153,90 @@ export function InteractiveProofVisualizer() {
     return () => ctx.revert();
   }, []);
 
-  const handleCopyHash = () => {
-    navigator.clipboard.writeText("sha256:7f8a92c481b3790dfaa8172635418290bcda1248102938475610293847561029");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  // GSAP Fling & Stack Reorder Physics (Restoring the interactive carousel from 285374d)
+  const handleCycleStack = (direction: "next" | "prev" = "next") => {
+    if (isAnimating.current) return;
+    const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (cards.length < 3) return;
+
+    isAnimating.current = true;
+    const restingRotations = [-4, 3, -1.5];
+
+    // Current top card index is last in visual stack hierarchy
+    const topCardIdx = direction === "next"
+      ? stackOrder.current[0] // Front card
+      : stackOrder.current[stackOrder.current.length - 1]; // Bottom card
+
+    const targetCard = cards[topCardIdx];
+    if (!targetCard) {
+      isAnimating.current = false;
+      return;
+    }
+
+    const swipeOutX = direction === "next" ? 260 : -260;
+
+    gsap.timeline()
+      .to(targetCard, {
+        x: swipeOutX,
+        rotate: direction === "next" ? 18 : -18,
+        scale: 0.95,
+        opacity: 0.8,
+        duration: 0.26,
+        ease: "power2.out",
+        onComplete: () => {
+          // Cycle the array order
+          if (direction === "next") {
+            const first = stackOrder.current.shift() ?? 0;
+            stackOrder.current.push(first);
+          } else {
+            const last = stackOrder.current.pop() ?? 0;
+            stackOrder.current.unshift(last);
+          }
+
+          // Apply updated z-index and resting layer positions
+          stackOrder.current.forEach((cardIdx, layerIdx) => {
+            const cardEl = cards[cardIdx];
+            if (cardEl) {
+              const newZ = 30 - layerIdx * 10;
+              const newY = layerIdx * 14;
+              const newX = layerIdx * 10;
+              const newScale = 1 - layerIdx * 0.04;
+              const newOpacity = 1 - layerIdx * 0.15;
+
+              gsap.set(cardEl, { zIndex: newZ });
+              if (cardIdx !== topCardIdx) {
+                gsap.to(cardEl, {
+                  y: newY,
+                  x: newX,
+                  scale: newScale,
+                  opacity: newOpacity,
+                  duration: 0.22,
+                  ease: "power2.out",
+                });
+              }
+            }
+          });
+        },
+      })
+      // Tuck the swiped card back into the bottom of the deck
+      .to(targetCard, {
+        x: 20,
+        y: 28,
+        rotate: restingRotations[topCardIdx],
+        scale: 0.92,
+        opacity: 0.8,
+        duration: 0.26,
+        ease: "power2.inOut",
+        onComplete: () => {
+          isAnimating.current = false;
+        },
+      });
   };
 
   return (
     <section
       ref={sectionRef}
-      className="proof-section-container relative z-20 w-full py-24 md:py-36 px-6 md:px-12 bg-[#0E0E0D] text-[#F1EFE9] border-t border-white/10 transition-colors duration-500 overflow-hidden select-none"
+      className="proof-section-container relative z-20 w-full py-24 md:py-36 px-6 md:px-12 bg-[#0E0E0D] text-[#F1EFE9] border-t border-current/15 transition-colors duration-500 overflow-hidden select-none"
     >
       {/* Universal Blueprint Grid Overlay covering the whole section */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-0">
@@ -87,7 +250,7 @@ export function InteractiveProofVisualizer() {
         </svg>
       </div>
 
-      <div ref={containerRef} className="relative z-10 max-w-7xl mx-auto space-y-12">
+      <div className="relative z-10 max-w-7xl mx-auto space-y-12">
         {/* Section Header */}
         <div className="proof-reveal-el text-left space-y-3 max-w-3xl pb-6 border-b border-current/15">
           <div className="inline-flex items-center gap-2 font-mono text-[0.55rem] uppercase tracking-[0.25em] text-orange font-bold">
@@ -102,8 +265,8 @@ export function InteractiveProofVisualizer() {
           </p>
         </div>
 
-        {/* Interactive 4-Layer Explorer Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        {/* 2-Column Main Section Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
           {/* Left Column (5 cols): Layer Selection Navigation */}
           <div className="proof-reveal-el lg:col-span-5 flex flex-col justify-between gap-3.5">
             <button
@@ -187,151 +350,115 @@ export function InteractiveProofVisualizer() {
             </button>
           </div>
 
-          {/* Right Column (7 cols): Interactive Live Inspector */}
-          <div className="proof-reveal-el lg:col-span-7">
-            <div className="relative border-2 border-current bg-card p-6 md:p-8 font-mono text-[0.65rem] uppercase tracking-wider shadow-[6px_6px_0px_0px_rgba(255,107,0,0.8)] flex flex-col justify-between h-full">
-              {/* Corner Reticle Accents */}
-              <span className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-orange pointer-events-none" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-orange pointer-events-none" />
-              <span className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-orange pointer-events-none" />
-              <span className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-orange pointer-events-none" />
+          {/* Right Column (7 cols): Reunited Arena Cards Gliding In from Top & Stacked Carousel */}
+          <div
+            ref={stackWrapperRef}
+            className="lg:col-span-7 flex flex-col items-center justify-center relative min-h-[440px] will-change-[transform,opacity]"
+          >
+            {/* Stacked Cards Deck Container */}
+            <div className="relative w-full max-w-[480px] h-[320px]">
+              {displayCards.map((card, idx) => {
+                const zIndexClass = idx === 0 ? "z-30" : idx === 1 ? "z-20" : "z-10";
+                const shadowStyle = idx === 0
+                  ? "4px 4px 0px 0px rgba(14,14,13,0.9)"
+                  : idx === 1
+                    ? "6px 6px 0px 0px rgba(14,14,13,0.85)"
+                    : "8px 8px 0px 0px rgba(14,14,13,0.75)";
 
-              {/* Inspector Header */}
-              <div className="flex flex-wrap items-center justify-between pb-3 mb-6 border-b border-current/15 text-[0.55rem] font-bold">
-                <span className="text-orange tracking-widest">[CREDENTIAL INSPECTION MATRIX // PROOF #DA-94F2B8]</span>
-                <span className="tracking-widest opacity-70">SHA-256: 7f8a92...e14c</span>
-              </div>
+                return (
+                  <div
+                    key={card.id}
+                    ref={(el) => {
+                      cardRefs.current[idx] = el;
+                    }}
+                    onClick={() => handleCycleStack("next")}
+                    className={`absolute inset-0 w-full bg-card text-foreground border-4 border-double border-foreground p-6 md:p-7 flex flex-col justify-between cursor-pointer select-none ${zIndexClass}`}
+                    style={{
+                      boxShadow: shadowStyle,
+                    }}
+                  >
+                    {/* Outline grid overlays */}
+                    <div className="absolute inset-1 border border-foreground/15 pointer-events-none" />
+                    <div className="absolute inset-1.5 border border-dashed border-foreground/10 pointer-events-none" />
 
-              {/* Dynamic Layer Content */}
-              <div className="my-auto space-y-6">
-                {activeLayer === "hash" && (
-                  <div className="space-y-4 font-mono text-xs animate-in fade-in duration-200">
-                    <div className="p-4 bg-black/5 dark:bg-white/5 border border-current/20 space-y-1.5">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[0.55rem] opacity-70 font-bold block">
-                          CANONICAL PAYLOAD DIGEST:
+                    {/* Card Title & Tag Header */}
+                    <div className="space-y-3 text-left">
+                      <div className="font-display italic text-[clamp(1.15rem,2.5vw,1.75rem)] leading-[1.1] text-foreground tracking-tight">
+                        <span className="text-orange font-bold not-italic font-mono text-[0.58rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2.5 align-middle -translate-y-0.5">
+                          [{card.tag}]
                         </span>
-                        <button
-                          onClick={handleCopyHash}
-                          className="flex items-center gap-1 text-[0.52rem] text-orange hover:underline uppercase font-bold"
-                        >
-                          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                          <span>{copied ? "COPIED" : "COPY HASH"}</span>
-                        </button>
+                        {card.title}
                       </div>
-                      <p className="font-bold text-foreground text-xs break-all leading-relaxed">
-                        sha256:7f8a92c481b3790dfaa8172635418290bcda1248102938475610293847561029
+
+                      <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-w-sm">
+                        {card.description}
                       </p>
                     </div>
 
-                    <div className="space-y-2.5 text-[0.6rem]">
-                      <div className="flex justify-between border-b border-current/10 pb-1.5">
-                        <span className="opacity-70">HASHING ALGORITHM:</span>
-                        <span className="font-bold text-foreground">RFC-8785 Canonical JSON + SHA-256</span>
-                      </div>
-                      <div className="flex justify-between border-b border-current/10 pb-1.5">
-                        <span className="opacity-70">ISSUANCE TIMESTAMP:</span>
-                        <span className="font-bold text-foreground">2026-08-15T12:00:00Z</span>
-                      </div>
-                      <div className="flex justify-between border-b border-current/10 pb-1.5">
-                        <span className="opacity-70">TAMPER STATUS:</span>
-                        <span className="font-bold text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-0.5 border border-green-500/30">
-                          [✓] VERIFIED UNMODIFIED
+                    {/* Bottom Content Row: Timer + Tech Badges */}
+                    <div className="flex flex-row items-end justify-between gap-4 pt-4 border-t border-dashed border-foreground/20 text-left">
+                      {/* Left: Countdown */}
+                      <div className="flex flex-col">
+                        <span className="font-mono text-[0.42rem] uppercase tracking-[0.25em] text-muted-foreground mb-1 block font-bold">
+                          [{card.timeLabel}]
                         </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeLayer === "rubric" && (
-                  <div className="space-y-4 font-mono text-xs animate-in fade-in duration-200">
-                    <div className="flex justify-between items-center bg-foreground text-background p-4 shadow-sm">
-                      <span className="font-bold text-sm">FINAL PUBLISHED SCORE</span>
-                      <span className="font-bold text-lg text-orange">94.5 / 100.0</span>
-                    </div>
-
-                    <div className="space-y-2.5 text-[0.58rem]">
-                      <div className="p-3 bg-black/5 dark:bg-white/5 border border-current/15 flex justify-between items-center">
-                        <div>
-                          <span className="font-bold text-foreground block text-xs">Code Quality &amp; Clean Architecture</span>
-                          <span className="opacity-70">&quot;Modular domain separation, zero circular dependencies.&quot;</span>
+                        <div className={`font-mono text-sm md:text-[1.1rem] font-bold leading-none tracking-widest ${card.isLive ? "text-foreground" : "text-muted-foreground"}`}>
+                          {card.isLive ? (
+                            <>
+                              {activeTimer.split(":")[0]}
+                              <span className="text-orange animate-pulse">:</span>
+                              {activeTimer.split(":")[1]}
+                              <span className="text-orange animate-pulse">:</span>
+                              <span className="text-orange">{activeTimer.split(":")[2]}</span>
+                            </>
+                          ) : (
+                            card.timeValue
+                          )}
                         </div>
-                        <span className="font-bold text-sm text-orange">95/100</span>
                       </div>
 
-                      <div className="p-3 bg-black/5 dark:bg-white/5 border border-current/15 flex justify-between items-center">
-                        <div>
-                          <span className="font-bold text-foreground block text-xs">System Throughput &amp; Scalability</span>
-                          <span className="opacity-70">&quot;Redis caching strategy handles 10,000 requests/sec.&quot;</span>
-                        </div>
-                        <span className="font-bold text-sm text-orange">94/100</span>
+                      {/* Right: Tech Badges */}
+                      <div className="flex flex-wrap gap-1.5 justify-end">
+                        {card.tech.map((tech) => (
+                          <span
+                            key={tech}
+                            className="font-mono text-[0.42rem] md:text-[0.48rem] uppercase tracking-wider text-foreground font-bold"
+                          >
+                            [{tech}]
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
-                )}
+                );
+              })}
+            </div>
 
-                {activeLayer === "git" && (
-                  <div className="space-y-4 font-mono text-xs animate-in fade-in duration-200">
-                    <div className="p-4 bg-black/5 dark:bg-white/5 border border-current/20 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[0.55rem] opacity-70 font-bold">VERIFIED REPO COMMIT DIGEST:</span>
-                        <span className="text-[0.55rem] text-orange font-bold">14 COMMITS AUDITED</span>
-                      </div>
-                      <span className="font-bold text-foreground text-xs block">
-                        github.com/contestant/cairo-microservice-battle
-                      </span>
-                    </div>
+            {/* Carousel Navigation Controls */}
+            <div
+              className={`flex items-center gap-4 mt-10 pt-2 transition-all duration-300 ${
+                showCarouselControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+              }`}
+            >
+              <button
+                onClick={() => handleCycleStack("prev")}
+                className="w-10 h-10 border-2 border-foreground bg-card text-foreground flex items-center justify-center font-mono font-bold text-xs hover:bg-foreground hover:text-card transition-colors shadow-[2px_2px_0px_0px_var(--foreground)] active:translate-y-0.5"
+                title="Previous Arena Card"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
 
-                    <div className="p-4 border border-current/20 bg-card space-y-1.5">
-                      <span className="text-[0.55rem] opacity-70 font-bold block">
-                        5-MINUTE VIDEO DEFENSE RECORDING:
-                      </span>
-                      <span className="font-bold text-foreground text-xs block text-orange">
-                        ▶ loom.com/share/cairo-defense-2026-alex
-                      </span>
-                      <span className="text-[0.52rem] opacity-70 block">
-                        Technical walkthrough explaining system architecture, concurrency, and trade-offs.
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {activeLayer === "verifier" && (
-                  <div className="space-y-4 font-mono text-xs animate-in fade-in duration-200">
-                    <div className="p-4 bg-black/5 dark:bg-white/5 border border-current/20 space-y-2">
-                      <span className="text-[0.55rem] opacity-70 font-bold block">
-                        PUBLIC IMMUTABLE CREDENTIAL LINK:
-                      </span>
-                      <span className="font-bold text-foreground text-xs block break-all">
-                        https://devsarena.eg/proof/cairo-battle-2026
-                      </span>
-                    </div>
-
-                    <div className="pt-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                      <span className="text-[0.55rem] opacity-70">
-                        Publicly queryable &bull; SHA-256 Validated &bull; Never expires
-                      </span>
-                      <Link
-                        href="/proof"
-                        className="px-5 py-2.5 bg-foreground text-background font-mono text-[0.62rem] font-bold hover:bg-orange hover:text-black transition-colors inline-flex items-center gap-2 shadow-sm"
-                      >
-                        <span>OPEN PUBLIC VERIFIER</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-                  </div>
-                )}
+              <div className="font-mono text-[0.58rem] font-bold uppercase tracking-widest text-current/70">
+                <span>CYCLE CARDS DECK</span>
               </div>
 
-              {/* Inspector Footer */}
-              <div className="mt-6 pt-3 border-t border-current/15 flex items-center justify-between">
-                <span className="font-mono text-[0.52rem] opacity-60">
-                  SEALED IN CAIRO // DEVS ARENA TRUST PROTOCOL
-                </span>
-                <span className="font-mono text-[0.52rem] text-orange font-bold">
-                  [✓] 100% AUDITABLE &amp; SIGNED
-                </span>
-              </div>
+              <button
+                onClick={() => handleCycleStack("next")}
+                className="w-10 h-10 border-2 border-foreground bg-card text-foreground flex items-center justify-center font-mono font-bold text-xs hover:bg-foreground hover:text-card transition-colors shadow-[2px_2px_0px_0px_var(--foreground)] active:translate-y-0.5"
+                title="Next Arena Card"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>

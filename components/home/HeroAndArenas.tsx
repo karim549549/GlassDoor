@@ -34,8 +34,8 @@ export function HeroAndArenas({
       {/* CHAPTER 4: Three-Sided Interactive Console (Light Cream #F1EFE9) */}
       <ThreeSidedPerspective />
 
-      {/* CHAPTER 5: Interactive Proof Packet Cryptographic Inspector */}
-      <InteractiveProofVisualizer />
+      {/* CHAPTER 5: Interactive Proof Packet Cryptographic Inspector & Reunited Arena Cards Carousel */}
+      <InteractiveProofVisualizer cards={cards} />
 
       {/* CHAPTER 6: Glicko-2 Multi-Domain Mathematical Ledger (Cyber Dark #070a0d) */}
       <GlickoLedgerExplorer />
