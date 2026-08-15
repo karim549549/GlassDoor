@@ -11,29 +11,6 @@ interface UseArenaCardAnimationsArgs {
   arenasRef: React.RefObject<HTMLDivElement | null>;
 }
 
-/**
- * Choreography for the fanned arena card stack.
- *
- * Three defects were fixed here; all three produced the same symptom, a page
- * that would not scroll.
- *
- * 1. The entrance used to set `document.body.style.overflow = "hidden"` and
- *    only restore it from the final tween's `onComplete`. Any path that skipped
- *    that callback - a null card ref, a matchMedia revert on resize, a
- *    StrictMode double-invoke, a tab backgrounded mid-tween - left the document
- *    permanently unscrollable. The lock is gone entirely: the entrance now
- *    plays over a page the reader can always scroll.
- *
- * 2. ScrollTrigger setup was gated on an `entranceFinished` flag set by that
- *    same callback, so the identical failure also meant no scroll animation was
- *    ever created. Setup is now driven by a timeline completion *or* a hard
- *    timeout, so it cannot be stranded by one missed callback.
- *
- * 3. `scrub: true` snaps to scroll position every frame and reads as jitter.
- *    Numeric scrub gives ScrollTrigger a smoothing window instead.
- */
-
-/** Entrance duration is ~1.4s; this only has to outlast it. */
 const ENTRANCE_FALLBACK_MS = 2600;
 
 export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCardAnimationsArgs) {
@@ -41,8 +18,12 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeTimer, setActiveTimer] = useState("05:12:43");
   const [entranceFinished, setEntranceFinished] = useState(false);
+  const [showCarouselControls, setShowCarouselControls] = useState(false);
 
-  // Live sprint timer countdown.
+  const stackOrder = useRef<number[]>([0, 1, 2]);
+  const isAnimating = useRef(false);
+
+  // Live sprint timer countdown
   useEffect(() => {
     let totalSeconds = 5 * 3600 + 12 * 60 + 43;
 
@@ -50,14 +31,9 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
       const hrs = Math.floor(s / 3600);
       const mins = Math.floor((s % 3600) / 60);
       const secs = s % 60;
-      // Minutes used to be dropped here - the clock read `hrs:secs`, so it
-      // looked like a minute counter running 60x fast.
       return [hrs, mins, secs].map((n) => n.toString().padStart(2, "0")).join(":");
     };
 
-    // No priming call here: the initial state below is already `format()` of
-    // this same starting value, and setting state synchronously in an effect
-    // just costs a second render.
     const interval = setInterval(() => {
       if (totalSeconds <= 0) {
         clearInterval(interval);
@@ -70,7 +46,7 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
     return () => clearInterval(interval);
   }, []);
 
-  // Entrance fly-in. Never blocks scrolling.
+  // Entrance fly-in: Fades in ONLY ONCE at the Hero section, and never fades away again
   useEffect(() => {
     const cards = cardRefs.current;
     if (!cards || cards.length === 0) return;
@@ -81,8 +57,6 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
       mm.add("(min-width: 768px)", () => {
         const [a, b, c] = cards;
         if (!a || !b || !c) {
-          // Nothing to animate - hand off immediately rather than leaving the
-          // scroll choreography waiting on a tween that will never run.
           setEntranceFinished(true);
           return;
         }
@@ -105,8 +79,6 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
       });
     }, stackRef);
 
-    // Belt and braces: whatever happens to the timeline above, the scroll
-    // choreography gets built.
     const fallback = window.setTimeout(() => setEntranceFinished(true), ENTRANCE_FALLBACK_MS);
 
     return () => {
@@ -115,20 +87,13 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
     };
   }, []);
 
-  // Re-measure once the entrance has landed. The slide timeline records its
-  // starting `y` when it is built, and at that moment the cards are still
-  // mid-flight; `invalidateOnRefresh` on that timeline makes this refresh
-  // re-read the settled values. This is what the old `entranceFinished` gate
-  // was really for, without gating trigger *creation* on a callback that could
-  // never fire.
   useEffect(() => {
     if (!entranceFinished) return;
     const raf = requestAnimationFrame(() => ScrollTrigger.refresh());
     return () => cancelAnimationFrame(raf);
   }, [entranceFinished]);
 
-  // Scroll choreography. Built on mount, alongside every other trigger on the
-  // page, so all of them measure against the same layout.
+  // Master Scroll Choreography: Continuous, zero-fade card movement across all sections
   useEffect(() => {
     const container = containerRef.current;
     const arenas = arenasRef.current;
@@ -141,7 +106,7 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
       const mm = gsap.matchMedia();
 
       mm.add("(min-width: 768px)", () => {
-        // Hero fades out and the arenas panel darkens as it arrives.
+        // 1. Hero fades out and Arenas panel darkens
         gsap
           .timeline({
             scrollTrigger: {
@@ -164,7 +129,7 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
             0
           );
 
-        // Cards ride down into the panel.
+        // 2. Cards ride down from Hero into Section 2
         gsap
           .timeline({
             scrollTrigger: {
@@ -175,9 +140,9 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
               invalidateOnRefresh: true,
             },
           })
-          .to(cards, { y: 0, ease: "none" }, 0);
+          .to(cards, { y: 0, opacity: 1, ease: "none" }, 0);
 
-        // Pinned docking sequence: separate, label, then clear.
+        // 3. Pinned Section 2 Docking Sequence
         const dock = gsap.timeline({
           scrollTrigger: {
             trigger: arenas,
@@ -187,68 +152,167 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
             pin: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
-            // Highest priority on the page: this pin sits above every other
-            // trigger, and its 1600px spacer moves all of them. It has to
-            // re-measure first or everything below it reads a stale offset.
             refreshPriority: 2,
           },
         });
 
         dock
-          .to(cards[0], { x: -500, scale: 0.9, rotate: 0, ease: "power1.inOut", duration: 0.65 }, 0)
-          .to(cards[1], { x: 0, scale: 0.9, rotate: 0, ease: "power1.inOut", duration: 0.65 }, 0)
-          .to(cards[2], { x: 500, scale: 0.9, rotate: 0, ease: "power1.inOut", duration: 0.65 }, 0)
+          .to(cards[0], { x: -500, scale: 0.9, rotate: 0, opacity: 1, ease: "power1.inOut", duration: 0.65 }, 0)
+          .to(cards[1], { x: 0, scale: 0.9, rotate: 0, opacity: 1, ease: "power1.inOut", duration: 0.65 }, 0)
+          .to(cards[2], { x: 500, scale: 0.9, rotate: 0, opacity: 1, ease: "power1.inOut", duration: 0.65 }, 0)
           .to(".arena-organizer-block", { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }, 0.65)
           .to(".arena-enter-button", { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }, 0.65)
           .to(".arena-organizer-block", { opacity: 0, duration: 0.12, ease: "power1.in" }, 0.76)
           .to(".arena-enter-button", { opacity: 0, duration: 0.12, ease: "power1.in" }, 0.76)
-          // Everything from here overlaps deliberately - regroup, fade and
-          // descent all run at once with per-card offsets, so nothing snaps
-          // and no card changes state at the same instant as its neighbours.
-          //
-          // Regroup: the three docked cards slide back into the fanned stack
-          // they arrived as, same offsets and same slight rotations, one after
-          // another - so the stack visibly reassembles rather than three cards
-          // happening to converge.
-          .to(cards[2], { x: 0, rotate: -1.5, scale: 1.05, duration: 0.18, ease: "power2.inOut" }, 0.78)
-          .to(cards[1], { x: 0, rotate: 3, scale: 1.05, duration: 0.18, ease: "power2.inOut" }, 0.82)
-          .to(cards[0], { x: 0, rotate: -4, scale: 1.05, duration: 0.18, ease: "power2.inOut" }, 0.86)
-          // Fade starts while the regroup is still moving and finishes as the
-          // stack leaves, so the cards dissolve across the whole exit instead
-          // of blinking out at the end of it.
-          .to(cards[2], { opacity: 0, duration: 0.22, ease: "power1.in" }, 0.84)
-          .to(cards[1], { opacity: 0, duration: 0.22, ease: "power1.in" }, 0.88)
-          .to(cards[0], { opacity: 0, duration: 0.22, ease: "power1.in" }, 0.92)
-          // Descent overlaps the fade. The cards stay mounted throughout and
-          // pass behind the next section, which outranks this one in the
-          // stacking order, so a later section can bring the same stack back.
-          // Function-based so the distance is re-read on every refresh.
+          // Regroup cards back into the stacked deck as they leave Section 2 (100% opacity, no fade out)
+          .to(cards[2], { x: 0, rotate: -1.5, scale: 1.05, opacity: 1, duration: 0.18, ease: "power2.inOut" }, 0.78)
+          .to(cards[1], { x: 0, rotate: 3, scale: 1.05, opacity: 1, duration: 0.18, ease: "power2.inOut" }, 0.82)
+          .to(cards[0], { x: 0, rotate: -4, scale: 1.05, opacity: 1, duration: 0.18, ease: "power2.inOut" }, 0.86)
+          // Continuous descent without fading away
           .to(
             cards,
             {
               y: () => window.innerHeight * 1.05,
+              opacity: 1,
               duration: 0.22,
               ease: "power2.in",
               stagger: 0.03,
             },
             0.86
           );
+
+        // 4. Section 5: Cards scale up to larger hero size in right-hand column dock at center of screen
+        const proofSection = document.querySelector(".proof-section-container");
+        if (proofSection) {
+          const proofTimeline = gsap.timeline({
+            scrollTrigger: {
+              trigger: proofSection,
+              start: "top 60%",
+              end: "center center",
+              scrub: 0.8,
+              invalidateOnRefresh: true,
+              onToggle: (self) => {
+                setShowCarouselControls(self.isActive || self.progress >= 0.85);
+              },
+              onUpdate: (self) => {
+                setShowCarouselControls(self.progress >= 0.75);
+              },
+            },
+          });
+
+          // Cards scale up significantly to command the right column
+          proofTimeline
+            .to(cards[0], { x: 350, rotate: -4, scale: 1.25, opacity: 1, ease: "power1.inOut" }, 0)
+            .to(cards[1], { x: 360, rotate: 3, scale: 1.20, opacity: 1, ease: "power1.inOut" }, 0)
+            .to(cards[2], { x: 370, rotate: -1.5, scale: 1.15, opacity: 1, ease: "power1.inOut" }, 0)
+            .to(".arena-carousel-controls", { x: 350, opacity: 1, ease: "power1.inOut" }, 0);
+        }
       });
 
-      // Allocate the pin distances into the spacers now that every trigger on
-      // the page exists. Without this the spacers stay at their natural height
-      // with no padding, and no section actually pins.
+      mm.add("(max-width: 767px)", () => {
+        const proofSection = document.querySelector(".proof-section-container");
+        if (proofSection) {
+          ScrollTrigger.create({
+            trigger: proofSection,
+            start: "top 60%",
+            end: "center center",
+            scrub: true,
+            onUpdate: (self) => {
+              setShowCarouselControls(self.progress >= 0.6);
+            },
+          });
+        }
+      });
+
       ScrollTrigger.refresh();
     }, container);
 
     return () => scrollCtx.revert();
   }, [containerRef, arenasRef]);
 
+  // GSAP Fling & Stack Reorder Physics: 100% opacity maintained throughout flings
+  const handleCycleStack = (direction: "next" | "prev" = "next") => {
+    if (isAnimating.current) return;
+    const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (cards.length < 3) return;
+
+    isAnimating.current = true;
+    const isDesktop = window.innerWidth >= 768;
+    const baseOffsetX = isDesktop ? 350 : 0;
+    const baseScale = isDesktop ? 1.25 : 1.05;
+    const restingRotations = [-4, 3, -1.5];
+
+    const topCardIdx = direction === "next"
+      ? stackOrder.current[0]
+      : stackOrder.current[stackOrder.current.length - 1];
+
+    const targetCard = cards[topCardIdx];
+    if (!targetCard) {
+      isAnimating.current = false;
+      return;
+    }
+
+    const swipeOutX = baseOffsetX + (direction === "next" ? 260 : -260);
+
+    gsap.timeline()
+      .to(targetCard, {
+        x: swipeOutX,
+        rotate: direction === "next" ? 18 : -18,
+        scale: baseScale * 0.95,
+        opacity: 1,
+        duration: 0.26,
+        ease: "power2.out",
+        onComplete: () => {
+          if (direction === "next") {
+            const first = stackOrder.current.shift() ?? 0;
+            stackOrder.current.push(first);
+          } else {
+            const last = stackOrder.current.pop() ?? 0;
+            stackOrder.current.unshift(last);
+          }
+
+          stackOrder.current.forEach((cardIdx, layerIdx) => {
+            const cardEl = cards[cardIdx];
+            if (cardEl) {
+              const newZ = 40 - layerIdx * 10;
+              const newX = baseOffsetX + layerIdx * 10;
+              const newY = layerIdx * 16;
+              const newScale = baseScale - layerIdx * 0.05;
+
+              gsap.set(cardEl, { zIndex: newZ, opacity: 1 });
+              if (cardIdx !== topCardIdx) {
+                gsap.to(cardEl, {
+                  x: newX,
+                  y: newY,
+                  scale: newScale,
+                  opacity: 1,
+                  duration: 0.22,
+                  ease: "power2.out",
+                });
+              }
+            }
+          });
+        },
+      })
+      .to(targetCard, {
+        x: baseOffsetX + 20,
+        y: 32,
+        rotate: restingRotations[topCardIdx],
+        scale: baseScale - 0.1,
+        opacity: 1,
+        duration: 0.26,
+        ease: "power2.inOut",
+        onComplete: () => {
+          isAnimating.current = false;
+        },
+      });
+  };
+
   return {
     stackRef,
     cardRefs,
     activeTimer,
-    showCarouselControls: false,
-    handleCycleStack: (_direction?: "next" | "prev") => {},
+    showCarouselControls,
+    handleCycleStack,
   };
 }

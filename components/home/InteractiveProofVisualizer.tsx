@@ -19,7 +19,7 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
   const sectionRef = useRef<HTMLElement>(null);
   const stackWrapperRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const stackOrder = useRef<number[]>([0, 1, 2]); // Tracks DOM z-index layer order
+  const stackOrder = useRef<number[]>([0, 1, 2]);
   const isAnimating = useRef(false);
 
   const displayCards = (cards && cards.length >= 3 ? cards : ARENA_CARDS).slice(0, 3);
@@ -43,7 +43,7 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
     return () => clearInterval(interval);
   }, []);
 
-  // GSAP ScrollTrigger Choreography
+  // GSAP Pinned Docking Choreography: Section 5 pins in place while cards visibly descend and dock
   useEffect(() => {
     const section = sectionRef.current;
     const cardEls = cardRefs.current.filter(Boolean) as HTMLDivElement[];
@@ -52,40 +52,19 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
-      // 1. Background transition: Starts at 'top bottom' and morphs to 'top top' (unified with Section 2)
-      gsap.fromTo(
-        section,
-        {
-          backgroundColor: "#0E0E0D",
-          color: "#F1EFE9",
-          borderColor: "rgba(241, 239, 233, 0.15)",
-        },
-        {
-          backgroundColor: "#F1EFE9",
-          color: "#0E0E0D",
-          borderColor: "rgba(14, 14, 13, 0.15)",
-          ease: "none",
+      // Desktop & Tablet (>= 768px): Pinned Docking Sequence
+      mm.add("(min-width: 768px)", () => {
+        const pinnedTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: section,
-            start: "top bottom",
-            end: "top 15%",
+            start: "top top",
+            end: "+=1300",
+            pin: true,
+            anticipatePin: 1,
             scrub: 1,
             invalidateOnRefresh: true,
-          },
-        }
-      );
-
-      // 2. Cards Assembly Timeline: Cards glide down from the upper dark sections, regroup, and stack into the carousel dock
-      mm.add("(min-width: 768px)", () => {
-        const stackTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: section,
-            start: "top bottom",
-            end: "top 10%",
-            scrub: 0.8,
-            invalidateOnRefresh: true,
             onToggle: (self) => {
-              setShowCarouselControls(self.isActive || self.progress >= 0.8);
+              setShowCarouselControls(self.isActive || self.progress >= 0.7);
             },
             onUpdate: (self) => {
               setShowCarouselControls(self.progress >= 0.6);
@@ -93,26 +72,46 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
           },
         });
 
-        // Initial offscreen positions (descending from upper black sections)
-        gsap.set(cardEls[0], { y: -380, x: -80, rotate: -18, scale: 0.88, opacity: 0 });
-        gsap.set(cardEls[1], { y: -320, x: 60, rotate: 22, scale: 0.88, opacity: 0 });
-        gsap.set(cardEls[2], { y: -260, x: -30, rotate: -12, scale: 0.88, opacity: 0 });
+        // 1. Morph background from Black to Cream White during first half of pin
+        pinnedTimeline.fromTo(
+          section,
+          {
+            backgroundColor: "#0E0E0D",
+            color: "#F1EFE9",
+            borderColor: "rgba(241, 239, 233, 0.15)",
+          },
+          {
+            backgroundColor: "#F1EFE9",
+            color: "#0E0E0D",
+            borderColor: "rgba(14, 14, 13, 0.15)",
+            ease: "none",
+            duration: 0.35,
+          },
+          0
+        );
 
-        // Smooth convergence into the 3-card layered brutalist stack
-        stackTimeline
-          .to(cardEls[0], { y: 0, x: 0, rotate: -4, scale: 1.0, opacity: 1, ease: "power2.out", duration: 0.7 }, 0)
-          .to(cardEls[1], { y: 14, x: 10, rotate: 3, scale: 0.96, opacity: 0.9, ease: "power2.out", duration: 0.75 }, 0.05)
-          .to(cardEls[2], { y: 28, x: 20, rotate: -1.5, scale: 0.92, opacity: 0.8, ease: "power2.out", duration: 0.8 }, 0.1);
+        // 2. Initial state: Cards start offscreen above (100% opacity throughout)
+        gsap.set(cardEls[0], { y: "-120vh", x: -60, rotate: -18, scale: 1.05, opacity: 1 });
+        gsap.set(cardEls[1], { y: "-120vh", x: 40, rotate: 20, scale: 1.05, opacity: 1 });
+        gsap.set(cardEls[2], { y: "-120vh", x: -20, rotate: -12, scale: 1.05, opacity: 1 });
+
+        // 3. Cards visibly descend across the viewport and dock into the right column
+        pinnedTimeline
+          .to(cardEls[0], { y: 0, x: 0, rotate: -4, scale: 1.18, opacity: 1, ease: "power2.out", duration: 0.65 }, 0)
+          .to(cardEls[1], { y: 16, x: 12, rotate: 3, scale: 1.12, opacity: 1, ease: "power2.out", duration: 0.7 }, 0.05)
+          .to(cardEls[2], { y: 32, x: 24, rotate: -1.5, scale: 1.06, opacity: 1, ease: "power2.out", duration: 0.75 }, 0.1);
       });
 
-      // Mobile Assembly
+      // Mobile (< 768px): Pinned or scrub assembly
       mm.add("(max-width: 767px)", () => {
-        const stackTimeline = gsap.timeline({
+        const mobileTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: section,
-            start: "top bottom",
-            end: "top 20%",
-            scrub: 0.8,
+            start: "top top",
+            end: "+=900",
+            pin: true,
+            anticipatePin: 1,
+            scrub: 1,
             invalidateOnRefresh: true,
             onUpdate: (self) => {
               setShowCarouselControls(self.progress >= 0.5);
@@ -120,21 +119,36 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
           },
         });
 
-        gsap.set(cardEls[0], { y: -200, opacity: 0 });
-        gsap.set(cardEls[1], { y: -160, opacity: 0 });
-        gsap.set(cardEls[2], { y: -120, opacity: 0 });
+        mobileTimeline.fromTo(
+          section,
+          {
+            backgroundColor: "#0E0E0D",
+            color: "#F1EFE9",
+          },
+          {
+            backgroundColor: "#F1EFE9",
+            color: "#0E0E0D",
+            ease: "none",
+            duration: 0.35,
+          },
+          0
+        );
 
-        stackTimeline
-          .to(cardEls[0], { y: 0, rotate: -3, scale: 1.0, opacity: 1, ease: "power2.out" }, 0)
-          .to(cardEls[1], { y: 12, rotate: 2, scale: 0.96, opacity: 0.9, ease: "power2.out" }, 0.05)
-          .to(cardEls[2], { y: 24, rotate: -1, scale: 0.92, opacity: 0.8, ease: "power2.out" }, 0.1);
+        gsap.set(cardEls[0], { y: "-80vh", opacity: 1 });
+        gsap.set(cardEls[1], { y: "-80vh", opacity: 1 });
+        gsap.set(cardEls[2], { y: "-80vh", opacity: 1 });
+
+        mobileTimeline
+          .to(cardEls[0], { y: 0, rotate: -3, scale: 1.05, opacity: 1, ease: "power2.out", duration: 0.6 }, 0)
+          .to(cardEls[1], { y: 12, rotate: 2, scale: 1.0, opacity: 1, ease: "power2.out", duration: 0.65 }, 0.05)
+          .to(cardEls[2], { y: 24, rotate: -1, scale: 0.95, opacity: 1, ease: "power2.out", duration: 0.7 }, 0.1);
       });
 
-      // 3. Section Header & Navigation Reveal
+      // Section Header & Left Navigation Reveal
       const revealElements = section.querySelectorAll(".proof-reveal-el");
       gsap.fromTo(
         revealElements,
-        { opacity: 0, y: 32 },
+        { opacity: 0, y: 28 },
         {
           opacity: 1,
           y: 0,
@@ -153,7 +167,7 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
     return () => ctx.revert();
   }, []);
 
-  // GSAP Fling & Stack Reorder Physics (Restoring the interactive carousel from 285374d)
+  // GSAP Fling & Stack Reorder Physics (100% opacity maintained throughout)
   const handleCycleStack = (direction: "next" | "prev" = "next") => {
     if (isAnimating.current) return;
     const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
@@ -162,10 +176,9 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
     isAnimating.current = true;
     const restingRotations = [-4, 3, -1.5];
 
-    // Current top card index is last in visual stack hierarchy
     const topCardIdx = direction === "next"
-      ? stackOrder.current[0] // Front card
-      : stackOrder.current[stackOrder.current.length - 1]; // Bottom card
+      ? stackOrder.current[0]
+      : stackOrder.current[stackOrder.current.length - 1];
 
     const targetCard = cards[topCardIdx];
     if (!targetCard) {
@@ -173,18 +186,17 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
       return;
     }
 
-    const swipeOutX = direction === "next" ? 260 : -260;
+    const swipeOutX = direction === "next" ? 280 : -280;
 
     gsap.timeline()
       .to(targetCard, {
         x: swipeOutX,
         rotate: direction === "next" ? 18 : -18,
-        scale: 0.95,
-        opacity: 0.8,
+        scale: 1.12,
+        opacity: 1,
         duration: 0.26,
         ease: "power2.out",
         onComplete: () => {
-          // Cycle the array order
           if (direction === "next") {
             const first = stackOrder.current.shift() ?? 0;
             stackOrder.current.push(first);
@@ -193,23 +205,21 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
             stackOrder.current.unshift(last);
           }
 
-          // Apply updated z-index and resting layer positions
           stackOrder.current.forEach((cardIdx, layerIdx) => {
             const cardEl = cards[cardIdx];
             if (cardEl) {
               const newZ = 30 - layerIdx * 10;
-              const newY = layerIdx * 14;
-              const newX = layerIdx * 10;
-              const newScale = 1 - layerIdx * 0.04;
-              const newOpacity = 1 - layerIdx * 0.15;
+              const newY = layerIdx * 16;
+              const newX = layerIdx * 12;
+              const newScale = 1.18 - layerIdx * 0.06;
 
-              gsap.set(cardEl, { zIndex: newZ });
+              gsap.set(cardEl, { zIndex: newZ, opacity: 1 });
               if (cardIdx !== topCardIdx) {
                 gsap.to(cardEl, {
                   y: newY,
                   x: newX,
                   scale: newScale,
-                  opacity: newOpacity,
+                  opacity: 1,
                   duration: 0.22,
                   ease: "power2.out",
                 });
@@ -218,13 +228,12 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
           });
         },
       })
-      // Tuck the swiped card back into the bottom of the deck
       .to(targetCard, {
-        x: 20,
-        y: 28,
+        x: 24,
+        y: 32,
         rotate: restingRotations[topCardIdx],
-        scale: 0.92,
-        opacity: 0.8,
+        scale: 1.06,
+        opacity: 1,
         duration: 0.26,
         ease: "power2.inOut",
         onComplete: () => {
@@ -236,9 +245,9 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
   return (
     <section
       ref={sectionRef}
-      className="proof-section-container relative z-20 w-full py-24 md:py-36 px-6 md:px-12 bg-[#0E0E0D] text-[#F1EFE9] border-t border-current/15 transition-colors duration-500 overflow-hidden select-none"
+      className="proof-section-container relative z-20 w-full min-h-screen py-16 md:py-20 px-6 md:px-12 bg-[#0E0E0D] text-[#F1EFE9] border-t border-current/15 transition-colors duration-500 overflow-hidden select-none flex flex-col justify-center"
     >
-      {/* Universal Blueprint Grid Overlay covering the whole section */}
+      {/* Universal Blueprint Grid Overlay */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -250,7 +259,7 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto space-y-12">
+      <div className="relative z-10 max-w-7xl mx-auto w-full space-y-10">
         {/* Section Header */}
         <div className="proof-reveal-el text-left space-y-3 max-w-3xl pb-6 border-b border-current/15">
           <div className="inline-flex items-center gap-2 font-mono text-[0.55rem] uppercase tracking-[0.25em] text-orange font-bold">
@@ -350,13 +359,13 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
             </button>
           </div>
 
-          {/* Right Column (7 cols): Reunited Arena Cards Gliding In from Top & Stacked Carousel */}
+          {/* Right Column (7 cols): Scaled-Up Hero Sized Arena Cards Dock */}
           <div
             ref={stackWrapperRef}
-            className="lg:col-span-7 flex flex-col items-center justify-center relative min-h-[440px] will-change-[transform,opacity]"
+            className="lg:col-span-7 flex flex-col items-center justify-center relative min-h-[460px] will-change-[transform]"
           >
-            {/* Stacked Cards Deck Container */}
-            <div className="relative w-full max-w-[480px] h-[320px]">
+            {/* Enlarged Stacked Cards Deck Container */}
+            <div className="relative w-full max-w-[520px] md:max-w-[540px] h-[340px]">
               {displayCards.map((card, idx) => {
                 const zIndexClass = idx === 0 ? "z-30" : idx === 1 ? "z-20" : "z-10";
                 const shadowStyle = idx === 0
@@ -372,7 +381,7 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
                       cardRefs.current[idx] = el;
                     }}
                     onClick={() => handleCycleStack("next")}
-                    className={`absolute inset-0 w-full bg-card text-foreground border-4 border-double border-foreground p-6 md:p-7 flex flex-col justify-between cursor-pointer select-none ${zIndexClass}`}
+                    className={`absolute inset-0 w-full bg-card text-foreground border-4 border-double border-foreground p-6 md:p-8 flex flex-col justify-between cursor-pointer select-none ${zIndexClass}`}
                     style={{
                       boxShadow: shadowStyle,
                     }}
@@ -382,15 +391,15 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
                     <div className="absolute inset-1.5 border border-dashed border-foreground/10 pointer-events-none" />
 
                     {/* Card Title & Tag Header */}
-                    <div className="space-y-3 text-left">
-                      <div className="font-display italic text-[clamp(1.15rem,2.5vw,1.75rem)] leading-[1.1] text-foreground tracking-tight">
-                        <span className="text-orange font-bold not-italic font-mono text-[0.58rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2.5 align-middle -translate-y-0.5">
+                    <div className="space-y-3.5 text-left">
+                      <div className="font-display italic text-[clamp(1.2rem,2.6vw,1.85rem)] leading-[1.1] text-foreground tracking-tight">
+                        <span className="text-orange font-bold not-italic font-mono text-[0.6rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2.5 align-middle -translate-y-0.5">
                           [{card.tag}]
                         </span>
                         {card.title}
                       </div>
 
-                      <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-w-sm">
+                      <p className="font-mono text-[0.55rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-w-md">
                         {card.description}
                       </p>
                     </div>
@@ -399,10 +408,10 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
                     <div className="flex flex-row items-end justify-between gap-4 pt-4 border-t border-dashed border-foreground/20 text-left">
                       {/* Left: Countdown */}
                       <div className="flex flex-col">
-                        <span className="font-mono text-[0.42rem] uppercase tracking-[0.25em] text-muted-foreground mb-1 block font-bold">
+                        <span className="font-mono text-[0.45rem] uppercase tracking-[0.25em] text-muted-foreground mb-1 block font-bold">
                           [{card.timeLabel}]
                         </span>
-                        <div className={`font-mono text-sm md:text-[1.1rem] font-bold leading-none tracking-widest ${card.isLive ? "text-foreground" : "text-muted-foreground"}`}>
+                        <div className={`font-mono text-base md:text-lg font-bold leading-none tracking-widest ${card.isLive ? "text-foreground" : "text-muted-foreground"}`}>
                           {card.isLive ? (
                             <>
                               {activeTimer.split(":")[0]}
@@ -418,11 +427,11 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
                       </div>
 
                       {/* Right: Tech Badges */}
-                      <div className="flex flex-wrap gap-1.5 justify-end">
+                      <div className="flex flex-wrap gap-2 justify-end">
                         {card.tech.map((tech) => (
                           <span
                             key={tech}
-                            className="font-mono text-[0.42rem] md:text-[0.48rem] uppercase tracking-wider text-foreground font-bold"
+                            className="font-mono text-[0.45rem] md:text-[0.52rem] uppercase tracking-wider text-foreground font-bold"
                           >
                             [{tech}]
                           </span>
@@ -436,7 +445,7 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
 
             {/* Carousel Navigation Controls */}
             <div
-              className={`flex items-center gap-4 mt-10 pt-2 transition-all duration-300 ${
+              className={`flex items-center gap-4 mt-12 pt-2 transition-all duration-300 ${
                 showCarouselControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
               }`}
             >
