@@ -3,24 +3,17 @@
 import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { FoxBackground } from "./FoxBackground";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * Section 3 — the directive statement.
+ * Section 3 — the directive statement with the Nine-Tailed Fox ambient neon & particle background.
  *
  * The section holds still while the statement arrives one line at a time, and
  * scrolling back up takes it apart in reverse.
  *
  * The holding is done by CSS `position: sticky`, not by ScrollTrigger's `pin`.
- * That is the important detail. Pinning wraps the section in a generated
- * pin-spacer, and this page already has a pinned section directly above it -
- * the two spacers re-measured against each other differently depending on when
- * each refresh landed, so this section resolved to two document offsets 1500px
- * apart on consecutive passes and its reveal never armed. Sticky is resolved by
- * the layout engine, creates no spacer, and cannot desync from a neighbour.
- * ScrollTrigger is left doing the one thing it is reliable at here: reporting
- * progress.
  */
 
 interface Segment {
@@ -51,19 +44,6 @@ export function DirectiveSection() {
       const lines = textEl.querySelectorAll<HTMLElement>(".directive-line");
       if (lines.length === 0) return;
 
-      // Lines start at 0 - fully absent, not faint - and land with an overshoot
-      // rather than a linear ramp, so each arrives with its own weight instead
-      // of the group crossfading uniformly.
-      //
-      // No `pin` here: the holding is done by CSS `position: sticky` on the
-      // inner stage, so ScrollTrigger only reports progress across the tall
-      // outer section. That keeps this section's layout independent of the
-      // pinned arena stack above it, whose pin-spacer is inserted about a
-      // second after first paint.
-      //
-      // `scrub: 1` ties progress to scroll position in both directions, so
-      // scrolling back up runs the reveal backwards rather than leaving the
-      // statement stranded at full opacity.
       gsap.fromTo(
         lines,
         { opacity: 0, y: 46, scale: 0.94 },
@@ -85,10 +65,6 @@ export function DirectiveSection() {
       );
     }, sectionRef);
 
-    // Deliberately no `ScrollTrigger.refresh()` here: exactly one place owns
-    // refreshing (`useArenaCardAnimations`, which owns the pin above this one
-    // and is therefore what moves everything below it). Several components each
-    // refreshing on their own schedule made the layout jump between passes.
     return () => ctx.revert();
   }, []);
 
@@ -101,7 +77,7 @@ export function DirectiveSection() {
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center items-center px-6 md:px-12 text-center">
         {/* Background blueprint grid overlay */}
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none z-0">
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-0">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="directive-grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -111,6 +87,9 @@ export function DirectiveSection() {
             <rect width="100%" height="100%" fill="url(#directive-grid)" />
           </svg>
         </div>
+
+        {/* Nine-Tailed Fox Neon & Particle Hybrid Master Background Layer */}
+        <FoxBackground sectionRef={sectionRef} />
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10 flex flex-col items-center">
           {/* Telemetry Header */}
