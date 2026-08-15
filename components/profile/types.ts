@@ -8,13 +8,44 @@ export interface UserJobTypeEntry {
   name: string;
 }
 
+export interface UserRatingState {
+  domain: string;
+  rating: number;
+  deviation: number;
+  volatility: number;
+}
+
+export interface UserArenaEntry {
+  id: string;
+  joinedAt: string | Date;
+  arena: {
+    id: string;
+    title: string;
+    domain: string;
+    difficulty: string;
+    format: string;
+  };
+  submission: {
+    id: string;
+    finalScore: number | null;
+    githubUrl: string;
+    videoUrl: string | null;
+    createdAt: string | Date;
+    proofPacket: {
+      slug: string;
+      contentHash: string;
+      issuedAt: string | Date;
+      isRevoked: boolean;
+    } | null;
+  } | null;
+}
+
 export interface UserProfile {
   id: string;
   fullName: string | null;
   firstName?: string | null;
   lastName?: string | null;
   handle: string | null;
-  // Intentionally no `email` - the public profile endpoint does not return one.
   avatarUrl: string | null;
   coverUrl: string | null;
   bio?: string | null;
@@ -27,10 +58,13 @@ export interface UserProfile {
   linkedinUrl: string | null;
   portfolioUrl: string | null;
   rating: number;
+  ratingStates?: UserRatingState[];
   createdAt: string | Date;
   lastActiveAt: string | Date | null;
   skills?: UserSkillEntry[];
   jobTypes?: UserJobTypeEntry[];
   followersCount: number;
+  followingCount?: number;
   isFollowing: boolean;
+  arenaEntries?: UserArenaEntry[];
 }

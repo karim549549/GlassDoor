@@ -1,24 +1,12 @@
 import { z } from "zod";
 import type { RawUserProfile } from "./service";
 
-/**
- * The API's actual public contract for a user profile — flat, validated,
- * and decoupled from however the Prisma schema happens to shape a many-to-many
- * relation. `skills`/`jobTypes` come back from Prisma as
- * `{ skill: { id, name } }[]` (the join-table row wrapping the thing you
- * actually want) — this flattens that to `{ id, name }[]` before it ever
- * reaches a response. New many-to-many relations (e.g. a future tagging
- * system) should get the same treatment: raw Prisma shape stays internal to
- * the service, a dto.ts flattens + validates before NextResponse.json().
- */
 export const userProfileDtoSchema = z.object({
   id: z.string(),
   fullName: z.string().nullable(),
   firstName: z.string().nullable(),
   lastName: z.string().nullable(),
   handle: z.string().nullable(),
-  // No `email` field: this DTO is the public profile contract and the service's
-  // select no longer fetches one. See USER_PROFILE_SELECT in ./service.ts.
   avatarUrl: z.string().nullable(),
   coverUrl: z.string().nullable(),
   bio: z.string().nullable(),
@@ -31,21 +19,56 @@ export const userProfileDtoSchema = z.object({
   linkedinUrl: z.string().nullable(),
   portfolioUrl: z.string().nullable(),
   rating: z.number(),
-  ratingStates: z.array(
-    z.object({
-      domain: z.string(),
-      rating: z.number(),
-      deviation: z.number(),
-      volatility: z.number(),
-    })
-  ).default([]),
+  ratingStates: z
+    .array(
+      z.object({
+        domain: z.string(),
+        rating: z.number(),
+        deviation: z.number(),
+        volatility: z.number(),
+      })
+    )
+    .default([]),
   createdAt: z.date(),
   lastActiveAt: z.date().nullable(),
   skills: z.array(z.object({ id: z.string(), name: z.string() })),
   jobTypes: z.array(z.object({ id: z.string(), name: z.string() })),
   followersCount: z.number(),
+  followingCount: z.number().default(0),
   isFollowing: z.boolean(),
   isOwner: z.boolean(),
+  arenaEntries: z
+    .array(
+      z.object({
+        id: z.string(),
+        joinedAt: z.date(),
+        arena: z.object({
+          id: z.string(),
+          title: z.string(),
+          domain: z.string(),
+          difficulty: z.string(),
+          format: z.string(),
+        }),
+        submission: z
+          .object({
+            id: z.string(),
+            finalScore: z.number().nullable(),
+            githubUrl: z.string(),
+            videoUrl: z.string().nullable(),
+            createdAt: z.date(),
+            proofPacket: z
+              .object({
+                slug: z.string(),
+                contentHash: z.string(),
+                issuedAt: z.date(),
+                isRevoked: z.boolean(),
+              })
+              .nullable(),
+          })
+          .nullable(),
+      })
+    )
+    .default([]),
 });
 
 export type UserProfileDto = z.infer<typeof userProfileDtoSchema>;
@@ -55,11 +78,15 @@ export function toUserProfileDto(raw: RawUserProfile): UserProfileDto {
     ? Math.round(raw.ratingStates[0].rating)
     : 1500;
 
+  const flattenedSkills = raw.skills.map((s) => s.skill);
+  const flattenedJobTypes = raw.jobTypes.map((j) => j.jobType);
+
   return userProfileDtoSchema.parse({
     ...raw,
+    skills: flattenedSkills,
+    jobTypes: flattenedJobTypes,
     rating: primaryRating,
-    ratingStates: raw.ratingStates || [],
-    skills: raw.skills.map((s) => s.skill),
-    jobTypes: raw.jobTypes.map((j) => j.jobType),
+    followingCount: raw.followingCount ?? 0,
+    arenaEntries: raw.arenaEntries ?? [],
   });
 }

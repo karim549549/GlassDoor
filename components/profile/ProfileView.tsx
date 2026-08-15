@@ -66,11 +66,18 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
             onEditClick={() => router.push(`/user/${profile.id}/edit`)}
           />
 
-          <ArenaStatsCard rating={profile.rating} />
+          <ArenaStatsCard
+            rating={profile.rating}
+            ratingStates={profile.ratingStates}
+            arenaEntries={profile.arenaEntries}
+          />
         </div>
 
         {/* Bottom Row: Full-width Arena Performance Record Card */}
-        <ArenaPerformanceRecord />
+        <ArenaPerformanceRecord
+          arenaEntries={profile.arenaEntries}
+          createdAt={profile.createdAt}
+        />
       </div>
 
       {/* Edit Profile Modal Dialog */}

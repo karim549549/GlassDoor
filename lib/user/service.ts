@@ -2,25 +2,12 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/server/prisma";
 
-/**
- * Explicit field allow-list — only what toUserProfileDto() in dto.ts
- * actually maps to a response field. Excludes emailVerified and updatedAt
- * (User has no auth secrets to worry about here since Supabase Auth owns
- * credentials, but the discipline of not fetching unused columns applies
- * regardless — same pattern as ARENA_LIST_SELECT in lib/arena/types.ts).
- */
 export const USER_PROFILE_SELECT = {
   id: true,
   fullName: true,
   firstName: true,
   lastName: true,
   handle: true,
-  // email is deliberately NOT selected. This allow-list feeds the PUBLIC
-  // profile endpoint, so including it published every user's email address to
-  // any unauthenticated visitor - both a privacy problem under Egypt's PDPL
-  // and a giveaway of the exact contact detail the platform intends to gate
-  // behind verified recruiter access. A viewer's own email is available from
-  // the session via /api/auth/me; it never needs to come from here.
   avatarUrl: true,
   coverUrl: true,
   bio: true,
@@ -32,36 +19,70 @@ export const USER_PROFILE_SELECT = {
   githubUrl: true,
   linkedinUrl: true,
   portfolioUrl: true,
-  ratingStates: { select: { domain: true, rating: true, deviation: true, volatility: true } },
+  ratingStates: {
+    select: { domain: true, rating: true, deviation: true, volatility: true },
+    orderBy: { rating: "desc" },
+  },
   createdAt: true,
   lastActiveAt: true,
   skills: { select: { skill: { select: { id: true, name: true } } } },
   jobTypes: { select: { jobType: { select: { id: true, name: true } } } },
+  arenaEntries: {
+    where: { withdrawnAt: null },
+    select: {
+      id: true,
+      joinedAt: true,
+      arena: {
+        select: {
+          id: true,
+          title: true,
+          domain: true,
+          difficulty: true,
+          format: true,
+        },
+      },
+      submission: {
+        select: {
+          id: true,
+          finalScore: true,
+          githubUrl: true,
+          videoUrl: true,
+          createdAt: true,
+          proofPacket: {
+            select: {
+              slug: true,
+              contentHash: true,
+              issuedAt: true,
+              isRevoked: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { joinedAt: "desc" },
+  },
 } satisfies Prisma.UserSelect;
 
 type UserProfileRow = Prisma.UserGetPayload<{ select: typeof USER_PROFILE_SELECT }>;
 
-/** Raw Prisma shape — internal only. API responses go through toUserProfileDto() in dto.ts. */
 export interface RawUserProfile extends UserProfileRow {
   followersCount: number;
+  followingCount: number;
   isFollowing: boolean;
   isOwner: boolean;
 }
 
-/**
- * Scoped queries (findUnique + counts) instead of loading every follower row
- * just to compute a count and a membership check.
- */
 export async function getUserProfileById(
   id: string,
   viewerId: string | null
 ): Promise<RawUserProfile | null> {
-  const [dbUser, followersCount, followRow] = await Promise.all([
+  const [dbUser, followersCount, followingCount, followRow] = await Promise.all([
     prisma.user.findUnique({
       where: { id },
       select: USER_PROFILE_SELECT,
     }),
     prisma.follows.count({ where: { followingId: id } }),
+    prisma.follows.count({ where: { followerId: id } }),
     viewerId
       ? prisma.follows.findUnique({
           where: { followerId_followingId: { followerId: viewerId, followingId: id } },
@@ -76,6 +97,7 @@ export async function getUserProfileById(
   return {
     ...dbUser,
     followersCount,
+    followingCount,
     isFollowing: !!followRow,
     isOwner: viewerId === id,
   };
