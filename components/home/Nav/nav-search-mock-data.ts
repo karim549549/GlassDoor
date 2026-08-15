@@ -38,7 +38,7 @@ export const MOCK_COMPANIES: MockCompany[] = [
 ];
 
 export const MOCK_CONTEXT: MockContextEntry[] = [
-  { id: "rules", title: "Community Guidelines & Rules", description: "Rules profile and salary sharing policies.", url: "/context" },
-  { id: "spec", title: "Salary Dataset Specifications", description: "Learn about calculations and verification.", url: "/context" },
+  { id: "rules", title: "Community Guidelines & Rules", description: "Conduct, eligibility, and arena participation rules.", url: "/context" },
+  { id: "spec", title: "Rating & Judging Methodology", description: "How rubric scores and Glicko-2 ratings are calculated.", url: "/context" },
   { id: "privacy", title: "Anonymity & Privacy Policy", description: "How we protect developer identity.", url: "/context" },
 ];

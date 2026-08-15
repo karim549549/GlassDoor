@@ -62,7 +62,7 @@ export function HeroAndArenas() {
                     GITHUB VERIFICATION
                   </div>
                   <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
-                    Active EGP salaries feed requires a verified developer account.
+                    Entering a rated arena requires a verified developer account.
                   </p>
                 </div>
 

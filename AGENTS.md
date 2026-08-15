@@ -4,6 +4,44 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# Orient before you explore
+
+**Read `.agents/reference/PROJECT_MAP.md` first.** It is generated from the repo
+(`npm run map`) and lists every model, migration, API route with its auth gate,
+page, domain library and test file. It exists because a subagent starts with a
+cold context and otherwise rediscovers all of that by grepping — which measured
+~300k tokens across three exploration agents in one session, for a map that was
+discarded on exit. Reading one generated file instead is the difference.
+
+Never hand-edit the map; regenerate it. A stale map is worse than none, because
+it gets trusted.
+
+# Facts that are easy to get wrong here
+
+These come up in almost every task. Assume them rather than re-deriving them.
+
+- **The database is currently unreachable** (invalid credentials, Prisma P1000).
+  Nothing can be verified at runtime. `npm run build` will fail — it runs
+  `prisma migrate deploy`. The green check is:
+  `npx prisma generate && npx tsc --noEmit && npx eslint && npx next build && npm test`
+- **Arena status is DERIVED, never stored.** There is no `status` column and no
+  scheduler. `deriveArenaStatus(windows, now)` in `lib/arena/status.ts` takes
+  `now` as a parameter — never call `Date.now()` inside it, or arenas near a
+  phase boundary hydration-mismatch. List filtering uses `arenaStatusWhere`.
+- **Migrations are hand-assembled.** Generate the DDL, never type it:
+  `npx prisma migrate diff --from-empty --to-schema prisma/schema --script`
+  works offline and emits Prisma's own constraint names. Hand-write only DROP,
+  RENAME, backfill, CHECK and trigger statements. Never edit an applied migration.
+- **Never run `prisma db push`.** It silently drops the conflict-of-interest
+  trigger in `20260815190000_...`, which is what stops a judge scoring their own
+  team. `lib/server/db-integrity.ts` asserts the trigger still exists.
+- **`npm test`** runs `scripts/run-tests.mjs`, which walks `lib/` — Node 20 here
+  cannot glob in `node --test`. Test files import with **no** `.ts` extension.
+- **Anonymity and identity are enforced in the DTO layer**, never in components.
+  `USER_PROFILE_SELECT` deliberately omits `email`; the public profile must not
+  expose it.
+- **Money is `Decimal`, never `Float`.** Rank is computed at read time, never stored.
+
 # Codebase conventions
 
 Established during the 2026-08 refactor (see `docs/superpowers/plans/2026-08-02-codebase-refactor-and-performance.md`). Follow these for any new feature or further refactor — they exist to keep files small and prevent the duplicated-logic/oversized-component debt that refactor paid down from re-accumulating.

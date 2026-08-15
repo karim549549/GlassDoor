@@ -1,5 +1,6 @@
 import "server-only";
 import crypto from "crypto";
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/server/prisma";
 import { contentHash, verifyContentHash } from "./hash";
 
@@ -166,7 +167,11 @@ export async function generateProofPacket(submissionId: string) {
       slug,
       submissionId: sub.id,
       contentHash: hash,
-      payloadSnapshot: snapshot as any,
+      // Prisma types a `Json` column as InputJsonValue, which a structurally
+      // typed snapshot object does not satisfy nominally. This is the narrow,
+      // correct cast for writing a validated object into a Json column - not a
+      // blanket `any`, which would also silence a genuinely wrong shape.
+      payloadSnapshot: snapshot as unknown as Prisma.InputJsonValue,
       issuedAt: new Date(issuedAt),
     },
   });

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="border-t border-border bg-secondary">
@@ -11,9 +13,9 @@ export function Footer() {
           </span>
         </div>
         <div className="font-mono text-[0.6rem] flex gap-6 text-muted-foreground">
-          <a href="/arena" className="hover:text-foreground transition-colors">Arenas</a>
-          <a href="/companies" className="hover:text-foreground transition-colors">Companies</a>
-          <a href="/billboard" className="hover:text-foreground transition-colors">Billboard</a>
+          <Link href="/arena" className="hover:text-foreground transition-colors">Arenas</Link>
+          <Link href="/companies" className="hover:text-foreground transition-colors">Companies</Link>
+          <Link href="/billboard" className="hover:text-foreground transition-colors">Billboard</Link>
         </div>
       </div>
     </footer>

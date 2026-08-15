@@ -116,7 +116,7 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
           Welcome back
         </h1>
         <p className="font-mono text-[0.6rem] text-muted-foreground uppercase mt-2 tracking-widest">
-          Sign in to access salary transparency in Egypt
+          Sign in to compete, judge, and claim your credential
         </p>
       </div>
 

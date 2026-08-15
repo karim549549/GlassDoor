@@ -52,7 +52,7 @@ export function NavMessagesMenu({ isDarkTheme }: NavMessagesMenuProps) {
               <span className="text-[0.5rem] text-orange">New</span>
             </div>
             <span className="text-[0.55rem] opacity-70 lowercase normal-case text-left">
-              {`"Hey, can you double check the Vodafone salary rates?"`}
+              {`"Can you take a look at my rubric score for the Cairo arena?"`}
             </span>
           </DropdownMenuItem>
           <DropdownMenuItem

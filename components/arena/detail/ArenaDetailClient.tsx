@@ -9,7 +9,8 @@ import { ArenaOverviewTab } from "./ArenaOverviewTab";
 import { ArenaTimelineStepper } from "./ArenaTimelineStepper";
 import { ArenaActionCard } from "./ArenaActionCard";
 import { ArenaHostCard } from "./ArenaHostCard";
-import { ComingSoonPanel } from "./ComingSoonPanel";
+import { ArenaComments } from "./ArenaComments";
+import { ArenaLeaderboard } from "./ArenaLeaderboard";
 import { Footer } from "@/components/home/Footer";
 import { CheckCircle2 } from "lucide-react";
 
@@ -285,19 +286,11 @@ export function ArenaDetailClient({ arena, meta, isGuest }: ArenaDetailClientPro
             {/* Discussion and Standings Panels */}
             <div className="pt-6 border-t-2 border-foreground grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               <div className="lg:col-span-8">
-                <ComingSoonPanel
-                  label="[Discussion]"
-                  title="Discussion opens with registration"
-                  body="Questions and answers for this arena will appear here once the discussion thread is live."
-                />
+                <ArenaComments arenaId={arena.id} />
               </div>
 
               <div className="lg:col-span-4">
-                <ComingSoonPanel
-                  label="[Standings]"
-                  title="No results yet"
-                  body="Standings publish after judging closes."
-                />
+                <ArenaLeaderboard arenaId={arena.id} />
               </div>
             </div>
           </div>

@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node scripts/run-tests.mjs",
+    "check:migrations": "node scripts/check-migration-drift.mjs",
+    "map": "node scripts/generate-project-map.mjs",
     "db:clear": "tsx prisma/scripts/clear.ts"
   },
   "dependencies": {

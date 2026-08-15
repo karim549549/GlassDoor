@@ -60,7 +60,7 @@ export function NavSearchResults({
                   <span className="font-bold text-foreground">{c.name}</span>
                   <span className="text-[0.58rem] text-muted-foreground">{c.sector}</span>
                 </div>
-                <span className="text-[0.55rem] opacity-40">Salaries & Reviews →</span>
+                <span className="text-[0.55rem] opacity-40">Arenas & Hiring →</span>
               </div>
             ))}
           </div>

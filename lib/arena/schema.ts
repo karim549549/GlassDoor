@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { validateArenaTimeline } from "@/lib/arena/formats";
 
 /**
  * Base field-level rules, exported separately from `arenaSchema` so callers
@@ -102,7 +103,34 @@ export const arenaSchema = arenaBaseSchema
       message: "Please specify whether team leaders can configure team privacy",
       path: ["allowLeaderAccessControl"],
     }
-  );
+  )
+  // Full phase-order and per-format duration check. Without this only the
+  // registration pair above was validated, so an arena whose implementation
+  // window started before registration closed was creatable - and because
+  // status is derived from these timestamps, it reported UNDER_JUDGING from the
+  // moment it was published. Adjacent phases may be EQUAL (a 90-minute REP has
+  // a zero-width idea window), so the check is "not before", not "strictly
+  // after"; see PHASE_ORDER in lib/arena/formats.ts.
+  .superRefine((data, ctx) => {
+    const result = validateArenaTimeline(data.format, {
+      registrationStart: new Date(data.registrationStart),
+      registrationEnd: new Date(data.registrationEnd),
+      ideaPhaseStart: new Date(data.ideaPhaseStart),
+      ideaPhaseEnd: new Date(data.ideaPhaseEnd),
+      implPhaseStart: new Date(data.implPhaseStart),
+      implPhaseEnd: new Date(data.implPhaseEnd),
+    });
+
+    if (!result.ok) {
+      ctx.addIssue({
+        code: "custom",
+        message: result.reason,
+        // Surfaced on the implementation end field: it is the last one in the
+        // sequence and the one the create form shows nearest the error.
+        path: ["implPhaseEnd"],
+      });
+    }
+  });
 
 export type ArenaFormInput = z.input<typeof arenaSchema>;
 export type ArenaFormOutput = z.output<typeof arenaSchema>;

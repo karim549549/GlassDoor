@@ -135,6 +135,8 @@ model Arena {
   requirements             ArenaRequirement[]
   rubrics                  Rubric[]
   judges                   ArenaJudge[]
+  comments                 ArenaComment[]
+  disputes                 Dispute[]
 
   isDeleted                Boolean           @default(false)
   deletedAt                DateTime?

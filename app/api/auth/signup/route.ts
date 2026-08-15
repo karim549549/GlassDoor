@@ -9,8 +9,8 @@ import { logger } from "@/lib/server/logger";
 /**
  * Deliberately uniform: every outcome below - new account, address already
  * registered, Supabase rejection - returns the same success-shaped body.
- * Revealing whether an address has an account is a privacy leak on a
- * salary-transparency site, and this endpoint is unauthenticated.
+ * Revealing whether an address has an account leaks which developers are on
+ * the platform, and this endpoint is unauthenticated.
  */
 const UNIFORM_RESPONSE = {
   success: true,

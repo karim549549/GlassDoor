@@ -7,8 +7,19 @@ model ArenaSubmission {
   
   githubUrl    String
   figmaUrl     String?
+  /// Optional demo video of the finished product.
   videoUrl     String?
   writeupText  String                    @db.Text
+
+  /// Recorded oral defense: the entrant answering generated questions about
+  /// their OWN diff. This is the highest-signal anti-AI check in the product -
+  /// you cannot explain reasoning you never had - and it is distinct from
+  /// `videoUrl`, which is a product demo and proves nothing about authorship.
+  defenseVideoUrl String?
+  defenseRecordedAt DateTime?
+  /// The questions the entrant was asked, snapshotted so the proof packet can
+  /// show what was actually answered rather than regenerating them later.
+  defensePrompts  Json?
   
   finalScore   Float?
   feedbackText String?                   @db.Text
@@ -20,6 +31,7 @@ model ArenaSubmission {
   assignments  JudgeAssignment[]
   appeal       Appeal?
   proofPacket  ProofPacket?
+  disputes     Dispute[]
 
   createdAt    DateTime                  @default(now())
   updatedAt    DateTime                  @updatedAt

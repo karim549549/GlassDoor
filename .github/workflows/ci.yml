@@ -13,8 +13,8 @@ jobs:
 
       # Pinned to 20.x to match the version this project is developed on.
       # Note: `node --test` only gained glob-pattern support in Node 22, which
-      # is why package.json's test script lists test files explicitly rather
-      # than using "lib/**/*.test.ts". Bump both together if you upgrade.
+      # is why scripts/run-tests.mjs walks lib/ itself rather than relying on a
+      # glob. Simplify both together if you upgrade.
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -32,3 +32,19 @@ jobs:
       - run: npx eslint app components lib prisma proxy.ts
 
       - run: npm test
+
+      # Migrations here are hand-written (the database was unreachable when the
+      # v10 schema landed, so `migrate dev` could not generate them). This
+      # compares every column the schema declares against the columns the
+      # migration SQL actually creates, and fails on drift.
+      #
+      # It is NOT a substitute for the real gate: `prisma migrate diff
+      # --from-migrations ... --exit-code` against a shadow database, which
+      # also checks types, defaults, constraints and indexes. Run that once a
+      # throwaway Postgres is available.
+      - run: npm run check:migrations
+
+      # The project map is generated, not hand-written. Regenerate and fail if
+      # it moved: a stale map is worse than none, because agents trust it.
+      - run: npm run map
+      - run: git diff --exit-code .agents/reference/PROJECT_MAP.md

@@ -1,0 +1,37 @@
+/// Threaded discussion on an arena page.
+///
+/// The previous incarnation of this model lived in the companies domain and was
+/// dropped with the salary product. The adjacency-list shape is reinstated here
+/// because arena Q&A has the same structure: a flat table fetched in one query
+/// and assembled into a tree in the DTO, rather than a recursive `include`.
+model ArenaComment {
+  id          String         @id @default(uuid()) @db.Uuid
+  arenaId     String         @db.Uuid
+  arena       Arena          @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  authorId    String         @db.Uuid
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  /// Null for a top-level comment; a comment id makes this a reply.
+  parentId    String?        @db.Uuid
+  parent      ArenaComment?  @relation("ArenaCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     ArenaComment[] @relation("ArenaCommentReplies")
+
+  content     String         @db.Text
+  /// When true the author is never revealed in any response. Enforced in the
+  /// DTO layer, which is the single path every consumer passes through.
+  isAnonymous Boolean        @default(false)
+  /// Hosts can pin one answer to the top of a thread.
+  isPinned    Boolean        @default(false)
+
+  /// Soft delete: a removed comment leaves a tombstone so its replies keep
+  /// their parent and the thread does not silently reshape.
+  deletedAt   DateTime?
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([arenaId, createdAt])
+  @@index([parentId])
+  @@index([authorId])
+  @@map("arena_comments")
+}

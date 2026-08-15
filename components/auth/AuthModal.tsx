@@ -136,14 +136,14 @@ export function AuthModal() {
                 Devs Arena
               </span>
               <h3 className="font-display text-[2.4rem] leading-tight italic mt-12 font-medium">
-                Real salaries.<br />
-                Real reviews.<br />
-                Every Egyptian tech company, indexed.
+                Real builds.<br />
+                Real judging.<br />
+                Proof an employer can verify.
               </h3>
             </div>
             
             <div className="font-mono text-[0.55rem] tracking-wider opacity-40 uppercase mt-auto">
-              Devs Arena © 2026 · Salary Transparency Project
+              Devs Arena © 2026 · Build, Not Claim
             </div>
           </div>
         </div>

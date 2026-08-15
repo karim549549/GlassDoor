@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
         // "Invalid login credentials" for a wrong email and a wrong password,
         // but returns a distinct "Email not confirmed" for a registered-but-
         // unconfirmed address - which tells an unauthenticated caller that the
-        // account exists. On a salary-transparency site that is the same
-        // privacy leak the signup route was just fixed for, so the real reason
-        // is logged server-side instead of returned.
+        // account exists. Account existence is exactly what a scraper building
+        // a target list of Egyptian developers wants, so the real reason is
+        // logged server-side instead of returned.
         logger.warn("Login rejected", { reason: error?.message ?? "no user returned" });
         return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
       }

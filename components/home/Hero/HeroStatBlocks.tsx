@@ -2,7 +2,7 @@ import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 /**
  * The four static/counter info blocks scattered around the Hero cover:
- * salary-database label (top left), companies indexed (top right),
+ * arena-platform label (top left), companies indexed (top right),
  * exclusive highlight (left middle), and verified engineers (right middle).
  */
 export function HeroStatBlocks() {

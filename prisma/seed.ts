@@ -10,11 +10,18 @@ const ROLES = [
   },
   {
     name: "USER",
-    description: "Standard registered user with access to review companies and submit salaries.",
+    description: "Standard registered developer: enters arenas, submits work, earns a rating.",
   },
   {
     name: "COMPANY",
-    description: "Company representative profile for managing company reviews and details.",
+    description: "Company representative: hosts and sponsors arenas, manages the company profile.",
+  },
+  {
+    // Gates /judge. NOT in SELF_ASSIGNABLE_ROLES (lib/auth/schema.ts) and must
+    // never be - a judge who can grant themselves the role defeats the point of
+    // open judging. Granted deliberately, the same way ADMIN is.
+    name: "JUDGE",
+    description: "Scores submissions against a published rubric. Granted manually, never self-assigned.",
   },
 ];
 
