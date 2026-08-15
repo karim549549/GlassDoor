@@ -248,11 +248,11 @@ export function InteractiveProofVisualizer({ cards }: { cards?: ArenaCardData[] 
       className="proof-section-container relative z-20 w-full min-h-screen py-16 md:py-20 px-6 md:px-12 bg-[#0E0E0D] text-[#F1EFE9] border-t border-current/15 transition-colors duration-500 overflow-hidden select-none flex flex-col justify-center"
     >
       {/* Universal Blueprint Grid Overlay */}
-      <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-0">
+      <div className="absolute inset-0 opacity-[0.20] pointer-events-none z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="proof-grid" width="36" height="36" patternUnits="userSpaceOnUse">
-              <path d="M 36 0 L 0 0 0 36" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              <path d="M 36 0 L 0 0 0 36" fill="none" stroke="currentColor" strokeWidth="0.75" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#proof-grid)" />
