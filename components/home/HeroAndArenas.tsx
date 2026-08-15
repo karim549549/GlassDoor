@@ -15,25 +15,119 @@ export function HeroAndArenas() {
 
   return (
     <div ref={containerRef} className="relative overflow-visible bg-background">
-      {/* Section 1: Magazine Editorial Hero Section */}
+      {/* SECTION 1: Magazine Editorial Hero Section */}
       <HeroSection />
 
-      {/* Section 2: Interactive 3-Card Docking Arenas Section */}
+      {/* SECTION 2: Pinned 3-Card Docking Arenas Section (Morphs to Dark Mode #0E0E0D) */}
       <ArenasSection ref={arenasRef} containerRef={containerRef} />
 
-      {/* Section 3: High-Impact Statement & Principles */}
+      {/* SECTION 3: The Credential & Rules Stage (.pink-section-container - Morphs back to Light Cream #F1EFE9) */}
+      <div className="pink-section-container h-auto py-16 md:h-screen md:min-h-screen bg-foreground text-background w-full border-t border-foreground/10 relative flex flex-col justify-center items-center md:py-12 z-10 transition-colors duration-300 overflow-visible">
+        {/* Editorial Blueprint Grid Backdrop Overlay */}
+        <div className="absolute inset-0 opacity-[0.14] pointer-events-none z-0">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="section3-grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="currentColor" strokeWidth="0.55" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#section3-grid)" />
+          </svg>
+        </div>
+
+        {/* Content Columns Wrapper */}
+        <div className="max-w-7xl mx-auto w-full flex flex-col items-center gap-8 relative z-10 pointer-events-none">
+          <div className="w-full flex flex-col md:flex-row items-center justify-between px-6 md:px-12 pointer-events-none">
+            {/* Left Column: Asymmetrical Editorial Arena Rules Box */}
+            <div className="w-full md:w-1/2 flex flex-col justify-center text-left pointer-events-auto pr-0 md:pr-4 max-w-xl">
+              {/* The 4-Floor Unified Brutalist Grid Box */}
+              <div className="w-full border-4 border-double border-current bg-card/5 flex flex-col h-auto md:h-[520px] shadow-[4px_4px_0px_0px_currentColor] relative">
+                {/* Floor 1: Identifier & Section Header */}
+                <div className="flex-1 flex flex-col justify-between p-5 border-b border-current/15">
+                  <span className="font-mono text-[0.45rem] text-orange uppercase tracking-[0.25em] font-bold block">
+                    [01 / IDENTIFIER]
+                  </span>
+                  <div className="font-display italic text-[clamp(1.5rem,2.2vw,2rem)] font-normal uppercase tracking-tight leading-none">
+                    ARENA RULES
+                  </div>
+                  <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                    Cairo sprint protocol · System specifications &amp; cryptographic integrity.
+                  </p>
+                </div>
+
+                {/* Floor 2: Registry Rules */}
+                <div className="flex-1 flex flex-col justify-between p-5 border-b border-current/15">
+                  <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
+                    [02 / REGISTRY]
+                  </span>
+                  <div className="font-mono text-[clamp(1.1rem,1.8vw,1.45rem)] font-bold uppercase tracking-tight leading-none">
+                    GITHUB VERIFICATION
+                  </div>
+                  <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                    Entering a rated arena requires a verified developer account.
+                  </p>
+                </div>
+
+                {/* Floor 3: Timeframe Rules */}
+                <div className="flex-1 flex flex-col justify-between p-5 border-b border-current/15">
+                  <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
+                    [03 / TIMEFRAME]
+                  </span>
+                  <div className="font-mono text-[clamp(1.1rem,1.8vw,1.45rem)] font-bold uppercase tracking-tight leading-none">
+                    6-HOUR CODE SPRINT
+                  </div>
+                  <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                    Solutions must be submitted before the countdown lobby ticks to zero.
+                  </p>
+                </div>
+
+                {/* Floor 4: Integrity Rules */}
+                <div className="flex-1 flex flex-col justify-between p-5">
+                  <span className="font-mono text-[0.45rem] text-muted-foreground uppercase tracking-[0.25em] font-bold block">
+                    [04 / INTEGRITY]
+                  </span>
+                  <div className="font-mono text-[clamp(1.1rem,1.8vw,1.45rem)] font-bold uppercase tracking-tight leading-none">
+                    OPEN-SOURCE PROOFS
+                  </div>
+                  <p className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                    All submissions produce a verifiable SHA-256 Proof Packet.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Column Divider Line */}
+            <div className="hidden md:block w-px h-[520px] bg-current/15 self-center mx-8" />
+
+            {/* Right Column Spacer: Provides layout alignment for the stacked cards & carousel controls */}
+            <div className="hidden md:block md:w-1/2 md:h-[350px] relative pointer-events-none" />
+          </div>
+
+          {/* Centered Billboard standings redirect button */}
+          <div className="w-full flex justify-center mt-6 pointer-events-auto">
+            <a
+              href="/billboard"
+              className="px-8 py-3.5 bg-orange text-card border border-orange font-mono text-[0.65rem] font-bold tracking-[0.25em] uppercase hover:bg-card hover:text-foreground hover:border-foreground transition-colors shadow-[4px_4px_0px_0px_currentColor] hover:shadow-[6px_6px_0px_0px_currentColor] active:translate-y-0.5 flex items-center gap-2"
+            >
+              View Standings Billboard <span className="font-sans font-normal text-xs">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* CHAPTER 4: High-Impact Statement & Principles (Dark Mode #070a0d) */}
       <StatementSection />
 
-      {/* Section 4: Three-Sided Platform Storytelling (Developers · Recruiters · Hosts) */}
+      {/* CHAPTER 5: Three-Sided Interactive Console (Obsidian #0a0e14) */}
       <ThreeSidedPerspective />
 
-      {/* Section 5: Interactive Proof Packet Cryptographic Anatomy Visualizer */}
+      {/* CHAPTER 6: Interactive Proof Packet Cryptographic Inspector (Light Cream #F1EFE9) */}
       <InteractiveProofVisualizer />
 
-      {/* Section 6: Glicko-2 Multi-Domain Mathematical Ledger */}
+      {/* CHAPTER 7: Glicko-2 Multi-Domain Mathematical Ledger (Cyber Dark #070a0d) */}
       <GlickoLedgerExplorer />
 
-      {/* Section 7: Conversion Terminal & Next Steps */}
+      {/* CHAPTER 8: Cybernetic Conversion Terminal (Obsidian #050708) */}
       <ConversionTerminal />
     </div>
   );

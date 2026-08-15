@@ -38,23 +38,23 @@ export function WebGLStage() {
     camera.position.z = 80;
 
     // Particle constellation geometry
-    const particleCount = 220;
+    const particleCount = 200;
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
     // Warm orange and cyber white/cyan accents
     const colorOrange = new THREE.Color("#ff6b00");
     const colorCyan = new THREE.Color("#38bdf8");
-    const colorWhite = new THREE.Color("#f2f5f9");
+    const colorDim = new THREE.Color("#8892b0");
 
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * 160;
-      positions[i3 + 1] = (Math.random() - 0.5) * 160;
-      positions[i3 + 2] = (Math.random() - 0.5) * 80;
+      positions[i3] = (Math.random() - 0.5) * 180;
+      positions[i3 + 1] = (Math.random() - 0.5) * 180;
+      positions[i3 + 2] = (Math.random() - 0.5) * 90;
 
       const choice = Math.random();
-      const col = choice > 0.85 ? colorOrange : choice > 0.65 ? colorCyan : colorWhite;
+      const col = choice > 0.85 ? colorOrange : choice > 0.7 ? colorCyan : colorDim;
       colors[i3] = col.r;
       colors[i3 + 1] = col.g;
       colors[i3 + 2] = col.b;
@@ -65,10 +65,10 @@ export function WebGLStage() {
     geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 2.2,
+      size: 2.0,
       vertexColors: true,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.35,
       blending: THREE.AdditiveBlending,
     });
 
@@ -100,14 +100,14 @@ export function WebGLStage() {
     let animationFrameId: number;
 
     const animate = () => {
-      targetX += (mouseX - targetX) * 0.04;
-      targetY += (mouseY - targetY) * 0.04;
+      targetX += (mouseX - targetX) * 0.03;
+      targetY += (mouseY - targetY) * 0.03;
 
-      particles.rotation.y += 0.0006;
-      particles.rotation.x += 0.0003;
+      particles.rotation.y += 0.0004;
+      particles.rotation.x += 0.0002;
 
-      camera.position.x = targetX * 12;
-      camera.position.y = targetY * 12;
+      camera.position.x = targetX * 10;
+      camera.position.y = targetY * 10;
       camera.lookAt(scene.position);
 
       renderer.render(scene, camera);
@@ -130,7 +130,7 @@ export function WebGLStage() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="fixed inset-0 pointer-events-none z-0 w-full h-full opacity-60"
+      className="fixed inset-0 pointer-events-none z-0 w-full h-full opacity-50"
     />
   );
 }
