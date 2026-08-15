@@ -25,29 +25,34 @@ export const revalidate = 300;
  * to self-fetch from at build time.
  */
 async function loadHeroCards(now: Date) {
-  const base = { page: 1, access: "public" as const, sortBy: "newest" as const, tab: "all" as const, search: "", now };
+  try {
+    const base = { page: 1, access: "public" as const, sortBy: "newest" as const, tab: "all" as const, search: "", now };
 
-  const open = await listArenas({ ...base, limit: 3, status: "open" });
-  const picked = [...open.arenas];
+    const open = await listArenas({ ...base, limit: 3, status: "open" });
+    const picked = [...open.arenas];
 
-  if (picked.length < 3) {
-    // The "open" and "active" filters overlap - a registration-open arena
-    // satisfies both - so the top-up has to exclude what is already on the
-    // deck, or the same arena docks in all three slots. Over-fetch and dedupe
-    // by id rather than trusting the counts to line up.
-    const seen = new Set(picked.map((a) => a.id));
-    const active = await listArenas({ ...base, limit: 6, status: "active" });
-    for (const a of active.arenas) {
-      if (picked.length >= 3) break;
-      if (seen.has(a.id)) continue;
-      seen.add(a.id);
-      picked.push(a);
+    if (picked.length < 3) {
+      // The "open" and "active" filters overlap - a registration-open arena
+      // satisfies both - so the top-up has to exclude what is already on the
+      // deck, or the same arena docks in all three slots. Over-fetch and dedupe
+      // by id rather than trusting the counts to line up.
+      const seen = new Set(picked.map((a) => a.id));
+      const active = await listArenas({ ...base, limit: 6, status: "active" });
+      for (const a of active.arenas) {
+        if (picked.length >= 3) break;
+        if (seen.has(a.id)) continue;
+        seen.add(a.id);
+        picked.push(a);
+      }
     }
-  }
 
-  // `total` here is the real count of public arenas taking entries - it feeds
-  // the hero's headline figure, which used to be a hardcoded "312".
-  return { cards: picked.map((a) => toArenaCardData(a, now)), openCount: open.total };
+    // `total` here is the real count of public arenas taking entries - it feeds
+    // the hero's headline figure, which used to be a hardcoded "312".
+    return { cards: picked.map((a) => toArenaCardData(a, now)), openCount: open.total };
+  } catch {
+    // If the database is unreachable or offline during CI prerender, fall back to placeholder cards
+    return { cards: [], openCount: 0 };
+  }
 }
 
 export default async function Home() {
