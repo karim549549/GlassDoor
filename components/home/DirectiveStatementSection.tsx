@@ -1,29 +1,15 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const WORDS = [
-  { text: "We", highlight: false },
-  { text: "turn", highlight: false },
-  { text: "competitive", highlight: false },
-  { text: "code", highlight: false },
-  { text: "sprints", highlight: false },
-  { text: "into", highlight: false },
-  { text: "unforgeable", highlight: true },
-  { text: "hiring", highlight: true },
-  { text: "credentials", highlight: true },
-  { text: ".", highlight: false },
-  { text: "Proving", highlight: false },
-  { text: "what", highlight: false },
-  { text: "developers", highlight: false },
-  { text: "can", highlight: false },
-  { text: "actually", highlight: false },
-  { text: "build.", highlight: false },
+const STATEMENT_PARTS = [
+  { text: "We turn competitive code sprints into ", highlight: false },
+  { text: "unforgeable hiring credentials", highlight: true },
+  { text: ". Proving what developers can actually build.", highlight: false },
 ];
 
 export function DirectiveStatementSection() {
@@ -36,30 +22,61 @@ export function DirectiveStatementSection() {
     if (!section || !textEl) return;
 
     const ctx = gsap.context(() => {
-      const chars = textEl.querySelectorAll(".scrub-char");
+      const letters = textEl.querySelectorAll(".reveal-letter");
+      if (!letters || letters.length === 0) return;
 
-      // Character-by-character kinetic scrub timeline
-      gsap.fromTo(
-        chars,
-        {
-          opacity: 0.15,
-          color: "rgba(241, 239, 233, 0.18)",
-          scale: 0.98,
-        },
-        {
-          opacity: 1,
-          color: "#F1EFE9",
-          scale: 1,
-          stagger: 0.02,
-          ease: "none",
+      const mm = gsap.matchMedia();
+
+      // Desktop: Pin the entire section and scrub letter by letter
+      mm.add("(min-width: 768px)", () => {
+        const tl = gsap.timeline({
           scrollTrigger: {
             trigger: section,
-            start: "top 70%",
-            end: "center 40%",
-            scrub: 0.5,
+            start: "top top",
+            end: "+=1400",
+            pin: true,
+            scrub: 0.8,
+            anticipatePin: 1,
           },
-        }
-      );
+        });
+
+        tl.fromTo(
+          letters,
+          {
+            opacity: 0.12,
+            y: 10,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.025,
+            ease: "power1.inOut",
+          }
+        );
+      });
+
+      // Mobile: Smooth scrub without full pin lock
+      mm.add("(max-width: 767px)", () => {
+        gsap.fromTo(
+          letters,
+          {
+            opacity: 0.15,
+            y: 6,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.015,
+            ease: "none",
+            scrollTrigger: {
+              trigger: section,
+              start: "top 75%",
+              end: "bottom 35%",
+              scrub: 0.5,
+            },
+          }
+        );
+      });
     }, sectionRef);
 
     return () => ctx.revert();
@@ -68,9 +85,9 @@ export function DirectiveStatementSection() {
   return (
     <section
       ref={sectionRef}
-      className="pink-section-container relative min-h-[90vh] md:min-h-screen bg-[#0E0E0D] text-[#F1EFE9] w-full border-t border-white/10 flex flex-col justify-center items-center py-24 md:py-36 px-6 md:px-12 z-20 transition-colors duration-300 overflow-hidden text-center"
+      className="pink-section-container relative min-h-screen bg-[#0E0E0D] text-[#F1EFE9] w-full border-t border-white/15 flex flex-col justify-center items-center py-20 px-6 md:px-12 z-20 overflow-hidden text-center select-none"
     >
-      {/* Background blueprint grid overlay */}
+      {/* Blueprint Grid Overlay */}
       <div className="absolute inset-0 opacity-[0.06] pointer-events-none z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -82,29 +99,33 @@ export function DirectiveStatementSection() {
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto space-y-12 flex flex-col items-center">
+      <div className="relative z-10 max-w-5xl mx-auto space-y-10 flex flex-col items-center">
         {/* Telemetry Header */}
-        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 border border-white/15 bg-white/5 font-mono text-[0.58rem] tracking-[0.25em] uppercase text-orange font-bold">
+        <div className="inline-flex items-center gap-3 px-4 py-1.5 border border-white/15 bg-white/5 font-mono text-[0.58rem] tracking-[0.25em] uppercase text-orange font-bold">
           <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
           <span>DEVS ARENA CORE DIRECTIVE // CAIRO PROTOCOL // 30.0444° N</span>
         </div>
 
-        {/* Large Centered Bold Typography with Character-by-Character Scrub */}
+        {/* Large Bold Italic Headline with Character-by-Character Pinned Scrub */}
         <h2
           ref={textRef}
-          className="font-display italic text-[clamp(2.2rem,5.5vw,4.8rem)] font-normal uppercase tracking-tight leading-[1.08] text-[#F1EFE9] text-balance select-none"
+          className="font-display italic text-[clamp(2.2rem,5.5vw,4.8rem)] font-normal uppercase tracking-tight leading-[1.08] text-[#F1EFE9] text-balance"
         >
-          {WORDS.map((word, wIdx) => (
+          {STATEMENT_PARTS.map((part, pIdx) => (
             <span
-              key={wIdx}
-              className={`inline-block mr-2.5 sm:mr-3.5 ${
-                word.highlight
-                  ? "text-orange underline decoration-orange/40 underline-offset-8"
-                  : "text-[#F1EFE9]"
-              }`}
+              key={pIdx}
+              className={
+                part.highlight
+                  ? "text-orange underline decoration-orange/40 underline-offset-8 inline"
+                  : "text-[#F1EFE9] inline"
+              }
             >
-              {word.text.split("").map((char, cIdx) => (
-                <span key={cIdx} className="scrub-char inline-block will-change-transform">
+              {part.text.split("").map((char, cIdx) => (
+                <span
+                  key={cIdx}
+                  className="reveal-letter inline-block opacity-[0.12] will-change-[opacity,transform]"
+                  style={{ whiteSpace: char === " " ? "pre" : "normal" }}
+                >
                   {char}
                 </span>
               ))}
@@ -112,15 +133,13 @@ export function DirectiveStatementSection() {
           ))}
         </h2>
 
-        {/* Standings Billboard Action CTA */}
-        <div className="pt-4">
-          <Link
-            href="/billboard"
-            className="px-8 py-3.5 bg-orange text-card border border-orange font-mono text-[0.65rem] font-bold tracking-[0.25em] uppercase hover:bg-card hover:text-foreground hover:border-foreground transition-all shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] active:translate-y-0.5 inline-flex items-center gap-2"
-          >
-            <span>View Standings Billboard</span>
-            <span className="font-sans font-normal text-xs">→</span>
-          </Link>
+        {/* Sub Telemetry Readout */}
+        <div className="flex flex-wrap items-center justify-center gap-6 font-mono text-[0.55rem] text-[#F1EFE9]/60 uppercase tracking-[0.2em] pt-4 border-t border-white/10">
+          <span>&gt; AUTOMATED CODE RUNNER VERIFICATION</span>
+          <span>&bull;</span>
+          <span>&gt; GLICKO-2 DOMAIN LEDGER</span>
+          <span>&bull;</span>
+          <span>&gt; SHA-256 PROOF PACKETS</span>
         </div>
       </div>
     </section>
