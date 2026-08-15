@@ -26,45 +26,62 @@ export function DirectiveSection() {
       const letters = textEl.querySelectorAll(".scrub-char");
       if (!letters || letters.length === 0) return;
 
-      // 1. Fox Neon Background Scroll Fade-in & Scale
-      gsap.fromTo(
-        ".fox-neon-art",
-        { opacity: 0, scale: 0.88, filter: "drop-shadow(0 0 10px rgba(255,107,0,0.1))" },
-        {
-          opacity: 0.9,
-          scale: 1,
-          filter: "drop-shadow(0 0 45px rgba(255,107,0,0.65))",
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "center center",
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
-        }
-      );
+      const masterTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      });
 
-      // 2. Letter-by-letter scrub reveal across the sticky section
-      gsap.fromTo(
+      // 1. Text reveal begins immediately: letters start TOTALLY HIDDEN (opacity: 0) and scrub in
+      masterTimeline.fromTo(
         letters,
         {
-          opacity: 0.12,
-          y: 6,
+          opacity: 0,
+          y: 12,
         },
         {
           opacity: 1,
           y: 0,
           stagger: 0.02,
           ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 0.8,
-            invalidateOnRefresh: true,
-          },
-        }
+          duration: 1,
+        },
+        0
+      );
+
+      // 2. Delayed Fox Image & Embers: starts ONLY after at least 50% of the text has appeared
+      masterTimeline.fromTo(
+        ".fox-neon-art",
+        {
+          opacity: 0,
+          scale: 0.9,
+          filter: "drop-shadow(0 0 10px rgba(255,107,0,0))",
+        },
+        {
+          opacity: 0.88,
+          scale: 1,
+          filter: "drop-shadow(0 0 45px rgba(255,107,0,0.6))",
+          ease: "power2.out",
+          duration: 0.5,
+        },
+        0.5 // Starts at 50% scroll progress
+      );
+
+      masterTimeline.fromTo(
+        ".fox-embers-canvas",
+        {
+          opacity: 0,
+        },
+        {
+          opacity: 1,
+          ease: "power1.out",
+          duration: 0.4,
+        },
+        0.55
       );
     }, sectionRef);
 
@@ -89,7 +106,7 @@ export function DirectiveSection() {
           </svg>
         </div>
 
-        {/* Nine-Tailed Fox Neon Background Layer */}
+        {/* Nine-Tailed Fox Neon & Floating Embers Background (Appears after 50% text reveal) */}
         <FoxBackground sectionRef={sectionRef} />
 
         <div className="relative z-10 max-w-5xl mx-auto space-y-10 flex flex-col items-center">
@@ -99,10 +116,10 @@ export function DirectiveSection() {
             <span>DEVS ARENA CORE DIRECTIVE // CAIRO PROTOCOL // 30.0444° N</span>
           </div>
 
-          {/* Large Bold Italic Headline with Original Font Size & Character-by-Character Scrub */}
+          {/* Original Typography & Styling: Letters start totally hidden and reveal via scroll */}
           <h2
             ref={textRef}
-            className="font-display italic text-[clamp(2.2rem,5.5vw,4.8rem)] font-normal uppercase tracking-tight leading-[1.08] text-[#F1EFE9] text-balance"
+            className="font-display italic text-[clamp(2.2rem,5.5vw,4.8rem)] font-normal uppercase tracking-tight leading-[1.08] text-[#F1EFE9] text-balance select-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]"
           >
             {STATEMENT_PARTS.map((part, pIdx) => (
               <span
@@ -116,7 +133,7 @@ export function DirectiveSection() {
                 {part.text.split("").map((char, cIdx) => (
                   <span
                     key={cIdx}
-                    className="scrub-char inline-block opacity-[0.12] will-change-[opacity,transform]"
+                    className="scrub-char inline-block opacity-0 will-change-[opacity,transform]"
                     style={{ whiteSpace: char === " " ? "pre" : "normal" }}
                   >
                     {char}

@@ -21,7 +21,7 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
     let destroyed = false;
 
     // Ambient embers drifting around the glowing fox tails
-    const emberCount = 65;
+    const emberCount = 55;
     const embers: {
       x: number;
       y: number;
@@ -39,10 +39,10 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
       embers.push({
         x: (Math.random() - 0.5) * Math.min(width * 0.85, 900),
         y: (Math.random() - 0.5) * Math.min(height * 0.85, 650),
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: -0.3 - Math.random() * 0.6,
-        size: 0.8 + Math.random() * 1.6,
-        alpha: 0.2 + Math.random() * 0.7,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: -0.25 - Math.random() * 0.5,
+        size: 0.8 + Math.random() * 1.5,
+        alpha: 0.2 + Math.random() * 0.6,
         seed: Math.random() * 100,
       });
     }
@@ -84,7 +84,7 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
         const currentAlpha = e.alpha * flicker;
 
         // Outer glow
-        ctx.globalAlpha = currentAlpha * 0.3;
+        ctx.globalAlpha = currentAlpha * 0.25;
         ctx.fillStyle = "#ff6b00";
         ctx.beginPath();
         ctx.arc(e.x, e.y, e.size * 2.5, 0, Math.PI * 2);
@@ -113,7 +113,7 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
 
   return (
     <div className="absolute inset-0 pointer-events-none z-1 flex items-center justify-center overflow-hidden">
-      {/* High-Resolution Glowing Neon Nine-Tailed Fox Artwork Layer (Fade-In via ScrollTrigger) */}
+      {/* High-Resolution Glowing Neon Nine-Tailed Fox Artwork Layer (Starts at opacity: 0, fades in after 50% text reveal) */}
       <div className="fox-neon-art relative w-[min(960px,94vw)] h-[min(680px,84vh)] pointer-events-none select-none opacity-0 will-change-[opacity,transform,filter]">
         <Image
           src="/artwork/devsarena-fox-background.png"
@@ -128,7 +128,7 @@ export function FoxBackground({ sectionRef }: FoxBackgroundProps) {
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        className="absolute inset-0 w-full h-full pointer-events-none mix-blend-screen"
+        className="fox-embers-canvas absolute inset-0 w-full h-full pointer-events-none mix-blend-screen opacity-0 will-change-[opacity]"
       />
     </div>
   );
