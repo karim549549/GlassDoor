@@ -1,25 +1,5 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, DM_Sans, JetBrains_Mono, Geist } from "next/font/google";
 import "./globals.css";
-
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-});
-
-const dmSans = DM_Sans({
-  variable: "--font-body",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -34,9 +14,6 @@ import { cn } from "@/lib/utils";
 import { Nav } from "@/components/home/Nav";
 import { LayoutSpacer } from "@/components/providers/LayoutSpacer";
 import { ToastProvider } from "@/components/providers/ToastProvider";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
 
 /**
  * Deliberately NOT async and deliberately does not read the session.
@@ -57,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", instrumentSerif.variable, dmSans.variable, jetbrainsMono.variable, "font-sans", geist.variable)}
+      className={cn("h-full", "antialiased", "font-sans")}
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
@@ -70,4 +47,3 @@ export default function RootLayout({
     </html>
   );
 }
-

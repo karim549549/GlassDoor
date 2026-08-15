@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -15,15 +16,12 @@ html {
 }
 
 :root {
+  --font-display: "Instrument Serif", serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --font-size: 16px;
   --background: #F1EFE9;
   --foreground: #0E0E0D;
-  /* Reconciled from two near-identical off-whites that had drifted apart:
-     #FAFAF8 (used by card/popover/accent-foreground/destructive-foreground)
-     and #FAF8F5 (hardcoded in components, 86 uses). Settled on #FAF8F5 - the
-     value the components actually render - so the token migration is a no-op
-     on screen. The gap was ~2/255 per channel, below the perceptual
-     threshold and not worth carrying two names for. */
   --card: #FAF8F5;
   --card-foreground: #0E0E0D;
   --popover: #FAF8F5;
