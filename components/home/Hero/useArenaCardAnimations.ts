@@ -188,11 +188,11 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
         // Slide the carousel controls container down to Section 3 in sync with cards
         pinkTimeline.to(".arena-carousel-controls", { y: "100vh", x: 420, ease: "power1.inOut" }, 0);
 
-        // Morph background from dark mode (#0E0E0D) back to light cream (#F1EFE9)
+        // Maintain unified seamless dark mode across Sections 2 and 3 (#0E0E0D)
         pinkTimeline.to(".pink-section-container", {
-          backgroundColor: "#F1EFE9",
-          color: "#0E0E0D",
-          borderColor: "rgba(14, 14, 13, 0.15)",
+          backgroundColor: "#0E0E0D",
+          color: "#F1EFE9",
+          borderColor: "rgba(241, 239, 233, 0.15)",
           ease: "none"
         }, 0);
       });

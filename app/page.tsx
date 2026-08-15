@@ -2,7 +2,6 @@ import { Billboard } from "@/components/home/Billboard";
 import { HeroAndArenas } from "@/components/home/HeroAndArenas";
 import { Footer } from "@/components/home/Footer";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { WebGLStage } from "@/components/home/WebGLStage";
 import { Suspense } from "react";
 
 export const revalidate = 3600;
@@ -10,11 +9,8 @@ export const revalidate = 3600;
 export default async function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden">
-      {/* 3D WebGL Particle Constellation Layer */}
-      <WebGLStage />
-
       {/* Editorial Background Blueprint Grid */}
-      <div className="absolute inset-0 opacity-[0.085] pointer-events-none z-0">
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="landing-grid" width="40" height="40" patternUnits="userSpaceOnUse">
