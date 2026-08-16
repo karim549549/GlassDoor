@@ -3,7 +3,7 @@ import { HeroAndArenas } from "@/components/home/HeroAndArenas";
 import { Footer } from "@/components/home/Footer";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Suspense } from "react";
-import { listArenas } from "@/lib/arena/service";
+import { listArenas, getBoardSummary } from "@/lib/arena/service";
 import { toArenaCardData } from "@/components/home/Hero/arena-cards-data";
 
 /**
@@ -59,7 +59,10 @@ export default async function Home() {
   // Resolved once and threaded into every status derivation below, so an arena
   // sitting on a phase boundary cannot derive two different states.
   const now = new Date();
-  const { cards, openCount } = await loadHeroCards(now);
+  const [{ cards, openCount }, summary] = await Promise.all([
+    loadHeroCards(now),
+    getBoardSummary(now).catch(() => null),
+  ]);
 
   return (
     // `overflow-x-clip`, not `overflow-x-hidden`. `hidden` makes this element a
@@ -82,7 +85,7 @@ export default async function Home() {
 
       <div className="relative z-10 flex flex-col min-h-screen">
         <Billboard />
-        <HeroAndArenas cards={cards} openCount={openCount} />
+        <HeroAndArenas cards={cards} openCount={openCount} summary={summary} />
         <Footer />
       </div>
 

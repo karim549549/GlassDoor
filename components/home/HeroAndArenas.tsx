@@ -9,13 +9,16 @@ import { ForCompanies } from "./ForCompanies";
 import { GlickoLedgerExplorer } from "./GlickoLedgerExplorer";
 import { ConversionTerminal } from "./ConversionTerminal";
 import type { ArenaCardData } from "./Hero/arena-cards-data";
+import type { BoardSummary } from "@/lib/arena/service";
 
 export function HeroAndArenas({
   cards,
   openCount = 0,
+  summary,
 }: {
   cards?: ArenaCardData[];
   openCount?: number;
+  summary?: BoardSummary | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const arenasRef = useRef<HTMLDivElement>(null);
@@ -26,7 +29,7 @@ export function HeroAndArenas({
       <HeroSection openCount={openCount} />
 
       {/* SECTION 2: Pinned 3-Card Docking Arenas Section (Dark Mode #0E0E0D) */}
-      <ArenasSection ref={arenasRef} containerRef={containerRef} cards={cards} />
+      <ArenasSection ref={arenasRef} containerRef={containerRef} cards={cards} summary={summary} />
 
       {/* SECTION 3: Pinned Directive Statement with Character-by-Character Scrub (Dark Mode #0E0E0D) */}
       <DirectiveSection />

@@ -305,3 +305,56 @@ export async function extractAndSuggestTags(title: string, description: string) 
     textContent.includes(tag.name.toLowerCase()) || textContent.includes(tag.slug.toLowerCase())
   );
 }
+
+/**
+ * Aggregate counts for the board summary on the landing page.
+ *
+ * Section 2 previously showed three hardcoded capability tags - one of which
+ * ("XP RANKINGS SYSTEM") described a mechanic this platform does not have; the
+ * rating is Glicko-2, not XP. These are counted from the same rows the board
+ * itself lists, so the strip cannot drift from what a visitor sees when they
+ * click through.
+ *
+ * Deliberately narrow. Prize pools, rating domains, formats and tags were all
+ * considered and all rejected: no arena currently sets a prize, every arena
+ * shares one domain and one format, and no published arena has a tag attached,
+ * so each would render as a zero or a meaningless "1". A statistic that always
+ * reads zero is worse than no statistic.
+ */
+export interface BoardSummary {
+  /** Public, published, not deleted. */
+  total: number;
+  openNow: number;
+  teamCount: number;
+  soloCount: number;
+  nextDeadline: Date | null;
+}
+
+export async function getBoardSummary(now: Date = new Date()): Promise<BoardSummary> {
+  const visible: Prisma.ArenaWhereInput = {
+    isDeleted: false,
+    isPrivate: false,
+    publishedAt: { not: null },
+    canceledAt: null,
+  };
+
+  const openWhere: Prisma.ArenaWhereInput = {
+    ...visible,
+    registrationStart: { lte: now },
+    registrationEnd: { gt: now },
+  };
+
+  const [total, openNow, teamCount, soloCount, next] = await Promise.all([
+    prisma.arena.count({ where: visible }),
+    prisma.arena.count({ where: openWhere }),
+    prisma.arena.count({ where: { ...visible, isTeam: true } }),
+    prisma.arena.count({ where: { ...visible, isTeam: false } }),
+    prisma.arena.findFirst({
+      where: { ...visible, registrationEnd: { gt: now } },
+      orderBy: { registrationEnd: "asc" },
+      select: { registrationEnd: true },
+    }),
+  ]);
+
+  return { total, openNow, teamCount, soloCount, nextDeadline: next?.registrationEnd ?? null };
+}

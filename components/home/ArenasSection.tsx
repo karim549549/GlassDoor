@@ -2,14 +2,16 @@
 
 import React, { forwardRef } from "react";
 import Link from "next/link";
-import { Shield, Users, Trophy } from "lucide-react";
 import { HeroArenaCard } from "./Hero/HeroArenaCard";
 import { ARENA_CARDS, type ArenaCardData } from "./Hero/arena-cards-data";
+import type { BoardSummary } from "@/lib/arena/service";
 
 interface ArenasSectionProps extends React.ComponentProps<"section"> {
   containerRef?: React.RefObject<HTMLDivElement | null>;
   /** Real arenas from the database, in the same order as the docking slots. */
   cards?: ArenaCardData[];
+  /** Live counts for the board summary strip. */
+  summary?: BoardSummary | null;
 }
 
 /**
@@ -39,7 +41,7 @@ const DOCK_SLOTS = [
 ];
 
 export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
-  ({ containerRef, cards, ...props }, ref) => {
+  ({ containerRef, cards, summary, ...props }, ref) => {
     const deck = (cards && cards.length > 0 ? cards : ARENA_CARDS).slice(0, 3);
     const docked = deck.length === 3 ? deck : [...deck, ...ARENA_CARDS.slice(deck.length)].slice(0, 3);
 
@@ -68,18 +70,50 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
             </p>
           </div>
 
-          {/* Technical Specs Tags list */}
-          <div className="flex flex-wrap gap-3 font-mono text-[0.5rem] uppercase tracking-wider text-muted-foreground pt-2">
-            <span className="flex items-center gap-1.5 border border-border/40 px-2.5 py-1">
-              <Shield className="h-3.5 w-3.5 text-orange" /> [VERIFIED GITHUB]
-            </span>
-            <span className="flex items-center gap-1.5 border border-border/40 px-2.5 py-1">
-              <Users className="h-3.5 w-3.5" /> [OPEN SEATS IN LOBBIES]
-            </span>
-            <span className="flex items-center gap-1.5 border border-border/40 px-2.5 py-1">
-              <Trophy className="h-3.5 w-3.5" /> [XP RANKINGS SYSTEM]
-            </span>
-          </div>
+          {/* Live board summary.
+              Was three hardcoded capability tags, one of which described a
+              mechanic that does not exist here - the rating is Glicko-2, not
+              XP. These are counted from the same rows the board below lists, so
+              the numbers cannot drift from what a visitor finds on click. */}
+          <dl className="flex flex-wrap gap-x-8 gap-y-4 pt-2">
+            <div>
+              <dt className="font-mono text-[0.45rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                On the board
+              </dt>
+              <dd className="font-mono text-[1.4rem] leading-none tabular-nums mt-1.5">
+                {summary?.total ?? "--"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[0.45rem] font-bold uppercase tracking-[0.2em] text-orange">
+                Taking entries
+              </dt>
+              <dd className="font-mono text-[1.4rem] leading-none tabular-nums text-orange mt-1.5">
+                {summary?.openNow ?? "--"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[0.45rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                Team / solo
+              </dt>
+              <dd className="font-mono text-[1.4rem] leading-none tabular-nums mt-1.5">
+                {summary ? `${summary.teamCount}/${summary.soloCount}` : "--"}
+              </dd>
+            </div>
+            {summary?.nextDeadline && (
+              <div>
+                <dt className="font-mono text-[0.45rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Next entry closes
+                </dt>
+                <dd className="font-mono text-[0.72rem] uppercase tracking-wider mt-2.5">
+                  {new Date(summary.nextDeadline).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </dd>
+              </div>
+            )}
+          </dl>
         </div>
 
         {/* Dynamic Center landing space for fanned cards */}
