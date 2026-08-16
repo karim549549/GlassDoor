@@ -4,6 +4,50 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# What this product actually is
+
+**Devs Arena is a competitive coding show first, and a hiring platform second —
+in that order, and the order is load-bearing.**
+
+Read this before writing any user-facing copy. The PRD and most of this repo's
+history are written around proof packets, Glicko ratings and verifiable hiring
+credentials, because that is the engineering that was hard and therefore got
+documented. That weighting has repeatedly misled agents — including in the
+session that added this section — into putting the year-two revenue pitch on
+the year-one front door.
+
+**Who actually shows up today:** developers who want a fun, competitive Saturday
+— the Codeforces / Kaggle / Advent of Code audience — plus viewers of the
+YouTube show. They are not job hunting. Prize money, a rating to climb, teams,
+and the show are why they enter.
+
+**Why leading with the credential is self-defeating.** A hiring credential is
+worth nothing without a critical mass of competitors, and telling a casual
+entrant that everything they do becomes a permanent public record judged by
+named judges that recruiters will read is a job interview with an audience. It
+suppresses exactly the participation the credential depends on. Game first,
+density second, marketplace third — the order every comparable platform
+followed.
+
+**The judging is the show's format, not a credential feature.** Human judges
+with mandatory written reasoning were built for scoring integrity, but
+auto-judged competition (Codeforces, LeetCode) is dull to watch and a green
+checkmark is not television. Judges arguing about why one submission beat
+another is watchable, and it is the thing a pure-algorithms site structurally
+cannot copy.
+
+## What this means when you write copy or build a surface
+
+- Lead with prize money, rating, teams, the show, and rivalry. Not employability.
+- The proof packet is a **souvenir the entrant may keep**, not the reason to
+  enter. Mention it once, framed as theirs.
+- Employer surfaces (`/companies`, `/recruiter`, packets-as-credential framing)
+  are **correct work for a later phase**. Keep them, keep them working, keep
+  them out of the primary navigation and off the hero.
+- Never describe the platform to a developer as a hiring or assessment tool.
+
+Full reasoning and phasing: `docs/PRODUCT_REQUIREMENTS_DOCUMENT.md` §1.2.
+
 # Orient before you explore
 
 **Read `.agents/reference/PROJECT_MAP.md` first.** It is generated from the repo

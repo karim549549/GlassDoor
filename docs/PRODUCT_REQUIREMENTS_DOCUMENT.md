@@ -1,18 +1,86 @@
 # 📘 Master Product Requirements Document (PRD) & Technical Blueprint
 **Project**: Devs Arena Platform  
-**Document Version**: 9.0 (Egypt-Centric Geolocation & Production Blueprint)  
+**Document Version**: 10.0 (Positioning Correction — Show First, Marketplace Later)  
 **Classification**: High-Priority Product & Architecture Specification  
 **Lead Authors**: Senior Business Developer & Principal Systems Architect  
 **Status**: APPROVED FOR IMPLEMENTATION  
+
+> **v10.0 changes positioning, not architecture.** No schema, endpoint or enum in sections 2–11 is altered. What changed is what the platform is *sold as*, and to whom, in which order — see **§1.2** and **§1.3**. Versions up to 9.0 described a skill-based hiring platform; the product that exists and has an audience is a competitive coding show, and the hiring machinery is its future revenue rather than its current pitch. Every implementer who read 9.0 built employer-facing copy for a developer-facing audience, which is the drift §1.2 exists to stop.
 
 ---
 
 ## 1. Document Overview & Strategic Mission
 
 ### 1.1 Executive Summary & Target Market Focus (Egypt)
-**Devs Arena** is an engineering-first competition and skill-based hiring platform built specifically for the **Egyptian tech ecosystem**. 
+**Devs Arena** is a **competitive coding show** for the **Egyptian tech ecosystem** — timed team arenas with real prize money, judged live by named engineers who explain their verdicts, with the results published as an ongoing YouTube series.
 
-Following the **Codeforces/Kaggle philosophy**, Devs Arena replaces unverified CV claims with **verifiable, time-boxed coding execution ("Build, Not Claim")** across Egyptian software engineers, startups, and tech hubs.
+Following the **Codeforces/Kaggle philosophy**, it runs on **time-boxed coding execution ("Build, Not Claim")**. Every judged result also produces a durable, verifiable record of what a developer built — which is the foundation of the platform's future revenue, but is **not** how the platform is sold to the people who enter it.
+
+---
+
+### 1.2 Positioning & Phasing — READ BEFORE WRITING PRODUCT COPY
+
+> **This section overrides the emphasis of the rest of this document.** Sections 2–11 specify the credential, rating and employer machinery in depth because that engineering is intricate and needed writing down. That depth is not a statement of priority, and it has repeatedly misled implementers into leading with a hiring pitch on surfaces aimed at competitors.
+
+#### The audience, today
+
+The people arriving now are developers who want a fun, competitive Saturday — the **Codeforces / Kaggle / Advent of Code** audience — and viewers of the show. **They are not job hunting.** They enter for prize money, a rating to climb, a team to enter with, and the chance to be on the show.
+
+#### Why the ordering is load-bearing
+
+A hiring credential has no value without a critical mass of competitors producing judged work. Telling a casual entrant that everything they do becomes a permanent public record, judged by named judges, that recruiters will read, describes a job interview with an audience — and it suppresses precisely the participation the credential depends on.
+
+The sequence is therefore **game → density → marketplace**, which is the order Codeforces, Kaggle, TopCoder and Advent of Code all followed. None of them opened with an employer pitch; companies arrived after the community existed.
+
+#### The show is the marketing engine
+
+The YouTube series is currently the platform's primary acquisition channel and its main differentiator against pure-algorithm sites. It is also the reason the judging model is shaped the way it is:
+
+**Human judges with mandatory written reasoning were specified for scoring integrity, but their real product value is as a broadcast format.** Auto-judged competition is dull to watch — a green checkmark is not television. Judges arguing about why one submission beat another is watchable, and it is the one thing an auto-graded competitor cannot replicate.
+
+Treat the show as a first-class product surface, not marketing collateral.
+
+#### Phase map
+
+| Phase | Sold as | Primary surfaces | Employer machinery |
+|---|---|---|---|
+| **1 — now** | A competitive coding show with prize money | Arenas, leaderboard, teams, the show | Built and working, kept out of primary nav and off the hero |
+| **2 — at density** | Same, plus "your record is worth something" | Adds prominent proof packets | Employer surfaces surfaced, feature-flagged on |
+| **3 — revenue** | Hiring pipeline as a paid product | `/companies`, `/recruiter` promoted | Monetised |
+
+**Nothing in phase 2 or 3 is deleted or deferred in code.** It is built, tested and reachable — it simply must not dominate what a first-time visitor reads.
+
+#### Copy rules that follow from this
+
+- Lead with prize money, rating, teams, rivalry and the show. **Never with employability.**
+- The proof packet is a **souvenir the entrant may keep**, not the reason to enter. Mention once, framed as theirs.
+- Never describe the platform to a developer as a hiring, screening or assessment tool.
+- Employer-facing language belongs on employer-facing pages, and nowhere else.
+
+---
+
+### 1.3 The Show — Product Surface, Not Collateral
+
+The YouTube series is **live, with published episodes**, and is the platform's primary acquisition channel. As of this revision it appears **nowhere in the application** — the only reference to YouTube anywhere in the repo is a non-goal stating that video transcoding is out of scope. That is the single largest gap between what the business is and what the product shows.
+
+> **OPEN — required before the show surfaces can be built:** the channel URL / handle, and whether episodes map one-to-one onto `Arena` records. Deliberately left blank rather than guessed; do not invent a channel link.
+
+#### Why it belongs in the product, not just on social
+
+An arena that has ended is currently a dead record. With the show attached, a finished arena becomes **an episode with a permanent page**: the brief, the entries, the judges' reasoning, and the video of the verdict. That converts the platform's exhaust into its content library, and gives every past arena a durable reason to be visited and linked.
+
+It is also the platform's answer to the cold-start problem. A brand-new arena board with no history is unconvincing; a back catalogue of episodes is evidence the thing is real, and it is evidence that works on developers, viewers and employers simultaneously — without making any claim about scale.
+
+#### Surfaces implied (not yet built)
+
+| Surface | Purpose |
+|---|---|
+| Episode link on a completed arena | Ties the record to the footage of its verdict |
+| A watchable index of past arenas | The back catalogue; the cold-start answer |
+| The show on the homepage | Currently the missing hook — what makes this not Codeforces |
+| Judge verdicts as readable content | Already stored, already the best writing on the platform, currently invisible |
+
+The last row matters most and costs least: `JudgeVerdict.feedbackText` and every `JudgeScore.justification` are already captured, already mandatory, and are the most interesting prose the platform produces. They are currently visible only inside a proof packet, framed as evidence for recruiters, when they are also simply **good reading** — the written half of the show.
 
 ---
 
