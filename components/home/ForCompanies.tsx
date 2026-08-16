@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Reveal } from "./Reveal";
@@ -87,6 +87,53 @@ const PAPER_FG = "#0E0E0D";
 
 export function ForCompanies() {
   const sectionRef = useRef<HTMLElement>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
+  const [floating, setFloating] = useState(false);
+
+  /**
+   * The floating CTA is shown only while the section is on screen AND its
+   * docked twin is not yet visible, so the two are never both present. That is
+   * the whole handoff: the companion disappears exactly as the real button
+   * arrives, which reads as docking without any shared-element position maths
+   * that could desync.
+   *
+   * IntersectionObserver rather than a scroll listener or a rAF loop: it fires
+   * off the main thread, costs nothing while idle, and does not depend on the
+   * animation frame clock.
+   */
+  useEffect(() => {
+    const section = sectionRef.current;
+    const dock = dockRef.current;
+    if (!section || !dock) return;
+
+    let sectionVisible = false;
+    let dockVisible = false;
+    const sync = () => setFloating(sectionVisible && !dockVisible);
+
+    const sectionIo = new IntersectionObserver(
+      ([e]) => {
+        // Requires a real amount of the section on screen, so the companion
+        // does not flash as the reader passes the boundary.
+        sectionVisible = e.isIntersecting;
+        sync();
+      },
+      { threshold: 0.15 }
+    );
+    const dockIo = new IntersectionObserver(
+      ([e]) => {
+        dockVisible = e.isIntersecting;
+        sync();
+      },
+      { rootMargin: "0px 0px -15% 0px" }
+    );
+
+    sectionIo.observe(section);
+    dockIo.observe(dock);
+    return () => {
+      sectionIo.disconnect();
+      dockIo.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -99,14 +146,21 @@ export function ForCompanies() {
         {
           backgroundColor: PAPER_BG,
           color: PAPER_FG,
-          ease: "none",
+          duration: 0.65,
+          ease: "power2.inOut",
           scrollTrigger: {
             trigger: section,
-            // Carries the dark in from section 4 and has fully warmed by the
-            // time the section sits in the middle of the viewport.
-            start: "top bottom",
-            end: "center center",
-            scrub: 1,
+            // A trip point, not a dial. Scrubbing tied the morph to scroll
+            // position, so a reader working through a section this tall spent
+            // most of it mid-transition - grey text on a greying ground, at
+            // exactly the point the page starts addressing the people who pay.
+            // The colour change is a transition between two readable states;
+            // the states are the point, not the travel between them.
+            start: "top 78%",
+            // Fires early - the section runs well past 100vh, so waiting for
+            // its centre would put the switch far below the first screenful
+            // the reader is already reading.
+            toggleActions: "play none none reverse",
             invalidateOnRefresh: true,
           },
         }
@@ -209,28 +263,74 @@ export function ForCompanies() {
           ))}
         </div>
 
-        <Reveal className="flex flex-wrap items-center gap-3 mt-12">
-          {/* Orange reads on both grounds, so the primary action survives the
-              morph without needing its own animation. */}
+        {/* One primary action, two demoted to links.
+            There were three buttons of near-equal weight here. Hick's law -
+            decision time rises with the number of options - and the general
+            one-primary-action-per-view principle both say that dilutes: a
+            recruiter reaching this point had to decide what KIND of visitor
+            they were before they could act on anything. */}
+        <Reveal>
+          <div ref={dockRef} className="mt-14">
+            <Link
+              href="/companies"
+              className="group flex w-full items-center justify-between gap-6 border-2 border-orange bg-orange px-8 py-7 text-[#0E0E0D] shadow-[6px_6px_0_0_currentColor] hover:shadow-[10px_10px_0_0_currentColor] hover:-translate-y-0.5 active:translate-y-0 transition-all focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+            >
+              <span>
+                <span className="block font-display italic text-[clamp(1.4rem,2.6vw,2.1rem)] leading-none uppercase">
+                  See how hiring works
+                </span>
+                <span className="block font-mono text-[0.55rem] uppercase tracking-[0.2em] opacity-70 mt-2">
+                  What a proof packet contains, and what it does not
+                </span>
+              </span>
+              <span className="font-mono text-[1.6rem] leading-none shrink-0 transition-transform group-hover:translate-x-1">
+                &rarr;
+              </span>
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-6 mt-6">
+            <Link
+              href="/arena/create"
+              className="font-mono text-[0.6rem] uppercase tracking-[0.18em] opacity-70 hover:opacity-100 hover:text-orange transition-all border-b border-current/30 pb-0.5"
+            >
+              Or host an arena yourself
+            </Link>
+            <Link
+              href="/support"
+              className="font-mono text-[0.6rem] uppercase tracking-[0.18em] opacity-60 hover:opacity-100 hover:text-orange transition-all"
+            >
+              Talk to us first &rarr;
+            </Link>
+          </div>
+        </Reveal>
+
+        {/* Sticky companion.
+            Rides the section, then hands off to the docked button above when it
+            scrolls into view - which is what stops it becoming furniture. A
+            persistent element that never changes state is what banner blindness
+            trains people to ignore; one that arrives, tracks, and visibly gives
+            way to its full-size self does not.
+            Scoped to this section on purpose: a page-wide fixed bar occludes
+            content everywhere else and is the exact pattern readers have learnt
+            to skip. */}
+        <div
+          aria-hidden={!floating}
+          className={`pointer-events-none fixed inset-x-0 bottom-6 z-40 hidden justify-center px-6 md:flex transition-all duration-500 ${
+            floating ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+          }`}
+        >
           <Link
             href="/companies"
-            className="bg-orange text-[#0E0E0D] border border-orange px-7 py-3.5 font-mono text-[0.65rem] font-bold uppercase tracking-[0.2em] shadow-[3px_3px_0_0_currentColor] hover:shadow-[5px_5px_0_0_currentColor] hover:-translate-y-px active:translate-y-0 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            tabIndex={floating ? 0 : -1}
+            className="pointer-events-auto flex items-center gap-4 border-2 border-orange bg-orange px-6 py-3.5 text-[#0E0E0D] shadow-[4px_4px_0_0_rgba(14,14,13,0.5)] hover:shadow-[6px_6px_0_0_rgba(14,14,13,0.5)] transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
           >
-            Hire from the board
+            <span className="font-mono text-[0.62rem] font-bold uppercase tracking-[0.2em]">
+              See how hiring works
+            </span>
+            <span className="font-mono text-[0.9rem] leading-none">&rarr;</span>
           </Link>
-          <Link
-            href="/arena/create"
-            className="border border-current px-7 py-3.5 font-mono text-[0.65rem] font-bold uppercase tracking-[0.2em] hover:bg-orange hover:border-orange hover:text-[#0E0E0D] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            Host an arena
-          </Link>
-          <Link
-            href="/support"
-            className="font-mono text-[0.6rem] uppercase tracking-[0.18em] opacity-60 hover:opacity-100 hover:text-orange transition-all"
-          >
-            Talk to us first &rarr;
-          </Link>
-        </Reveal>
+        </div>
       </div>
     </section>
   );
