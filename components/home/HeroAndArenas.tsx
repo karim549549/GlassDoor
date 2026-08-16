@@ -32,7 +32,7 @@ export function HeroAndArenas({
       <DirectiveSection />
 
       {/* CHAPTER 4: Three-Sided Interactive Console (Light Cream #F1EFE9) */}
-      <ThreeSidedPerspective />
+      <ThreeSidedPerspective cards={cards} />
 
       {/* CHAPTER 5: Interactive Proof Packet Cryptographic Inspector & Reunited Arena Cards Carousel */}
       <InteractiveProofVisualizer cards={cards} />

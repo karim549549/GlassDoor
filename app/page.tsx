@@ -28,10 +28,10 @@ async function loadHeroCards(now: Date) {
   try {
     const base = { page: 1, access: "public" as const, sortBy: "newest" as const, tab: "all" as const, search: "", now };
 
-    const open = await listArenas({ ...base, limit: 3, status: "open" });
+    const open = await listArenas({ ...base, limit: 6, status: "open" });
     const picked = [...open.arenas];
 
-    if (picked.length < 3) {
+    if (picked.length < 6) {
       // The "open" and "active" filters overlap - a registration-open arena
       // satisfies both - so the top-up has to exclude what is already on the
       // deck, or the same arena docks in all three slots. Over-fetch and dedupe
@@ -39,7 +39,7 @@ async function loadHeroCards(now: Date) {
       const seen = new Set(picked.map((a) => a.id));
       const active = await listArenas({ ...base, limit: 6, status: "active" });
       for (const a of active.arenas) {
-        if (picked.length >= 3) break;
+        if (picked.length >= 6) break;
         if (seen.has(a.id)) continue;
         seen.add(a.id);
         picked.push(a);
