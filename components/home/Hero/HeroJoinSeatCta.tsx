@@ -92,7 +92,11 @@ export function HeroJoinSeatCta() {
   return (
     <Link
       ref={linkRef}
-      href="/context"
+      // Was "/context", a route that has never existed - so the hero's primary
+      // call to action, the one the whole entrance animation is built around,
+      // was a 404 in production. It goes to the board, which is what "join an
+      // open seat" means.
+      href="/arena"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className="inline-block text-right group select-none cursor-pointer"

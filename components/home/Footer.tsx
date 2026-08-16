@@ -93,16 +93,22 @@ export function Footer() {
           </p>
 
           <div className="flex items-center gap-1">
+            {/* Not links. These were four `href="#"` anchors, which every SEO
+                checker counts as empty links and which put four focusable dead
+                ends in the keyboard path - a Tab stop that does nothing is
+                worse than no Tab stop. The accounts do not exist yet, so there
+                is nothing to point at; when they do, these become real anchors. */}
             {SOCIAL.map((label) => (
-              <a
+              <span
                 key={label}
-                href="#"
-                aria-label={label + " (coming soon)"}
-                className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-muted-foreground hover:text-orange transition-colors px-2 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-muted-foreground/60 px-2 py-1"
               >
                 {label}
-              </a>
+              </span>
             ))}
+            <span className="font-mono text-[0.5rem] uppercase tracking-[0.16em] text-muted-foreground/40 pl-1">
+              (soon)
+            </span>
           </div>
         </div>
       </div>
