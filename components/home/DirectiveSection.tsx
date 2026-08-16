@@ -1,9 +1,26 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { FoxBackground } from "./FoxBackground";
+
+/**
+ * three.js is 645KB uncompressed - 40% of this page's entire initial JS - and
+ * a static import put it in the homepage's prerendered HTML, downloaded and
+ * parsed before hydration for a decorative background that lives in section 3
+ * and is invisible until the reader scrolls to it.
+ *
+ * `ssr: false` because it is a WebGL canvas: it renders nothing on the server,
+ * so server-rendering it only pays the cost twice. There is no loading
+ * placeholder for the same reason the component is decorative - the section
+ * reads correctly with no fox at all, and a skeleton in its place would be a
+ * visible regression rather than a fallback.
+ */
+const FoxBackground = dynamic(
+  () => import("./FoxBackground").then((m) => m.FoxBackground),
+  { ssr: false }
+);
 
 gsap.registerPlugin(ScrollTrigger);
 

@@ -13,7 +13,15 @@ export function LayoutSpacer({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/companies/");
 
   return (
-    <div className={`flex-1 flex flex-col ${isBleedPage ? "" : "pt-11"}`}>
+    // The skip link's target. Not a <main> itself: several pages render their
+    // own, and nesting one inside another would give the document two main
+    // landmarks. tabIndex -1 lets the skip link actually move focus here
+    // rather than only moving the scroll position.
+    <div
+      id="main-content"
+      tabIndex={-1}
+      className={`flex-1 flex flex-col outline-none ${isBleedPage ? "" : "pt-11"}`}
+    >
       {children}
     </div>
   );

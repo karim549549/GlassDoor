@@ -18,7 +18,20 @@ export const dynamic = "force-dynamic";
  * because app/robots.ts already disallows them, and there is no /companies
  * index page - companies are reachable only at /companies/[slug].
  */
-const STATIC_PATHS = ["", "/arena", "/billboard"];
+const STATIC_PATHS = [
+  "",
+  "/arena",
+  "/billboard",
+  // These four resolve and were missing, so nothing linked them to a crawler
+  // except in-page anchors. /about and /support carry the entity and contact
+  // information search engines and assistants look for when deciding whether a
+  // site is a real operation; /terms and /privacy are what they look for when
+  // deciding whether it is a trustworthy one.
+  "/about",
+  "/support",
+  "/terms",
+  "/privacy",
+];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();

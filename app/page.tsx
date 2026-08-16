@@ -6,6 +6,58 @@ import { Suspense } from "react";
 import { listArenas, getBoardSummary } from "@/lib/arena/service";
 import { getGlobalStandings } from "@/lib/arena/leaderboard-service";
 import { toArenaCardData } from "@/components/home/Hero/arena-cards-data";
+import { serializeJsonLd } from "@/lib/json-ld";
+import { getSiteUrl } from "@/lib/site-url";
+
+/**
+ * Organization + WebSite, the two entities a homepage is expected to declare.
+ *
+ * This is also the highest-leverage thing on the page for being cited by an
+ * assistant rather than only ranked by a crawler: a language model summarising
+ * "what is Devs Arena" reads a declared entity far more reliably than it infers
+ * one from scroll-animated prose.
+ *
+ * Two deliberate omissions. No `SearchAction` - /arena takes no search query
+ * parameter, and structured data pointing at a URL that does not work is worse
+ * than none. No `sameAs` - the footer's social links are placeholders because
+ * the accounts do not exist yet, and asserting profiles that aren't there is
+ * exactly the kind of claim this product exists to make unnecessary.
+ */
+function buildJsonLd(siteUrl: string) {
+  const organization = {
+    "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
+    name: "Devs Arena",
+    url: siteUrl,
+    description:
+      "Devs Arena runs time-boxed developer competitions judged against a rubric frozen before entry opens, by named judges who cannot score their own team. Results become verifiable proof packets used as hiring credentials.",
+    areaServed: { "@type": "Country", name: "Egypt" },
+    knowsAbout: [
+      "Software developer assessment",
+      "Technical hiring",
+      "Competitive programming",
+      "Code review and judging",
+      "Developer skill verification",
+    ],
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organization,
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        url: siteUrl,
+        name: "Devs Arena",
+        description:
+          "Developer competition platform issuing verifiable hiring credentials.",
+        inLanguage: "en",
+        publisher: { "@id": `${siteUrl}/#organization` },
+      },
+    ],
+  };
+}
 
 /**
  * Five minutes, not the hour this page used to cache for: the arena cards show
@@ -73,6 +125,12 @@ export default async function Home() {
     // `clip` hides the same horizontal overflow (the cards translate +/-500px
     // during the docking sequence) without creating one.
     <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-clip">
+      <script
+        type="application/ld+json"
+        // Escaped through serializeJsonLd - see lib/json-ld.ts for why raw
+        // JSON.stringify is not safe inside a <script> block.
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildJsonLd(getSiteUrl())) }}
+      />
       {/* Editorial Background Blueprint Grid */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -87,7 +145,13 @@ export default async function Home() {
 
       <div className="relative z-10 flex flex-col min-h-screen">
         <Billboard />
-        <HeroAndArenas cards={cards} openCount={openCount} summary={summary} standings={standings} />
+        {/* The homepage was the only route in the app without a <main>. It is
+            what assistive tech, reader modes and content extractors use to
+            separate the page's substance from its chrome - and this is the one
+            page most likely to be read by something other than a browser. */}
+        <main className="flex flex-col">
+          <HeroAndArenas cards={cards} openCount={openCount} summary={summary} standings={standings} />
+        </main>
         <Footer />
       </div>
 

@@ -1,4 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+/* Fonts are NOT imported here. They come from `next/font/google` in
+   app/layout.tsx, which self-hosts the files from our own origin.
+
+   This used to be an `@import url(fonts.googleapis.com)` on this line. A CSS
+   @import is render-blocking AND serialized: the browser cannot discover the
+   font files until it has fetched and parsed the imported stylesheet, so the
+   critical path was connect -> CSS -> parse -> connect again -> font, across a
+   third-party origin with no preconnect. `next/font` emits the @font-face
+   rules inline with the page and preloads the files, removing both round trips
+   and the external dependency. It also computes a size-adjusted fallback,
+   which is what keeps the swap from shifting layout. */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -16,9 +26,12 @@ html {
 }
 
 :root {
-  --font-display: "Instrument Serif", serif;
-  --font-body: "DM Sans", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  /* The var() names are supplied by next/font in app/layout.tsx; the literal
+     family names remain as the fallback for any path that renders before the
+     class lands. */
+  --font-display: var(--font-instrument-serif), "Instrument Serif", serif;
+  --font-body: var(--font-dm-sans), "DM Sans", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
   --font-size: 16px;
   --background: #F1EFE9;
   --foreground: #0E0E0D;
