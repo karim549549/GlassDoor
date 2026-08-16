@@ -24,7 +24,7 @@ export function HUDCornerReticle({
       {/* Header Telemetry Tags */}
       {(label || coordinate) && (
         <div className="flex items-center justify-between pb-3 mb-4 border-b border-foreground/10 text-[0.55rem] text-muted-foreground font-bold">
-          {label && <span className="text-orange tracking-widest">{label}</span>}
+          {label && <span className="text-orange-ink tracking-widest">{label}</span>}
           {coordinate && <span className="tracking-widest font-mono text-muted-foreground/70">{coordinate}</span>}
         </div>
       )}

@@ -46,7 +46,7 @@ export function ConversionTerminal({ standings = [] }: { standings?: GlobalStand
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4 border-t border-foreground/15">
             <Link
               href="/arena"
-              className="px-8 py-4 bg-orange text-card font-mono text-xs font-bold uppercase tracking-[0.2em] shadow-[4px_4px_0px_0px_var(--foreground)] hover:bg-foreground hover:text-background transition-all flex items-center justify-center gap-2"
+              className="px-8 py-4 bg-orange text-[#0E0E0D] font-mono text-xs font-bold uppercase tracking-[0.2em] shadow-[4px_4px_0px_0px_var(--foreground)] hover:bg-foreground hover:text-background transition-all flex items-center justify-center gap-2"
             >
               <Zap className="w-4 h-4" />
               <span>SEE OPEN CHALLENGES</span>
