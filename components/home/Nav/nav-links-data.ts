@@ -5,11 +5,18 @@ export interface NavLinkEntry {
 
 // Shared between the desktop NavTabs and the BurgerMenu's mobile drawer so
 // the primary navigation destinations only need to be listed once.
+/**
+ * Entrant-facing only.
+ *
+ * "For companies" was here and has moved to the footer. It is the pitch for the
+ * side of the business that is not yet for sale, and the nav is the most
+ * valuable space on the site - see PRD 1.2. The page still exists, still works,
+ * and is still linked and crawlable; it just no longer greets a developer
+ * arriving to find something to build.
+ */
 export const NAV_LINKS: NavLinkEntry[] = [
-  { label: "Arenas", href: "/arena" },
-  // Was href "/" - it pointed at the homepage from every page, including the
-  // homepage itself. Now goes to the employer page it names.
-  { label: "For companies", href: "/companies" },
+  { label: "Challenges", href: "/arena" },
+  { label: "Start one", href: "/arena/create" },
 ];
 
 /**

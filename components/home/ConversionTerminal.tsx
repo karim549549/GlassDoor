@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Terminal, ArrowRight, ShieldCheck, Zap } from "lucide-react";
+import { Terminal, ArrowRight, PenLine, Zap } from "lucide-react";
 import { HUDCornerReticle } from "./HUDCornerReticle";
 import { LeaderboardRail } from "./LeaderboardRail";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
@@ -29,15 +29,17 @@ export function ConversionTerminal({ standings = [] }: { standings?: GlobalStand
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-orange">
               <Terminal className="w-4 h-4" />
-              <span>&gt; ESTABLISH YOUR CREDENTIAL RECORD</span>
+              <span>&gt; PICK SOMETHING AND BUILD IT</span>
             </div>
 
             <h2 className="font-display italic text-[clamp(2rem,4.5vw,3.8rem)] leading-tight uppercase font-normal text-foreground">
-              Ready to prove what you can build?
+              What are you doing Saturday?
             </h2>
 
             <p className="font-sans text-sm md:text-base text-foreground/80 max-w-2xl leading-relaxed">
-              Join active sprint arenas, challenge Egypt&apos;s best developers, and earn verifiable Proof Packets that bypass technical interview screens.
+              Enter an open challenge, or write a brief of your own and see who
+              turns up. Free either way. If you like what you built you can keep
+              the record of it &mdash; but that is a souvenir, not the point.
             </p>
           </div>
 
@@ -47,24 +49,32 @@ export function ConversionTerminal({ standings = [] }: { standings?: GlobalStand
               className="px-8 py-4 bg-orange text-card font-mono text-xs font-bold uppercase tracking-[0.2em] shadow-[4px_4px_0px_0px_var(--foreground)] hover:bg-foreground hover:text-background transition-all flex items-center justify-center gap-2"
             >
               <Zap className="w-4 h-4" />
-              <span>ENTER ACTIVE ARENAS</span>
+              <span>SEE OPEN CHALLENGES</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
 
+            {/* Was "EMPLOYER TALENT PIPELINE" -> /recruiter, given equal weight
+                to the entrant action on the page's closing CTA. The employer
+                surfaces still exist and still work; this slot belongs to the
+                core loop, which is that anyone can start a challenge. */}
             <Link
-              href="/recruiter"
+              href="/arena/create"
               className="px-8 py-4 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-[0.2em] shadow-[4px_4px_0px_0px_var(--orange)] hover:bg-orange hover:text-card transition-all flex items-center justify-center gap-2"
             >
-              <ShieldCheck className="w-4 h-4" />
-              <span>EMPLOYER TALENT PIPELINE</span>
+              <PenLine className="w-4 h-4" />
+              <span>WRITE A BRIEF</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
+          {/* "NEXT GLICKO-2 BATCH: SUNDAY 00:00 UTC" and "ALL SYSTEMS
+              OPERATIONAL" were both hardcoded assertions about running
+              infrastructure. Replaced with things that are true regardless of
+              state. */}
           <div className="pt-4 flex flex-wrap items-center justify-between gap-4 font-mono text-[0.55rem] text-muted-foreground">
-            <span>PLATFORM: DEVS-ARENA-EG // V10.0</span>
-            <span>NEXT GLICKO-2 BATCH: SUNDAY 00:00 UTC</span>
-            <span className="text-green-700 font-bold">[✓] ALL SYSTEMS OPERATIONAL</span>
+            <span>DEVS ARENA // CAIRO</span>
+            <span>NO ENTRY FEE, EVER</span>
+            <span className="text-orange font-bold">SOLO OR TEAMS OF 2&ndash;4</span>
           </div>
         </HUDCornerReticle>
         </div>

@@ -69,10 +69,10 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
               [02 / STAGE ARENA]
             </span>
             <h2 className="font-display italic text-[clamp(2rem,4.5vw,4rem)] leading-none uppercase font-normal">
-              Devs Arenas
+              Open challenges
             </h2>
             <p className="font-mono text-[0.58rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-w-md">
-              Time-boxed coding sprints. Join open seats, collaborate with peers, and scale the rankings.
+              Pick a brief. Bring a team or find one here. Four hours on the clock, online or in a room in Cairo.
             </p>
           </div>
 

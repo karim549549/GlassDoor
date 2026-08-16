@@ -34,9 +34,9 @@ const jetbrainsMono = JetBrains_Mono({
 
 const SITE_URL = getSiteUrl();
 
-const TITLE = "Devs Arena — Developer Competition Platform & Hiring Credentials";
+const TITLE = "Devs Arena — Team Hackathons & Coding Challenges in Egypt";
 const DESCRIPTION =
-  "Developers compete in time-boxed coding arenas judged against a frozen rubric by named judges. Every result becomes a verifiable proof packet recruiters can read instead of a CV.";
+  "Pick a strange brief, grab a team, and build it in four hours — online or in person in Cairo. Free to enter, real prize money, and a human judge who tells you exactly what they thought of your code.";
 
 /**
  * `metadataBase` has to come first: without it every relative URL below - the
@@ -57,19 +57,24 @@ export const metadata: Metadata = {
   // crawlers and non-Google engines still read it, and it costs one line - not
   // because it moves search rank. The keyword work that matters is in the
   // headings, the visible copy and the JSON-LD.
+  //
+  // These target the people who actually arrive: developers looking for
+  // something to enter. They were previously employer-intent terms ("technical
+  // hiring without interviews", "proof of work hiring") which chased the side
+  // of the market that is not yet for sale - see PRD 1.2 and 1.4.
   keywords: [
-    "developer competition platform",
-    "coding competition Egypt",
-    "verified developer skills",
-    "technical hiring without interviews",
-    "proof of work hiring",
-    "developer hiring credentials",
-    "coding arena Cairo",
-    "hackathon platform MENA",
-    "rubric based code judging",
-    "Glicko-2 developer rating",
-    "technical recruitment Egypt",
-    "verifiable developer portfolio",
+    "hackathon Egypt",
+    "hackathon Cairo",
+    "coding challenge Egypt",
+    "team coding competition",
+    "online hackathon",
+    "four hour coding challenge",
+    "web dev challenge",
+    "programming competition Egypt",
+    "developer community Egypt",
+    "build challenge for developers",
+    "coding contest Cairo",
+    "team hackathon MENA",
   ],
   openGraph: {
     type: "website",

@@ -12,7 +12,7 @@ import { ImageResponse } from "next/og";
  * gain no one viewing a 1200x630 thumbnail would notice.
  */
 export const alt =
-  "Devs Arena - developers compete in judged coding arenas and earn verifiable hiring credentials";
+  "Devs Arena - team coding challenges in Egypt: four hours, a strange brief, and a judge who explains themselves";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -68,11 +68,11 @@ export default function OpengraphImage() {
               maxWidth: 960,
             }}
           >
-            Build, don&apos;t claim.
+            Hackathons, but weirder.
           </div>
           <div style={{ display: "flex", fontSize: 31, lineHeight: 1.35, maxWidth: 900, opacity: 0.75 }}>
-            Time-boxed coding arenas, judged against a frozen rubric by named
-            judges. Every result becomes a credential a recruiter can verify.
+            Four-hour team challenges around briefs that have no business
+            existing. Cairo and online. Free to enter.
           </div>
         </div>
 
@@ -88,10 +88,10 @@ export default function OpengraphImage() {
           }}
         >
           <div style={{ display: "flex", background: ORANGE, color: PAPER, padding: "10px 18px", fontWeight: 700 }}>
-            PROOF PACKETS
+            FREE TO ENTER
           </div>
           <div style={{ display: "flex", opacity: 0.6 }}>
-            COMPETE &nbsp;/&nbsp; GET JUDGED &nbsp;/&nbsp; GET HIRED
+            PICK A BRIEF &nbsp;/&nbsp; GRAB A TEAM &nbsp;/&nbsp; SHIP IT
           </div>
         </div>
       </div>

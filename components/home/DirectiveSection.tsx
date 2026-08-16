@@ -24,10 +24,22 @@ const FoxBackground = dynamic(
 
 gsap.registerPlugin(ScrollTrigger);
 
+/**
+ * The largest text on the page, held through a pinned scroll.
+ *
+ * It used to read "We turn competitive code sprints into unforgeable hiring
+ * credentials", which is the pitch for the side of the business that is not yet
+ * for sale, aimed at people who arrived to have fun. See PRD 1.2: developers
+ * are the supply, not the customer, and copy that makes entering sound like an
+ * assessment suppresses the participation everything else depends on.
+ *
+ * This says what actually happens instead, and ends on the one thing an
+ * auto-graded site cannot offer.
+ */
 const STATEMENT_PARTS = [
-  { text: "We turn competitive code sprints into ", highlight: false },
-  { text: "unforgeable hiring credentials", highlight: true },
-  { text: ". Proving what developers can actually build.", highlight: false },
+  { text: "Thirty minutes to plan. Four hours to build. Then ", highlight: false },
+  { text: "a real engineer reads your code", highlight: true },
+  { text: " and tells you exactly what they thought of it.", highlight: false },
 ];
 
 export function DirectiveSection() {
@@ -161,11 +173,15 @@ export function DirectiveSection() {
 
           {/* Sub-telemetry readout */}
           <div className="flex flex-wrap items-center justify-center gap-6 font-mono text-[0.55rem] text-[#F1EFE9]/60 uppercase tracking-[0.2em] pt-4 border-t border-white/10">
-            <span>&gt; AUTOMATED CODE RUNNER VERIFICATION</span>
+            {/* Was "AUTOMATED CODE RUNNER VERIFICATION / GLICKO-2 DOMAIN
+                LEDGER / SHA-256 PROOF PACKETS" - the implementation, printed
+                under the page's biggest sentence. All three exist; none of them
+                answers "why would I spend Saturday on this". */}
+            <span>&gt; SOLO OR TEAMS OF 2&ndash;4</span>
             <span>&bull;</span>
-            <span>&gt; GLICKO-2 DOMAIN LEDGER</span>
+            <span>&gt; ONLINE OR IN A ROOM IN CAIRO</span>
             <span>&bull;</span>
-            <span>&gt; SHA-256 PROOF PACKETS</span>
+            <span>&gt; NO ENTRY FEE</span>
           </div>
         </div>
       </div>

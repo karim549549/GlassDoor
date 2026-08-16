@@ -9,12 +9,19 @@ export function HeroMasthead() {
         paddingBottom: "clamp(0.4rem, 1.2vh, 0.875rem)"
       }}
     >
-      <h1
+      {/* The masthead is the brand wordmark, not the page's heading. It used to
+          be the <h1>, which spent the single strongest on-page signal on a name
+          nobody is searching for yet - it ranked for the brand and nothing
+          else. The <h1> now lives on HeroHeadline, which says what the site
+          actually is. Rendered as a div with identical classes: no visual
+          change, only a semantic one. */}
+      <div
+        role="presentation"
         className="font-display select-none uppercase text-left font-normal"
         style={{ fontSize: "clamp(2.2rem, 7vw, 7rem)", lineHeight: 0.9, letterSpacing: "-0.02em" }}
       >
         Devs Arena
-      </h1>
+      </div>
 
       <div className="flex gap-8 items-baseline shrink-0">
         <div

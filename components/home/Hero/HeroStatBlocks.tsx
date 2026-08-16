@@ -64,10 +64,10 @@ export function HeroStatBlocks({ openCount = 0 }: { openCount?: number }) {
         style={{ top: "37%", left: "clamp(1rem, 2.5vw, 2rem)", maxWidth: "clamp(120px, 13vw, 170px)" }}
       >
         <div className="font-mono text-[0.52rem] text-orange uppercase mb-1" style={{ letterSpacing: "0.18em" }}>
-          Rating Engine
+          The brief
         </div>
         <div className="font-display" style={{ fontSize: "clamp(0.85rem, 1.1vw, 1.05rem)", lineHeight: 1.25, fontStyle: "italic" }}>
-          REP &bull; LIVE &bull; ARENA: Glicko-2 ratings
+          Something strange, and a clock
         </div>
       </div>
 
@@ -77,13 +77,13 @@ export function HeroStatBlocks({ openCount = 0 }: { openCount?: number }) {
         style={{ top: "34%", right: "clamp(1rem, 2.5vw, 2rem)", padding: "clamp(0.5rem, 1vw, 0.875rem) clamp(0.75rem, 1.5vw, 1.25rem)" }}
       >
         <div className="font-mono text-[0.48rem] uppercase tracking-[0.22em] text-muted-foreground">
-          Judging is
+          Entry costs
         </div>
         <div className="font-mono text-orange" style={{ fontSize: "clamp(1.5rem, 2.2vw, 2rem)", fontWeight: 500, lineHeight: 1.1 }}>
-          OPEN
+          FREE
         </div>
         <div className="font-mono text-[0.48rem] uppercase tracking-[0.18em] text-muted-foreground">
-          Named judges<br />published rubric
+          Solo or a team<br />of two to four
         </div>
       </div>
     </>

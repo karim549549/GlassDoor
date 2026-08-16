@@ -30,14 +30,14 @@ function buildJsonLd(siteUrl: string) {
     name: "Devs Arena",
     url: siteUrl,
     description:
-      "Devs Arena runs time-boxed developer competitions judged against a rubric frozen before entry opens, by named judges who cannot score their own team. Results become verifiable proof packets used as hiring credentials.",
+      "Devs Arena runs community coding challenges in Egypt: anyone can post a brief, teams get thirty minutes to plan and four hours to build, and working engineers judge the entries and explain their reasoning in writing. Free to enter, online or in person in Cairo.",
     areaServed: { "@type": "Country", name: "Egypt" },
     knowsAbout: [
-      "Software developer assessment",
-      "Technical hiring",
+      "Hackathons",
+      "Team coding challenges",
       "Competitive programming",
+      "Developer community events",
       "Code review and judging",
-      "Developer skill verification",
     ],
   };
 
@@ -51,7 +51,7 @@ function buildJsonLd(siteUrl: string) {
         url: siteUrl,
         name: "Devs Arena",
         description:
-          "Developer competition platform issuing verifiable hiring credentials.",
+          "Community team hackathons and coding challenges in Egypt. Free to enter.",
         inLanguage: "en",
         publisher: { "@id": `${siteUrl}/#organization` },
       },

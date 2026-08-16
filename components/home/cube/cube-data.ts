@@ -74,11 +74,11 @@ export const REWARDS: Reward[] = [
     notes: ["EARNED", "PER DOMAIN", "PERMANENT"],
   },
   {
-    tag: "Credential",
-    title: "One link that survives the interview",
-    body: "You leave with a proof packet: the brief, your commits, every judge's score and reasoning. Public, permanent, and readable without an account.",
+    tag: "The receipt",
+    title: "A record of the thing you made",
+    body: "The brief, your commits, and what each judge said, on one page you can send anyone. Keep it, share it, or ignore it entirely - it is yours either way.",
     statLabel: "Costs", stat: "Nothing",
-    notes: ["PUBLIC", "PERMANENT", "YOURS"],
+    notes: ["YOURS", "OPTIONAL", "SHAREABLE"],
   },
   {
     tag: "Standing",
@@ -95,11 +95,11 @@ export const REWARDS: Reward[] = [
     notes: ["SQUAD", "PEERS", "JUDGES"],
   },
   {
-    tag: "Pipeline",
-    title: "Companies read the board",
-    body: "Hiring teams shortlist from judged work instead of CVs. A strong packet is a direct route to a conversation, and you decide who may contact you.",
-    statLabel: "Contact", stat: "Your call",
-    notes: ["SHORTLIST", "NO SCREEN", "CONSENT"],
+    tag: "Write your own",
+    title: "Anyone can start a challenge",
+    body: "Had an idea too stupid not to build? Post the brief, set the clock, and see who turns up. You do not need permission and it does not cost anything.",
+    statLabel: "Approval", stat: "Not needed",
+    notes: ["YOUR BRIEF", "YOUR CLOCK", "FREE"],
   },
 ];
 

@@ -13,7 +13,7 @@ export function NavBrand({ isScrolled, isDarkTheme }: NavBrandProps) {
       <span className={`font-mono text-[0.6rem] opacity-35 border-l pl-3 hidden sm:block transition-colors duration-300 ${
         isDarkTheme ? "border-background/20" : "border-foreground/20"
       }`}>
-        Developer competitions &bull; hiring credentials
+        Team coding challenges &bull; Cairo &amp; online
       </span>
     </div>
   );

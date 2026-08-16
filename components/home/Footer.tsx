@@ -73,8 +73,8 @@ export function Footer() {
               Devs Arena
             </span>
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground leading-relaxed mt-4">
-              Timed developer competitions, judged in the open, turned into
-              hiring credentials anyone can check.
+              Team coding challenges with a clock on them. Anyone can post a
+              brief. Judged in the open by people who explain themselves.
             </p>
             <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-muted-foreground mt-5">
               Cairo, Egypt
