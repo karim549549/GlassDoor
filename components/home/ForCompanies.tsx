@@ -316,20 +316,31 @@ export function ForCompanies() {
             to skip. */}
         <div
           aria-hidden={!floating}
-          className={`pointer-events-none fixed inset-x-0 bottom-6 z-40 hidden justify-center px-6 md:flex transition-all duration-500 ${
-            floating ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+          className={`pointer-events-none fixed inset-x-0 bottom-[16vh] z-40 hidden md:block transition-all duration-500 ${
+            floating ? "translate-x-0 opacity-100" : "translate-x-8 opacity-0"
           }`}
         >
-          <Link
-            href="/companies"
-            tabIndex={floating ? 0 : -1}
-            className="pointer-events-auto flex items-center gap-4 border-2 border-orange bg-orange px-6 py-3.5 text-[#0E0E0D] shadow-[4px_4px_0_0_rgba(14,14,13,0.5)] hover:shadow-[6px_6px_0_0_rgba(14,14,13,0.5)] transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-          >
-            <span className="font-mono text-[0.62rem] font-bold uppercase tracking-[0.2em]">
-              See how hiring works
-            </span>
-            <span className="font-mono text-[0.9rem] leading-none">&rarr;</span>
-          </Link>
+          {/* Tracks the text column's right edge, not the viewport's. Hard
+              against the window edge is the right-rail position readers learnt
+              to skip when it was ad inventory; inside the measure, it reads as
+              part of the document. */}
+          <div className="mx-auto flex max-w-6xl justify-end px-6 md:px-12">
+            <Link
+              href="/companies"
+              tabIndex={floating ? 0 : -1}
+              className="pointer-events-auto group flex max-w-[15rem] flex-col gap-1 border-2 border-orange bg-orange px-6 py-4 text-[#0E0E0D] shadow-[5px_5px_0_0_rgba(14,14,13,0.45)] hover:shadow-[8px_8px_0_0_rgba(14,14,13,0.45)] hover:-translate-y-0.5 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+            >
+              <span className="flex items-center justify-between gap-4 font-display italic text-[1.15rem] leading-none uppercase">
+                See how hiring works
+                <span className="font-mono text-[1.1rem] not-italic leading-none shrink-0 transition-transform group-hover:translate-x-1">
+                  &rarr;
+                </span>
+              </span>
+              <span className="font-mono text-[0.5rem] uppercase tracking-[0.16em] opacity-70">
+                Three rounds, deleted
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
     </section>
