@@ -113,15 +113,31 @@ export function DirectiveSection() {
                     : "text-[#F1EFE9] inline"
                 }
               >
-                {part.text.split("").map((char, cIdx) => (
-                  <span
-                    key={cIdx}
-                    className="scrub-char inline-block opacity-0 will-change-[opacity,transform]"
-                    style={{ whiteSpace: char === " " ? "pre" : "normal" }}
-                  >
-                    {char}
-                  </span>
-                ))}
+                {/* Split into WORDS first, then characters inside them.
+                    Every character used to be its own inline-block, which let
+                    the browser break a line in the middle of a word -
+                    "credentials" wrapping as "creden / tials" - so the
+                    statement was unreadable at most widths. Each word is now an
+                    atomic inline-block that cannot be split; the characters
+                    inside it still animate individually. */}
+                {part.text.split(/(\s+)/).map((token, tIdx) =>
+                  /^\s+$/.test(token) ? (
+                    <span key={tIdx} style={{ whiteSpace: "pre" }}>
+                      {token}
+                    </span>
+                  ) : (
+                    <span key={tIdx} className="inline-block whitespace-nowrap">
+                      {token.split("").map((char, cIdx) => (
+                        <span
+                          key={cIdx}
+                          className="scrub-char inline-block opacity-0 will-change-[opacity,transform]"
+                        >
+                          {char}
+                        </span>
+                      ))}
+                    </span>
+                  )
+                )}
               </span>
             ))}
           </h2>
