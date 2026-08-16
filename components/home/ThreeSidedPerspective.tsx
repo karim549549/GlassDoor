@@ -18,70 +18,36 @@ import { ARENA_CARDS, type ArenaCardData } from "./Hero/arena-cards-data";
  * cards can simply end there and six cube faces begin here. The reader sees
  * continuity; the DOM never has to.
  *
- * The section is a full lifecycle, all of it driven by its own scroll position:
+ * The cube is always whole. It descends from above already built, holds while
+ * the reader turns it, and scrolls away - nothing assembles and nothing comes
+ * apart.
  *
- *   arrive    panels fall in from ABOVE, in the direction the deck was already
- *             travelling when it went behind section 3, styled exactly like the
- *             hero card so the handoff is invisible
- *   seat      each panel rotates into its face and restyles from paper to dark
- *             panel as it goes - a light card is right for a stack and wrong
- *             for one side of a solid on a near-black ground
- *   dwell     the cube is closed and can be turned
- *   leave     the stagger runs in REVERSE and the panels carry on DOWNWARD,
- *             turning back into paper on the way, so the carousel below reads
- *             as the same cards arriving rather than a new set appearing
- *
- * Nothing here fades. Opacity is never touched: these are solid cards moving
- * through the page, and fading them would make them read as elements being
- * created and destroyed instead of one deck travelling.
+ * Both animations existed and both were removed. Watching six panels fold
+ * together left the object indistinct for most of its screen time, and running
+ * that in reverse on exit competed with the carousel forming below it. Neither
+ * gave the section any sharpness, which is the whole reason a solid is here.
+ * The only thing scroll drives now is where the cube is.
  */
 
 /** Cube edge in px. Faces are square, so this is both width and height. */
 const SIZE = 420;
 const HALF = SIZE / 2;
 
-/**
- * Per face: the rotation that places it, its outward normal, and where it sits
- * before assembly. Rotation is stored as numbers rather than a transform string
- * because the cube is BUILT on scroll - every face interpolates from its
- * scattered start to its final angle, and a prebaked string cannot be halfway.
- */
+/** Per face: the rotation that places it, and the outward normal that produces. */
 const FACE_GEOMETRY = [
-  { rx: 0, ry: 0, normal: [0, 0, 1] as [number, number, number], from: [0, -55], to: [0, 60], spin: -3 },
-  { rx: 0, ry: 90, normal: [1, 0, 0] as [number, number, number], from: [42, -30], to: [-38, 34], spin: 4 },
-  { rx: 0, ry: 180, normal: [0, 0, -1] as [number, number, number], from: [-36, 26], to: [30, -28], spin: -2 },
-  { rx: 0, ry: -90, normal: [-1, 0, 0] as [number, number, number], from: [-46, -18], to: [-40, 22], spin: 3 },
+  { rx: 0, ry: 0, normal: [0, 0, 1] as [number, number, number] },
+  { rx: 0, ry: 90, normal: [1, 0, 0] as [number, number, number] },
+  { rx: 0, ry: 180, normal: [0, 0, -1] as [number, number, number] },
+  { rx: 0, ry: -90, normal: [-1, 0, 0] as [number, number, number] },
   // CSS Y grows downward, so rotateX(90deg) sends +Z to -Y.
-  { rx: 90, ry: 0, normal: [0, -1, 0] as [number, number, number], from: [24, -48], to: [34, 52], spin: -5 },
-  { rx: -90, ry: 0, normal: [0, 1, 0] as [number, number, number], from: [-28, 44], to: [-30, -46], spin: 2 },
+  { rx: 90, ry: 0, normal: [0, -1, 0] as [number, number, number] },
+  { rx: -90, ry: 0, normal: [0, 1, 0] as [number, number, number] },
 ];
 
-/** Assembly finishes by this fraction of the section's scroll, leaving the rest
- *  as dwell time in which the cube can be turned. */
-const ASSEMBLE_BY = 0.72;
-/**
- * How closed the cube already is when it comes into view.
- *
- * Watching six loose panels converge from across the viewport read as chaos -
- * there was no object yet, just debris. The cube now arrives ALREADY BUILT to
- * this fraction and only settles the last of the way, so what descends is
- * recognisably a solid from the first frame. Below about 0.7 it stops reading
- * as a box; at 1.0 there is nothing left to watch.
- */
-const PARTIAL_SEAT = 0.78;
 /** Distance above the stage the assembly starts, in px. */
 const ARRIVE_FROM = 1250;
 /** Fraction of the section over which it descends into place. */
 const ARRIVE_BY = 0.5;
-/** Per-face stagger, so the box closes panel by panel instead of all at once. */
-const FACE_STAGGER = 0.09;
-/**
- * Where disassembly begins, as a fraction of the section scroll. Past this the
- * cube opens back into loose cards travelling DOWNWARD - the same direction the
- * deck took out of section 2 - so the carousel below reads as the same cards
- * arriving rather than a new set appearing from nothing.
- */
-const DISASSEMBLE_FROM = 0.82;
 
 interface Callout {
   face: number;
@@ -119,28 +85,7 @@ const DRAG_IMPULSE = 0.13;
 const FRICTION = 0.94;
 const IDLE_DRIFT = 0.018;
 
-/**
- * The card restyles itself as it seats.
- *
- * A face arrives looking exactly like the hero card - light paper, four-pixel
- * double border, ink text - because that is what descended out of section 2 and
- * the handoff has to be invisible. But a light card is wrong once it is one
- * panel of a solid on a near-black section: the box loses its edges and reads
- * flat. So the two looks are interpolated across the same progress that seats
- * the panel, and the change happens while the reader is watching the cube form
- * rather than as a jump.
- *
- * Border style cannot be interpolated - double to solid has no midpoint - so it
- * switches once, at the point the panel is mostly seated.
- */
-const PAPER = { bg: [250, 248, 245], fg: [14, 14, 13], border: [14, 14, 13], borderAlpha: 1, borderPx: 4 };
-const PANEL = { bg: [35, 35, 32], fg: [241, 239, 233], border: [255, 255, 255], borderAlpha: 0.3, borderPx: 1 };
 
-const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-const mixRgb = (a: number[], b: number[], t: number) =>
-  `rgb(${Math.round(mix(a[0], b[0], t))}, ${Math.round(mix(a[1], b[1], t))}, ${Math.round(mix(a[2], b[2], t))})`;
-const mixRgba = (a: number[], b: number[], aA: number, bA: number, t: number) =>
-  `rgba(${Math.round(mix(a[0], b[0], t))}, ${Math.round(mix(a[1], b[1], t))}, ${Math.round(mix(a[2], b[2], t))}, ${mix(aA, bA, t).toFixed(3)})`;
 
 /** Applies rotateX(rx) rotateY(ry) to a vector, matching the CSS order. */
 function rotateVec(v: [number, number, number], rx: number, ry: number): [number, number, number] {
@@ -240,16 +185,17 @@ export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
       raf = requestAnimationFrame(loop);
       if (!visible) return;
 
-      // Assembly is read from the section's own rect every frame. The sticky
-      // stage holds the cube still in the middle of the viewport while this
-      // runs, so the reader watches it close rather than arriving to find it
-      // already built.
+      // The cube is ALWAYS fully built. There is no assembly and no teardown.
+      //
+      // Both used to exist and both were wrong for this. Watching six panels
+      // fold together gave the reader nothing sharp to look at - the object was
+      // indistinct for most of its screen time - and the reverse on exit was
+      // worse, because it competed with the carousel forming below it. The
+      // cube now simply descends from above, already whole, and stays. The only
+      // thing scroll drives is where it is.
       const rect = section.getBoundingClientRect();
       const travel = section.offsetHeight - window.innerHeight;
       const scrolled = travel > 0 ? clamp01(-rect.top / travel) : 0;
-      const assembly = clamp01(scrolled / ASSEMBLE_BY);
-      // Past the dwell the box opens again and the panels carry on downward.
-      const teardown = clamp01((scrolled - DISASSEMBLE_FROM) / (1 - DISASSEMBLE_FROM));
 
       vx *= FRICTION;
       vy *= FRICTION;
@@ -257,24 +203,18 @@ export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
       ry += vy;
 
       // No detent: the cube rests wherever momentum runs out. Until it is
-      // touched, a slow drift keeps it legibly three-dimensional - but only
-      // once there is a solid to drift.
-      if (!touched && !dragging && assembly > 0.9) ry += IDLE_DRIFT;
+      // touched, a slow drift keeps it legibly three-dimensional.
+      if (!touched && !dragging) ry += IDLE_DRIFT;
 
-      // How much of a solid there is right now: built up, then taken apart.
-      const solid = assembly * (1 - teardown);
-
-      // The assembly travels as ONE object rather than six. It descends from
-      // above already mostly closed, and leaves the same way - what the reader
-      // watches is a cube arriving and settling, not debris finding each other.
+      // NEGATIVE, so it starts ABOVE the stage and comes down into it. This
+      // was positive and the cube rose from the section below - the opposite of
+      // the direction the deck was travelling when it left section 2.
       const arrive = easeOut(clamp01(scrolled / ARRIVE_BY));
-      const cubeY = ARRIVE_FROM * (1 - arrive) + ARRIVE_FROM * teardown;
+      const cubeY = -ARRIVE_FROM * (1 - arrive);
 
-      // Turning only applies to an assembled cube; spinning a half-open box
-      // reads as broken rather than as motion. It also unwinds on the way out.
       cube.style.transform =
-        `translateY(${cubeY}px) rotateX(${rx * solid}deg) rotateY(${ry * solid}deg)`;
-      stage.style.pointerEvents = solid > 0.95 ? "auto" : "none";
+        `translateY(${cubeY}px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      stage.style.pointerEvents = arrive > 0.9 ? "auto" : "none";
 
       let front = 0;
       let bestZ = -Infinity;
@@ -282,69 +222,14 @@ export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
       for (let i = 0; i < 6; i++) {
         const el = faceRefs.current[i];
         if (!el) continue;
-        const g = FACE_GEOMETRY[i];
 
-        // Staggered so the box closes panel by panel. Disassembly runs the
-        // stagger in reverse, so the last panel in is the first one out and the
-        // box unpeels rather than collapsing.
-        const span = 1 - FACE_STAGGER * 5;
-        const local = easeOut(clamp01((assembly - i * FACE_STAGGER) / span));
-        const out = easeOut(clamp01((teardown - (5 - i) * FACE_STAGGER) / span));
-
-        // Two curves, because geometry and colour want different ranges.
-        //
-        // `closed` is 0 -> 1 -> 0 across the section and drives the restyle, so
-        // a panel is paper on the way in and paper again on the way out.
-        //
-        // `seat` never drops below PARTIAL_SEAT: the cube is already most of
-        // the way built when it enters and only opens back that far when it
-        // leaves, so it is always recognisably a solid rather than debris.
-        const closed = local * (1 - out);
-        const seat = mix(PARTIAL_SEAT, 1, closed);
-
-        // Faces arrive from ABOVE, not out of nothing. The cards left section 2
-        // travelling downward and were hidden behind section 3, so they have to
-        // continue in that direction to read as the same objects. Each starts
-        // well above the viewport - the sticky stage clips them until they
-        // enter - and carries a little tumble that resolves as it seats.
-        const [fx, fy] = g.from;
-        const [tx, ty] = g.to;
-        const rest = 1 - local;
-
-        // Two offsets, only one of which is ever non-zero: the entry offset
-        // decays as the panel seats, and the exit offset grows as it leaves.
-        const offX = fx * rest + tx * out;
-        const offY = fy * rest + ty * out;
-        const spin = g.spin * (rest + out);
-
-        el.style.transform =
-          `translate3d(${offX}px, ${offY}px, 0) ` +
-          `rotateZ(${spin}deg) ` +
-          `rotateX(${g.rx * seat}deg) rotateY(${g.ry * seat}deg) ` +
-          `translateZ(${HALF * seat}px)`;
-        // Deliberately no opacity ramp: these are solid cards falling into
-        // place, and fading them in would make them read as new elements
-        // appearing rather than the deck arriving.
-
-        // Restyle across the same progress that seats the panel: paper card in,
-        // cube panel out. Children inherit `color`, so setting it here recolours
-        // the whole face in one write.
-        // Driven by seat, not by build, so the panel turns back into paper as
-        // it leaves - which is exactly the card the carousel below renders.
-        el.style.backgroundColor = mixRgb(PAPER.bg, PANEL.bg, closed);
-        el.style.color = mixRgb(PAPER.fg, PANEL.fg, closed);
-        el.style.borderColor = mixRgba(PAPER.border, PANEL.border, PAPER.borderAlpha, PANEL.borderAlpha, closed);
-        el.style.borderWidth = `${mix(PAPER.borderPx, PANEL.borderPx, closed)}px`;
-        el.style.borderStyle = closed > 0.6 ? "solid" : "double";
-        el.style.boxShadow = `${mix(4, 0, closed)}px ${mix(4, 18, closed)}px ${mix(0, 50, closed)}px rgba(14,14,13,${mix(0.9, 0.85, closed)})`;
-
-        const z = rotateVec(g.normal, rx * seat, ry * seat)[2];
+        const z = rotateVec(FACE_GEOMETRY[i].normal, rx, ry)[2];
         if (z > bestZ) { bestZ = z; front = i; }
 
         // Faces stay opaque and are shaded, never faded: a faded card takes its
         // border with it, and the borders are what make a solid read as solid.
         const shade = el.firstElementChild as HTMLElement | null;
-        if (shade) shade.style.opacity = String(Math.max(0, 1 - Math.max(0, z)) * 0.5 * seat);
+        if (shade) shade.style.opacity = String(Math.max(0, 1 - Math.max(0, z)) * 0.5);
       }
 
       if (front !== lastFront) {
@@ -482,13 +367,13 @@ export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
               <div
                 key={`${card.id}-${i}`}
                 ref={(el) => { faceRefs.current[i] = el; }}
-                // Hero card styling, unchanged: light card, double border, the
-                // same inset rules. The handoff behind section 3 only reads as
-                // continuous if the faces look like the cards that went in.
-                className="absolute inset-0 border-double p-5 flex flex-col justify-between"
+                // Static. The face transform and the panel styling are both
+                // fixed now - the cube is never partially built, so there is
+                // nothing for either to interpolate between.
+                className="absolute inset-0 border border-white/30 bg-[#232320] text-[#F1EFE9] p-5 flex flex-col justify-between shadow-[0_18px_50px_rgba(0,0,0,0.85)]"
                 style={{
+                  transform: `rotateX(${FACE_GEOMETRY[i].rx}deg) rotateY(${FACE_GEOMETRY[i].ry}deg) translateZ(${HALF}px)`,
                   backfaceVisibility: "hidden",
-                  boxShadow: "4px 4px 0px 0px rgba(14,14,13,0.9)",
                 }}
               >
                 {/* Shading overlay, driven per frame from how square-on the face

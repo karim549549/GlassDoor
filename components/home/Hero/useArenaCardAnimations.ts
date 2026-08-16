@@ -61,6 +61,25 @@ export function useArenaCardAnimations({ containerRef, arenasRef }: UseArenaCard
           return;
         }
 
+        // The entrance is only correct from the top of the page.
+        //
+        // Browsers restore scroll position on refresh, so reloading partway
+        // down used to replay the fly-in anyway: the cards were flung
+        // off-screen and animated back to the hero while the reader was three
+        // sections below, so for over a second they were simply nowhere. The
+        // same happened on a deep link, and if the reader scrolled during that
+        // window the scroll choreography and the entrance fought each other.
+        //
+        // If the page did not load at the top, skip straight to the settled
+        // pose and let the scroll triggers place them from there.
+        if (window.scrollY > 40) {
+          gsap.set(a, { opacity: 1, x: 0, y: "-100vh", rotate: -4, scale: 1.5 });
+          gsap.set(b, { opacity: 1, x: 0, y: "-100vh", rotate: 3, scale: 1.5 });
+          gsap.set(c, { opacity: 1, x: 0, y: "-100vh", rotate: -1.5, scale: 1.5 });
+          setEntranceFinished(true);
+          return;
+        }
+
         gsap.set(a, { opacity: 0, x: -1400, y: 1000, rotate: -75, scale: 0.8 });
         gsap.set(b, { opacity: 0, x: 1400, y: -1000, rotate: 65, scale: 0.9 });
         gsap.set(c, { opacity: 0, x: -1200, y: -1200, rotate: -90, scale: 1.0 });
