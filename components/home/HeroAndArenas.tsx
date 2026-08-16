@@ -6,7 +6,7 @@ import ArenasSection from "./ArenasSection";
 import DirectiveSection from "./DirectiveSection";
 import { ThreeSidedPerspective } from "./ThreeSidedPerspective";
 import { ForCompanies } from "./ForCompanies";
-import { GlickoLedgerExplorer } from "./GlickoLedgerExplorer";
+import { ConversionTerminal } from "./ConversionTerminal";
 import type { ArenaCardData } from "./Hero/arena-cards-data";
 import type { BoardSummary } from "@/lib/arena/service";
 import type { GlobalStanding } from "@/lib/arena/leaderboard-service";
@@ -31,7 +31,7 @@ export function HeroAndArenas({
       <HeroSection openCount={openCount} />
 
       {/* SECTION 2: Pinned 3-Card Docking Arenas Section (Dark Mode #0E0E0D) */}
-      <ArenasSection ref={arenasRef} containerRef={containerRef} cards={cards} summary={summary} standings={standings} />
+      <ArenasSection ref={arenasRef} containerRef={containerRef} cards={cards} summary={summary} />
 
       {/* SECTION 3: Pinned Directive Statement with Character-by-Character Scrub (Dark Mode #0E0E0D) */}
       <DirectiveSection />
@@ -46,8 +46,10 @@ export function HeroAndArenas({
           real, and a documentation page rather than a sales one. */}
       <ForCompanies />
 
-      {/* SECTION 6: Glicko-2 Multi-Domain Mathematical Ledger (Cyber Dark #070a0d) */}
-      <GlickoLedgerExplorer />
+      {/* SECTION 6: the ask. Ready-to-join card, with the live standings rail
+          beside it - the only place on the page that reports on people rather
+          than arenas, and the right place for it: last, next to the CTA. */}
+      <ConversionTerminal standings={standings} />
     </div>
   );
 }
