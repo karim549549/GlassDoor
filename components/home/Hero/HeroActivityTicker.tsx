@@ -49,14 +49,14 @@ export function HeroActivityTicker() {
       >
         {TICKER_ITEMS.map((item, i) => (
           <span key={i} className="flex items-center gap-2">
-            <span className="text-orange">·</span>
+            <span className="text-orange-ink">·</span>
             {item}
           </span>
         ))}
         {/* Duplicate for seamless loop */}
         {TICKER_ITEMS.map((item, i) => (
           <span key={`dup-${i}`} className="flex items-center gap-2">
-            <span className="text-orange">·</span>
+            <span className="text-orange-ink">·</span>
             {item}
           </span>
         ))}

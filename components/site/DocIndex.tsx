@@ -131,13 +131,13 @@ export function DocIndex({ sections }: { sections: DocSection[] }) {
                 onClick={(e) => jumpTo(e, s.id)}
                 aria-current={active ? "location" : undefined}
                 className={`group flex gap-2.5 py-1.5 font-mono text-[0.58rem] uppercase leading-relaxed tracking-[0.1em] transition-colors ${
-                  active ? "text-orange" : "text-muted-foreground hover:text-foreground"
+                  active ? "text-orange-ink" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span
                   aria-hidden
                   className={`shrink-0 tabular-nums transition-colors ${
-                    active ? "text-orange" : "text-muted-foreground/50"
+                    active ? "text-orange-ink" : "text-muted-foreground/50"
                   }`}
                 >
                   {String(i + 1).padStart(2, "0")}

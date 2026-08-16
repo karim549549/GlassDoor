@@ -43,7 +43,7 @@ const SOCIAL = ["GitHub", "LinkedIn", "X", "Discord"];
 function Column({ heading, links }: { heading: string; links: { label: string; href: string }[] }) {
   return (
     <div>
-      <h3 className="font-mono text-[0.5rem] font-bold uppercase tracking-[0.24em] text-orange">
+      <h3 className="font-mono text-[0.5rem] font-bold uppercase tracking-[0.24em] text-orange-ink">
         {heading}
       </h3>
       <ul className="mt-4 space-y-2.5">

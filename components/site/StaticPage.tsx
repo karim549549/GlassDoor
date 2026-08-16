@@ -59,13 +59,13 @@ export function StaticPage({
       <div className="mx-auto max-w-6xl px-6 md:px-10 py-20 md:py-28">
         <Link
           href="/"
-          className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-muted-foreground hover:text-orange transition-colors"
+          className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-muted-foreground hover:text-orange-ink transition-colors"
         >
           &larr; Devs Arena
         </Link>
 
         <header className="mt-8 border-b border-border pb-8">
-          <span className="block font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange">
+          <span className="block font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange-ink">
             {eyebrow}
           </span>
           <h1 className="font-display italic text-[clamp(2.2rem,5vw,3.6rem)] leading-[1.02] uppercase mt-3 text-balance">
@@ -111,7 +111,7 @@ export function Block({ heading, children }: { heading: string; children: React.
     // skip-link-style jump. outline-none because focus arrives programmatically
     // from a link the user already sees highlighted.
     <section id={id} tabIndex={-1} className="scroll-mt-28 outline-none">
-      <h2 className="font-mono text-[0.6rem] font-bold uppercase tracking-[0.22em] text-orange">
+      <h2 className="font-mono text-[0.6rem] font-bold uppercase tracking-[0.22em] text-orange-ink">
         <a href={`#${id}`} className="hover:underline">
           {heading}
         </a>

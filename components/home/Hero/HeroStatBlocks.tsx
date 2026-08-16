@@ -63,7 +63,7 @@ export function HeroStatBlocks({ openCount = 0 }: { openCount?: number }) {
         className="absolute hidden lg:block z-20 text-foreground"
         style={{ top: "37%", left: "clamp(1rem, 2.5vw, 2rem)", maxWidth: "clamp(120px, 13vw, 170px)" }}
       >
-        <div className="font-mono text-[0.52rem] text-orange uppercase mb-1" style={{ letterSpacing: "0.18em" }}>
+        <div className="font-mono text-[0.52rem] text-orange-ink uppercase mb-1" style={{ letterSpacing: "0.18em" }}>
           The brief
         </div>
         <div className="font-display" style={{ fontSize: "clamp(0.85rem, 1.1vw, 1.05rem)", lineHeight: 1.25, fontStyle: "italic" }}>
@@ -79,6 +79,8 @@ export function HeroStatBlocks({ openCount = 0 }: { openCount?: number }) {
         <div className="font-mono text-[0.48rem] uppercase tracking-[0.22em] text-muted-foreground">
           Entry costs
         </div>
+        {/* Bright accent: clamps to 24px at its smallest, which is WCAG's large
+            text threshold, so 3:1 applies and --orange clears it. */}
         <div className="font-mono text-orange" style={{ fontSize: "clamp(1.5rem, 2.2vw, 2rem)", fontWeight: 500, lineHeight: 1.1 }}>
           FREE
         </div>

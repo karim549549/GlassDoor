@@ -59,7 +59,7 @@ export function HeroArenaCard({ containerRef, arenasRef, cards }: HeroArenaCardP
             {/* Card Header / Title Lockup */}
             <div className="space-y-3.5 text-left">
               <div className="font-display italic text-[clamp(1.15rem,2.8vw,1.85rem)] leading-[1.1] text-foreground tracking-tight">
-                <span className="text-orange font-bold not-italic font-mono text-[0.6rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2.5 align-middle -translate-y-0.5">
+                <span className="text-orange-ink font-bold not-italic font-mono text-[0.6rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2.5 align-middle -translate-y-0.5">
                   [{card.tag}]
                 </span>
                 {card.title}
@@ -97,10 +97,10 @@ export function HeroArenaCard({ containerRef, arenasRef, cards }: HeroArenaCardP
                   {card.isLive ? (
                     <>
                       {activeTimer.split(":")[0]}
-                      <span className="text-orange animate-pulse">:</span>
+                      <span className="text-orange-ink animate-pulse">:</span>
                       {activeTimer.split(":")[1]}
-                      <span className="text-orange animate-pulse">:</span>
-                      <span className="text-orange">{activeTimer.split(":")[2]}</span>
+                      <span className="text-orange-ink animate-pulse">:</span>
+                      <span className="text-orange-ink">{activeTimer.split(":")[2]}</span>
                     </>
                   ) : (
                     card.timeValue

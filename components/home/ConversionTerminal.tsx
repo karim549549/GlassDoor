@@ -27,7 +27,7 @@ export function ConversionTerminal({ standings = [] }: { standings?: GlobalStand
           className="border-2 border-foreground bg-white p-8 md:p-12 shadow-[8px_8px_0px_0px_var(--foreground)] space-y-8"
         >
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-orange">
+            <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-orange-ink">
               <Terminal className="w-4 h-4" />
               <span>&gt; PICK SOMETHING AND BUILD IT</span>
             </div>
@@ -74,7 +74,7 @@ export function ConversionTerminal({ standings = [] }: { standings?: GlobalStand
           <div className="pt-4 flex flex-wrap items-center justify-between gap-4 font-mono text-[0.55rem] text-muted-foreground">
             <span>DEVS ARENA // CAIRO</span>
             <span>NO ENTRY FEE, EVER</span>
-            <span className="text-orange font-bold">SOLO OR TEAMS OF 2&ndash;4</span>
+            <span className="text-orange-ink font-bold">SOLO OR TEAMS OF 2&ndash;4</span>
           </div>
         </HUDCornerReticle>
         </div>

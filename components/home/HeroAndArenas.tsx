@@ -7,6 +7,26 @@ import DirectiveSection from "./DirectiveSection";
 import { ThreeSidedPerspective } from "./ThreeSidedPerspective";
 import { ASaturday } from "./ASaturday";
 import { ConversionTerminal } from "./ConversionTerminal";
+
+/**
+ * These four below-fold sections were tried as `next/dynamic` imports and the
+ * split was reverted, because it was measured and it did nothing: 1023 -> 1015
+ * KB raw, 318 -> 319 KB gzipped, across 19 chunks instead of 14.
+ *
+ * That is the expected result rather than a mistake in the attempt. A dynamic
+ * import with `ssr: true` still needs every chunk present to hydrate the markup
+ * it server-rendered, so Next references them all from the initial HTML and
+ * nothing is deferred - it only redraws the chunk boundaries.
+ *
+ * `ssr: false` *would* cut the initial JS, and is the wrong trade here: these
+ * sections carry most of the page's ~1,350 words, and removing them from the
+ * served HTML would buy a performance point with the SEO score and with the
+ * content being indexable at all.
+ *
+ * The real main-thread cost is every section building its GSAP timelines on
+ * mount. Reducing that means lazily creating `gsap.context()` as each section
+ * approaches the viewport, not code-splitting.
+ */
 import type { ArenaCardData } from "./Hero/arena-cards-data";
 import type { BoardSummary } from "@/lib/arena/service";
 import type { GlobalStanding } from "@/lib/arena/leaderboard-service";

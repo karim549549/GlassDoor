@@ -65,7 +65,7 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
         {/* Technical Section Header */}
         <div className="relative z-10 max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="text-left space-y-2">
-            <span className="font-mono text-[0.52rem] uppercase tracking-[0.25em] text-orange font-bold block">
+            <span className="font-mono text-[0.52rem] uppercase tracking-[0.25em] text-orange-ink font-bold block">
               [02 / STAGE ARENA]
             </span>
             <h2 className="font-display italic text-[clamp(2rem,4.5vw,4rem)] leading-none uppercase font-normal">
@@ -91,10 +91,10 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-[0.45rem] font-bold uppercase tracking-[0.2em] text-orange">
+              <dt className="font-mono text-[0.45rem] font-bold uppercase tracking-[0.2em] text-orange-ink">
                 Taking entries
               </dt>
-              <dd className="font-mono text-[1.4rem] leading-none tabular-nums text-orange mt-1.5">
+              <dd className="font-mono text-[1.4rem] leading-none tabular-nums text-orange-ink mt-1.5">
                 {summary?.openNow ?? "--"}
               </dd>
             </div>
@@ -179,10 +179,10 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
           </div>
           <div className="flex gap-4">
             {/* Both of these were href="#". They now go where they say. */}
-            <Link href="/arena?status=completed" className="hover:text-orange transition-colors">
+            <Link href="/arena?status=completed" className="hover:text-orange-ink transition-colors">
               [Browse Arena History]
             </Link>
-            <Link href="/arena/create" className="hover:text-orange transition-colors">
+            <Link href="/arena/create" className="hover:text-orange-ink transition-colors">
               [Host an Arena]
             </Link>
           </div>

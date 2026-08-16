@@ -15,6 +15,9 @@ export function HeroHeadline() {
           line, "Developer network. Competitions. Credentials. Profiles.",
           named four things and promised none of them. */}
       <h1 className="font-display font-normal uppercase tracking-tight" style={{ fontSize: "clamp(1.5rem, 3.8vw, 3.25rem)", lineHeight: 0.95 }}>
+        {/* Stays the bright accent: at 52px this is large text, which needs
+            3:1, and --orange now clears it. The small mono labels around it use
+            --orange-ink because they need 4.5:1. */}
         Hackathons, <span className="text-orange">but weirder.</span>
       </h1>
 

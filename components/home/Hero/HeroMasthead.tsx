@@ -34,7 +34,7 @@ export function HeroMasthead() {
           className="font-mono uppercase tracking-widest text-right leading-relaxed"
           style={{ fontSize: "clamp(0.5rem, 0.8vw, 0.65rem)" }}
         >
-          <div className="text-orange">2026</div>
+          <div className="text-orange-ink">2026</div>
           <div className="text-muted-foreground mt-1">JUL</div>
         </div>
       </div>

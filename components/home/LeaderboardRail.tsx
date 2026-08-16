@@ -96,7 +96,7 @@ export function LeaderboardRail({ standings }: { standings: GlobalStanding[] }) 
     return (
       <aside className="w-full lg:w-[19rem] shrink-0">
         <header className="flex items-baseline justify-between border-b border-current/20 pb-2">
-          <span className="font-mono text-[0.5rem] font-bold uppercase tracking-[0.22em] text-orange">
+          <span className="font-mono text-[0.5rem] font-bold uppercase tracking-[0.22em] text-orange-ink">
             Standings
           </span>
           <span className="font-mono text-[0.45rem] uppercase tracking-[0.18em] opacity-50">
@@ -112,7 +112,7 @@ export function LeaderboardRail({ standings }: { standings: GlobalStanding[] }) 
           </p>
           <Link
             href="/arena"
-            className="inline-block mt-4 font-mono text-[0.55rem] font-bold uppercase tracking-[0.18em] text-orange border-b border-orange/40 pb-0.5 hover:border-orange transition-colors"
+            className="inline-block mt-4 font-mono text-[0.55rem] font-bold uppercase tracking-[0.18em] text-orange-ink border-b border-orange/40 pb-0.5 hover:border-orange transition-colors"
           >
             Be the first &rarr;
           </Link>
@@ -124,7 +124,7 @@ export function LeaderboardRail({ standings }: { standings: GlobalStanding[] }) 
   return (
     <aside className="w-full lg:w-[19rem] shrink-0">
       <header className="flex items-baseline justify-between border-b border-current/20 pb-2">
-        <span className="font-mono text-[0.5rem] font-bold uppercase tracking-[0.22em] text-orange">
+        <span className="font-mono text-[0.5rem] font-bold uppercase tracking-[0.22em] text-orange-ink">
           Standings
         </span>
         <span className="font-mono text-[0.45rem] uppercase tracking-[0.18em] opacity-50">
@@ -159,7 +159,7 @@ export function LeaderboardRail({ standings }: { standings: GlobalStanding[] }) 
               {/* A wide deviation means Glicko-2 is not yet confident. Saying so
                   is more honest than presenting every number as settled. */}
               {s.deviation > 110 && (
-                <span className="block font-mono text-[0.4rem] uppercase tracking-[0.14em] text-orange mt-1">
+                <span className="block font-mono text-[0.4rem] uppercase tracking-[0.14em] text-orange-ink mt-1">
                   Provisional
                 </span>
               )}
@@ -170,7 +170,7 @@ export function LeaderboardRail({ standings }: { standings: GlobalStanding[] }) 
 
       <Link
         href="/arena"
-        className="inline-block mt-4 font-mono text-[0.5rem] uppercase tracking-[0.18em] opacity-55 hover:opacity-100 hover:text-orange transition-all"
+        className="inline-block mt-4 font-mono text-[0.5rem] uppercase tracking-[0.18em] opacity-55 hover:opacity-100 hover:text-orange-ink transition-all"
       >
         Full board &rarr;
       </Link>
