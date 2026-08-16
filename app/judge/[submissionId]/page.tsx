@@ -7,14 +7,13 @@ import { getJudgeAssignments } from "@/lib/arena/judging-service";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaHeader } from "@/components/arena/ArenaHeader";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
-import { Footer } from "@/components/home/Footer";
 import { SubmissionArtifacts } from "@/components/judge/SubmissionArtifacts";
 import { ScoringForm } from "@/components/judge/ScoringForm";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Score Submission | Devs Arena",
+  title: "Score Submission",
   robots: { index: false, follow: false },
 };
 
@@ -109,7 +108,6 @@ export default async function JudgeScoringPage({ params }: PageProps) {
         </ArenaContainer>
       </main>
 
-      <Footer />
     </div>
   );
 }

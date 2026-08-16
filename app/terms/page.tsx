@@ -3,7 +3,7 @@ import Link from "next/link";
 import { StaticPage, Block, DraftNotice } from "@/components/site/StaticPage";
 
 export const metadata: Metadata = {
-  title: "Terms | Devs Arena",
+  title: "Terms",
   description:
     "The rules for competing, judging, and hosting on Devs Arena - including what happens to your work and how results are decided.",
 };

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/components/home/Reveal";
-import { Footer } from "@/components/home/Footer";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { PacketAnatomy } from "@/components/companies/PacketAnatomy";
 import { GUARANTEES, LIMITS } from "@/components/companies/hiring-content";
+import { DocIndex } from "@/components/site/DocIndex";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -65,6 +65,14 @@ function buildJsonLd(siteUrl: string) {
   };
 }
 
+/** Mirrors the section ids below; the rail links to these. */
+const SECTIONS = [
+  { id: "what-you-receive", label: "What you receive" },
+  { id: "why-it-holds", label: "Why it holds" },
+  { id: "where-it-stops", label: "Where it stops" },
+  { id: "start", label: "Start" },
+];
+
 export default function CompaniesPage() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
@@ -72,6 +80,28 @@ export default function CompaniesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildJsonLd(getSiteUrl())) }}
       />
+
+      {/* The section index, parked in the left gutter.
+          This page's sections are full-bleed with alternating grounds (one is
+          near-black), so the two-column document layout used on /about would
+          break them. Fixed in the margin instead: at 1440 and up there is over
+          300px of empty gutter either side of the 72rem content column, which
+          is exactly where a docs index belongs and is otherwise wasted. Below
+          that width there is no gutter to put it in, so it is hidden - the page
+          reads fine without it. */}
+      <div className="pointer-events-none fixed inset-x-0 top-1/2 z-30 hidden -translate-y-1/2 min-[1660px]:block">
+        {/* 103rem = the content column's 72rem plus a 13rem rail and a 2.5rem
+            gap on each side. Both this and the content are centred, so the gap
+            between them stays constant at any width above the breakpoint - and
+            the breakpoint is where the gutter first becomes wide enough to hold
+            the rail without touching the text. An earlier 92rem/xl pairing put
+            the rail's right edge 72px inside the content column. */}
+        <div className="mx-auto flex max-w-[103rem] px-6">
+          <div className="pointer-events-auto w-52">
+            <DocIndex sections={SECTIONS} />
+          </div>
+        </div>
+      </div>
 
       <main>
         {/* ---------------------------------------------------------------
@@ -127,7 +157,7 @@ export default function CompaniesPage() {
         {/* ---------------------------------------------------------------
             The signature: the credential, dissected.
         ---------------------------------------------------------------- */}
-        <section className="relative overflow-hidden border-b border-foreground/15">
+        <section id="what-you-receive" className="relative overflow-hidden border-b border-foreground/15 scroll-mt-20">
           <BackgroundGrid opacity={0.06} />
           <div className="relative z-10 mx-auto max-w-6xl px-6 py-20 md:px-12 md:py-28">
             <Reveal as="div" className="max-w-2xl">
@@ -154,7 +184,7 @@ export default function CompaniesPage() {
             Guarantees. Each names where it is enforced, because "we promise"
             is what every competitor already says.
         ---------------------------------------------------------------- */}
-        <section className="relative overflow-hidden border-b border-foreground/15 bg-foreground text-background">
+        <section id="why-it-holds" className="relative overflow-hidden border-b border-foreground/15 bg-foreground text-background scroll-mt-20">
           <BackgroundGrid opacity={0.07} />
           <div className="relative z-10 mx-auto max-w-6xl px-6 py-20 md:px-12 md:py-28">
             <Reveal as="div" className="max-w-2xl">
@@ -196,7 +226,7 @@ export default function CompaniesPage() {
         {/* ---------------------------------------------------------------
             Honest limits. No competitor publishes one; that is the reason to.
         ---------------------------------------------------------------- */}
-        <section className="relative overflow-hidden border-b border-foreground/15">
+        <section id="where-it-stops" className="relative overflow-hidden border-b border-foreground/15 scroll-mt-20">
           <BackgroundGrid opacity={0.06} />
           <div className="relative z-10 mx-auto max-w-6xl px-6 py-20 md:px-12 md:py-28">
             <Reveal as="div" className="max-w-2xl">
@@ -236,7 +266,7 @@ export default function CompaniesPage() {
             Two ways in. Reading judged work needs nothing from them; setting
             the problem is the committed path.
         ---------------------------------------------------------------- */}
-        <section className="relative overflow-hidden">
+        <section id="start" className="relative overflow-hidden scroll-mt-20">
           <BackgroundGrid opacity={0.06} />
           <div className="relative z-10 mx-auto max-w-6xl px-6 py-20 md:px-12 md:py-28">
             <Reveal as="div" className="max-w-2xl">
@@ -302,7 +332,6 @@ export default function CompaniesPage() {
         </section>
       </main>
 
-      <Footer />
     </div>
   );
 }

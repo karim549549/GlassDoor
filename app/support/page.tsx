@@ -3,7 +3,7 @@ import Link from "next/link";
 import { StaticPage, Block } from "@/components/site/StaticPage";
 
 export const metadata: Metadata = {
-  title: "Support | Devs Arena",
+  title: "Support",
   description:
     "Get help with an arena, a submission, a score, or a proof packet - and how to appeal a result.",
 };

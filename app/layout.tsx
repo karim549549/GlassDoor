@@ -101,6 +101,7 @@ import AuthProvider from "@/components/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 import { getSiteUrl } from "@/lib/site-url";
 import { Nav } from "@/components/home/Nav";
+import { Footer } from "@/components/home/Footer";
 import { LayoutSpacer } from "@/components/providers/LayoutSpacer";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 
@@ -152,6 +153,12 @@ export default function RootLayout({
           <ToastProvider>
             <Nav />
             <LayoutSpacer>{children}</LayoutSpacer>
+            {/* One mount, here, rather than ten pages each remembering to add
+                it. That arrangement had already failed: every static page -
+                about, support, terms, privacy - rendered with no footer at all,
+                so a reader reaching the end of the legal pages had nowhere to
+                go and none of the footer's links were reachable from them. */}
+            <Footer />
           </ToastProvider>
         </AuthProvider>
       </body>

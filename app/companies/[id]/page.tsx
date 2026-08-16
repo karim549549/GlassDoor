@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getCompanyByIdOrSlug } from "@/lib/companies/service";
 import { toCompanyDto } from "@/lib/companies/dto";
-import { Footer } from "@/components/home/Footer";
 import { CompanyDetailView } from "@/components/companies/CompanyDetailView";
 
 export const revalidate = 300;
@@ -21,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!company) {
     return {
-      title: "Company Not Found | Devs Arena",
+      title: "Company Not Found",
     };
   }
 
@@ -57,7 +56,6 @@ export default async function CompanyPage({ params }: PageProps) {
         <main className="flex-1">
           <CompanyDetailView company={toCompanyDto(company)} />
         </main>
-        <Footer />
       </div>
     </div>
   );

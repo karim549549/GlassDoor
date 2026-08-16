@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaHeader } from "@/components/arena/ArenaHeader";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
-import { Footer } from "@/components/home/Footer";
 import { ProofLookupClient } from "@/components/proof/ProofLookupClient";
 
 export const metadata: Metadata = {
-  title: "Proof Packet Verification Portal | Devs Arena",
+  title: "Proof Packet Verification Portal",
   description: "Verify tamper-evident developer competition credentials, rubric scorecards, and cryptographic proof packets.",
 };
 
@@ -26,7 +25,6 @@ export default function ProofIndexPage() {
         </ArenaContainer>
       </main>
 
-      <Footer />
     </div>
   );
 }

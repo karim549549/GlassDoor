@@ -3,7 +3,7 @@ import Link from "next/link";
 import { StaticPage, Block, DraftNotice } from "@/components/site/StaticPage";
 
 export const metadata: Metadata = {
-  title: "Privacy | Devs Arena",
+  title: "Privacy",
   description:
     "What Devs Arena collects, what it publishes, and what stays private - described from how the platform actually behaves.",
 };

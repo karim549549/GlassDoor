@@ -4,7 +4,6 @@ import { requireRole } from "@/lib/server/auth/require-user";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaHeader } from "@/components/arena/ArenaHeader";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
-import { Footer } from "@/components/home/Footer";
 import { Shield, Users, Trophy, Award, Building2, AlertTriangle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -121,7 +120,6 @@ export default async function AdminDashboardPage() {
         </ArenaContainer>
       </main>
 
-      <Footer />
     </div>
   );
 }

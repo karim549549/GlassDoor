@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const result = uuid ? await loadArena(uuid, null) : null;
 
   if (!result) {
-    return { title: "Arena Not Found | Devs Arena" };
+    return { title: "Arena Not Found" };
   }
 
   const { arena } = result;

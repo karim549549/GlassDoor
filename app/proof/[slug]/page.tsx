@@ -6,7 +6,6 @@ import { ProofPacketView } from "@/components/proof/ProofPacketView";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaHeader } from "@/components/arena/ArenaHeader";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
-import { Footer } from "@/components/home/Footer";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -19,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const packet = await loadPacket(slug);
 
   if (!packet) {
-    return { title: "Proof Packet Not Found | Devs Arena" };
+    return { title: "Proof Packet Not Found" };
   }
 
   const holderName =
@@ -64,7 +63,6 @@ export default async function ProofPacketPage({ params }: PageProps) {
         </ArenaContainer>
       </main>
 
-      <Footer />
     </div>
   );
 }

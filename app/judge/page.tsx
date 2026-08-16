@@ -5,13 +5,12 @@ import { getJudgeAssignments } from "@/lib/arena/judging-service";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { ArenaHeader } from "@/components/arena/ArenaHeader";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
-import { Footer } from "@/components/home/Footer";
 import { JudgeQueueList, type JudgeQueueItem } from "@/components/judge/JudgeQueueList";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Judging Queue | Devs Arena",
+  title: "Judging Queue",
   robots: { index: false, follow: false },
 };
 
@@ -69,7 +68,6 @@ export default async function JudgeQueuePage() {
         </ArenaContainer>
       </main>
 
-      <Footer />
     </div>
   );
 }

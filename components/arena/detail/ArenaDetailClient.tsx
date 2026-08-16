@@ -11,7 +11,6 @@ import { ArenaActionCard } from "./ArenaActionCard";
 import { ArenaHostCard } from "./ArenaHostCard";
 import { ArenaComments } from "./ArenaComments";
 import { ArenaLeaderboard } from "./ArenaLeaderboard";
-import { Footer } from "@/components/home/Footer";
 import { CheckCircle2 } from "lucide-react";
 
 interface ArenaDetailClientProps {
@@ -298,7 +297,6 @@ export function ArenaDetailClient({ arena, meta, isGuest }: ArenaDetailClientPro
       </main>
 
       {/* Footer */}
-      <Footer />
     </div>
   );
 }

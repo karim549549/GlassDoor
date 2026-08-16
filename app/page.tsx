@@ -1,6 +1,5 @@
 import { Billboard } from "@/components/home/Billboard";
 import { HeroAndArenas } from "@/components/home/HeroAndArenas";
-import { Footer } from "@/components/home/Footer";
 import { AuthModalMount } from "@/components/auth/AuthModalMount";
 import { Suspense } from "react";
 import { listArenas, getBoardSummary } from "@/lib/arena/service";
@@ -152,7 +151,6 @@ export default async function Home() {
         <main className="flex flex-col">
           <HeroAndArenas cards={cards} openCount={openCount} summary={summary} standings={standings} />
         </main>
-        <Footer />
       </div>
 
       <Suspense fallback={null}>

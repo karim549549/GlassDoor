@@ -14,12 +14,11 @@ import { PipelineFilters } from "@/components/recruiter/PipelineFilters";
 import { PipelineTable } from "@/components/recruiter/PipelineTable";
 import { ExportPipelineButton } from "@/components/recruiter/ExportPipelineButton";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
-import { Footer } from "@/components/home/Footer";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Candidate Pipeline | Devs Arena",
+  title: "Candidate Pipeline",
   robots: { index: false, follow: false },
 };
 
@@ -157,7 +156,6 @@ export default async function RecruiterPipelinePage({ searchParams }: RecruiterP
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }
