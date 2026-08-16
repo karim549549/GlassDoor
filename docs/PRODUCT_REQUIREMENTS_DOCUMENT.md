@@ -59,28 +59,56 @@ Treat the show as a first-class product surface, not marketing collateral.
 
 ---
 
-### 1.3 The Show — Product Surface, Not Collateral
+### 1.3 The Format — What an Arena Actually Is
 
-The YouTube series is **live, with published episodes**, and is the platform's primary acquisition channel. As of this revision it appears **nowhere in the application** — the only reference to YouTube anywhere in the repo is a non-goal stating that video transcoding is out of scope. That is the single largest gap between what the business is and what the product shows.
+#### The reference
 
-> **OPEN — required before the show surfaces can be built:** the channel URL / handle, and whether episodes map one-to-one onto `Arena` records. Deliberately left blank rather than guessed; do not invent a channel link.
+The product's format follows **CodeTV's _Web Dev Challenge_** (`https://codetv.dev/series/web-dev-challenge`) — an independent show, referenced here as a format model only; there is no affiliation. Its shape:
 
-#### Why it belongs in the product, not just on social
+- A **brief** is given to the teams
+- **30 minutes to plan**, then **4 hours to build**
+- Small **teams**, not solo
+- The episode ends with teams **demoing what they made**
+- Briefs are deliberately playful — *"the most devious video player"*, *"a site with zero business value"*, *"build a game playable on at least 2 devices"*, *"indulge your worst developer impulses"*
 
-An arena that has ended is currently a dead record. With the show attached, a finished arena becomes **an episode with a permanent page**: the brief, the entries, the judges' reasoning, and the video of the verdict. That converts the platform's exhaust into its content library, and gives every past arena a durable reason to be visited and linked.
+**Episodes do not map one-to-one onto `Arena` records.** The show is the *template for what an arena is*, not a catalogue to mirror. Do not model an `Episode` entity against it.
 
-It is also the platform's answer to the cold-start problem. A brand-new arena board with no history is unconvincing; a back catalogue of episodes is evidence the thing is real, and it is evidence that works on developers, viewers and employers simultaneously — without making any claim about scale.
+#### What Devs Arena adds — and this is the whole positioning
 
-#### Surfaces implied (not yet built)
+_Web Dev Challenge_ is something you **watch**. Its participants are invited.
+
+**Devs Arena is that format, open to enter, run both online across the platform and offline at physical venues.** That is the product in one sentence, and it is why the Egypt-centric venue and geocoding architecture in §2 exists — offline arenas are a first-class mode, not an afterthought.
+
+The line to lead with is closer to: *you cannot join Web Dev Challenge — you can join this one.*
+
+#### The phase windows already are the format
+
+`ideaPhaseStart/End` followed by `implPhaseStart/End` is not generic scheduling. It **is** "30 minutes to plan, then 4 hours to build", already modelled. Format presets should be expressed in those existing windows rather than as new fields.
+
+#### The tone gap — the most actionable finding in this document
+
+The reference format's briefs are jokes. The platform's own copy currently reads *"unforgeable hiring credentials"*, *"rubric frozen before entry"*, *"a conflict-of-interest database trigger"*. These describe the same activity from opposite universes, and the second one is what a first-time visitor currently sees.
+
+**Arena briefs and platform copy should sound like the show**: playful, specific, a little absurd. The integrity machinery is real and worth keeping, but it is plumbing — it belongs in documentation and on employer surfaces, not in the voice the product speaks to entrants.
+
+Note also that the reference format barely emphasises winning; it ends in a **demo**, and the interest is in what people made. The platform has built an elaborate scoring, rating and appeals apparatus. That apparatus is correct for the phase-2 credential and should be kept, but it should not be presented to entrants as the point of taking part. **The demo is the point.**
+
+#### The show as a product surface
+
+The YouTube series is **live, with published episodes**, and is the primary acquisition channel. As of this revision it appears **nowhere in the application** — the only YouTube reference in the repo is a non-goal stating that video transcoding is out of scope.
+
+> **OPEN — needed before show surfaces are built:** the channel URL / handle. Deliberately left blank rather than guessed; do not invent a channel link.
+
+An arena that has ended is currently a dead record. Attaching footage and demos turns a finished arena into **something worth revisiting**: the brief, what each team shipped, and the demo. That converts the platform's exhaust into its content library, and answers the cold-start problem — a new board with no history is unconvincing, whereas a back catalogue is evidence the thing is real, and it works on entrants, viewers and employers at once without claiming any scale.
 
 | Surface | Purpose |
 |---|---|
-| Episode link on a completed arena | Ties the record to the footage of its verdict |
+| Demo / footage on a completed arena | The payoff the format is built around |
 | A watchable index of past arenas | The back catalogue; the cold-start answer |
-| The show on the homepage | Currently the missing hook — what makes this not Codeforces |
-| Judge verdicts as readable content | Already stored, already the best writing on the platform, currently invisible |
+| The show on the homepage | The missing hook — what makes this not Codeforces |
+| Judge reasoning as readable content | Already stored, already mandatory, currently invisible |
 
-The last row matters most and costs least: `JudgeVerdict.feedbackText` and every `JudgeScore.justification` are already captured, already mandatory, and are the most interesting prose the platform produces. They are currently visible only inside a proof packet, framed as evidence for recruiters, when they are also simply **good reading** — the written half of the show.
+The last row costs least and returns most: `JudgeVerdict.feedbackText` and every `JudgeScore.justification` are already captured and cannot be empty. They are the most interesting prose the platform produces, and are currently visible only inside a proof packet, framed as evidence for recruiters — when they are also, simply, **good reading**. That is the written half of the show, already in the database.
 
 ---
 

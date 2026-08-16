@@ -36,6 +36,25 @@ checkmark is not television. Judges arguing about why one submission beat
 another is watchable, and it is the thing a pure-algorithms site structurally
 cannot copy.
 
+**The format follows CodeTV's _Web Dev Challenge_** — a brief, 30 minutes to
+plan, 4 hours to build, in teams, ending in a demo. Referenced as a format
+model only; no affiliation, and episodes are **not** modelled one-to-one onto
+arenas. Two consequences worth knowing before you touch anything:
+
+- `ideaPhaseStart/End` then `implPhaseStart/End` **is** "30 min to plan, 4 hours
+  to build". Express format presets in those existing windows, not new fields.
+- **That show is something you watch; this is the same format you can enter,**
+  online or offline at a real venue. The offline mode is why the Egypt venue and
+  geocoding architecture exists — it is first-class, not an afterthought.
+
+**Match the tone.** The reference format's briefs are jokes — "the most devious
+video player", "a site with zero business value". Platform copy currently says
+"unforgeable hiring credentials" and "conflict-of-interest database trigger".
+Same activity, opposite universes. The integrity machinery is real and stays,
+but it is plumbing: it belongs in docs and on employer surfaces, not in the
+voice the product uses with entrants. And the format barely emphasises winning —
+**it ends in a demo, and the demo is the point.**
+
 ## What this means when you write copy or build a surface
 
 - Lead with prize money, rating, teams, the show, and rivalry. Not employability.
