@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { ARENA_CARDS, type ArenaCardData } from "./Hero/arena-cards-data";
 
 /**
  * Section 4 - the arena deck, closed into a cube.
@@ -49,6 +48,68 @@ const ARRIVE_FROM = 1250;
 /** Fraction of the section over which it descends into place. */
 const ARRIVE_BY = 0.5;
 
+/**
+ * What a developer walks away with.
+ *
+ * The page already spends three sections showing arena cards; a fourth was the
+ * same pitch a third time. These six faces answer the question those sections
+ * leave open - why enter one at all - in the reader's terms rather than ours.
+ * Nothing here describes how the platform is built.
+ */
+interface Reward {
+  tag: string;
+  title: string;
+  body: string;
+  statLabel: string;
+  stat: string;
+  notes: string[];
+}
+
+const REWARDS: Reward[] = [
+  {
+    tag: "Prize money",
+    title: "Win the pool, not a badge",
+    body: "Arenas carry real prize money put up by whoever hosts them. Top three place, paid in EGP, with the split shown on the arena before you enter.",
+    statLabel: "Paid by", stat: "The host",
+    notes: ["1ST", "2ND", "3RD"],
+  },
+  {
+    tag: "Rating",
+    title: "A number you did not write yourself",
+    body: "Every judged result moves a Glicko-2 rating in that one domain. Backend work never inflates a frontend score, and nobody can edit it, including us.",
+    statLabel: "Domains", stat: "9, rated apart",
+    notes: ["EARNED", "PER DOMAIN", "PERMANENT"],
+  },
+  {
+    tag: "Credential",
+    title: "One link that survives the interview",
+    body: "You leave with a proof packet: the brief, your commits, every judge's score and reasoning. Public, permanent, and readable without an account.",
+    statLabel: "Costs", stat: "Nothing",
+    notes: ["PUBLIC", "PERMANENT", "YOURS"],
+  },
+  {
+    tag: "Standing",
+    title: "A place on the board",
+    body: "Every arena publishes its leaderboard, and your rating stacks across all of them. Being good becomes something a stranger can look up.",
+    statLabel: "Visible to", stat: "Anyone",
+    notes: ["RANKED", "PER ARENA", "CUMULATIVE"],
+  },
+  {
+    tag: "People",
+    title: "A team, and the judges who read your work",
+    body: "Team arenas put you with people who build at your level under real pressure. The judges are working engineers who then read your code closely.",
+    statLabel: "Teams of", stat: "2 to 4",
+    notes: ["SQUAD", "PEERS", "JUDGES"],
+  },
+  {
+    tag: "Pipeline",
+    title: "Companies read the board",
+    body: "Hiring teams shortlist from judged work instead of CVs. A strong packet is a direct route to a conversation, and you decide who may contact you.",
+    statLabel: "Contact", stat: "Your call",
+    notes: ["SHORTLIST", "NO SCREEN", "CONSENT"],
+  },
+];
+
 interface Callout {
   face: number;
   label: string;
@@ -68,12 +129,12 @@ interface Callout {
  * would be the wireframe this layout exists to avoid.
  */
 const CALLOUTS: Callout[] = [
-  { face: 0, label: "Formats", value: "REP · LIVE · ARENA", side: "left", top: "34%", inset: "3%", line: 190 },
-  { face: 3, label: "Rubric", value: "Frozen before entry", side: "left", top: "56%", inset: "1%", line: 245 },
-  { face: 5, label: "Conflicts", value: "Blocked in the database", side: "left", top: "78%", inset: "5%", line: 164 },
-  { face: 2, label: "Ledger", value: "Append-only", side: "right", top: "22%", inset: "4%", line: 178 },
-  { face: 1, label: "Evidence", value: "Commits + defense", side: "right", top: "52%", inset: "1%", line: 238 },
-  { face: 4, label: "Window", value: "Set by the host", side: "right", top: "80%", inset: "6%", line: 156 },
+  { face: 0, label: "01 Register", value: "Take a seat before the deadline", side: "left", top: "30%", inset: "3%", line: 190 },
+  { face: 3, label: "02 Plan", value: "Approach recorded before any code", side: "left", top: "52%", inset: "1%", line: 245 },
+  { face: 5, label: "03 Build", value: "Commits sync while the clock runs", side: "left", top: "74%", inset: "5%", line: 164 },
+  { face: 2, label: "04 Judge", value: "Named judges, written reasoning", side: "right", top: "26%", inset: "4%", line: 178 },
+  { face: 1, label: "05 Results", value: "Leaderboard, rating, prize", side: "right", top: "50%", inset: "1%", line: 238 },
+  { face: 4, label: "Then", value: "The packet is yours to keep", side: "right", top: "76%", inset: "6%", line: 156 },
 ];
 
 /**
@@ -100,7 +161,7 @@ function rotateVec(v: [number, number, number], rx: number, ry: number): [number
   return [x1, y1 * cx - z1 * sx, y1 * sx + z1 * cx];
 }
 
-export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
+export function ThreeSidedPerspective() {
   const sectionRef = useRef<HTMLElement>(null);
   const scalerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -109,13 +170,6 @@ export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
   const calloutRefs = useRef<(HTMLDivElement | null)[]>([]);
   const indexRef = useRef<HTMLSpanElement>(null);
 
-  // Six faces, whatever the board holds. Sections 1 and 2 take the first three
-  // of the same list, so the cube opens on the card the reader just watched
-  // descend.
-  const faces = React.useMemo(() => {
-    const base = cards && cards.length > 0 ? cards : ARENA_CARDS;
-    return Array.from({ length: 6 }, (_, i) => base[i % base.length]);
-  }, [cards]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -326,14 +380,14 @@ export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
           {/* Masthead, in the same lockup Section 2 uses. */}
           <div className="max-w-md space-y-2">
             <span className="block font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange">
-              [03 / The board, assembled]
+              [03 / Inside an arena]
             </span>
             <h2 className="font-display italic text-[clamp(2rem,4.5vw,4rem)] leading-none uppercase font-normal">
-              Six Arenas, One Solid
+              What you win
             </h2>
             <p className="font-mono text-[0.58rem] text-[#F1EFE9]/50 uppercase tracking-widest leading-relaxed">
-              The same cards that fanned out above. Every face is a live arena.
-              Drag to turn it, click a face to enter.
+              An arena is a real problem, a clock, and judges who put their names
+              to a verdict. Six sides here, one per thing you leave with.
             </p>
           </div>
 
@@ -363,9 +417,9 @@ export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
             className="absolute inset-0 will-change-transform"
             style={{ transformStyle: "preserve-3d" }}
           >
-            {faces.map((card, i) => (
+            {REWARDS.map((card, i) => (
               <div
-                key={`${card.id}-${i}`}
+                key={card.tag}
                 ref={(el) => { faceRefs.current[i] = el; }}
                 // Static. The face transform and the panel styling are both
                 // fixed now - the cube is never partially built, so there is
@@ -389,37 +443,31 @@ export function ThreeSidedPerspective({ cards }: { cards?: ArenaCardData[] }) {
                 <div className="absolute inset-1.5 border border-dashed border-current/10 pointer-events-none" />
 
                 <div className="relative space-y-3 text-left">
-                  <div className="font-display italic text-[1.15rem] leading-[1.1] tracking-tight">
-                    <span className="text-orange font-bold not-italic font-mono text-[0.55rem] tracking-[0.2em] border border-orange px-1.5 py-0.5 inline-block mr-2 align-middle -translate-y-0.5">
-                      [{card.tag}]
-                    </span>
+                  <span className="text-orange font-bold font-mono text-[0.52rem] tracking-[0.2em] uppercase border border-orange px-1.5 py-0.5 inline-block">
+                    {card.tag}
+                  </span>
+                  <div className="font-display italic text-[1.25rem] leading-[1.12] tracking-tight">
                     {card.title}
                   </div>
-                  <p className="font-mono text-[0.48rem] opacity-60 uppercase tracking-widest leading-relaxed line-clamp-4">
-                    {card.description}
-                  </p>
+                  <p className="text-[0.8rem] leading-relaxed opacity-70">{card.body}</p>
                 </div>
 
                 <div className="relative flex flex-row items-end justify-between gap-3 pt-3 border-t border-dashed border-current/20 mt-3 text-left">
                   <div className="flex flex-col">
                     <span className="font-mono text-[0.4rem] uppercase tracking-[0.25em] opacity-55 mb-1 block font-bold">
-                      [{card.timeLabel}]
+                      [{card.statLabel}]
                     </span>
-                    <div
-                      className={`font-mono text-[1rem] font-bold leading-none tracking-widest ${
-                        card.isLive ? "opacity-100" : "opacity-60"
-                      }`}
-                    >
-                      {card.timeValue}
+                    <div className="font-mono text-[0.85rem] font-bold leading-none tracking-wider">
+                      {card.stat}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5 justify-end max-w-[55%]">
-                    {card.tech.slice(0, 3).map((tech) => (
+                    {card.notes.map((n) => (
                       <span
-                        key={tech}
+                        key={n}
                         className="font-mono text-[0.45rem] uppercase tracking-wider font-bold opacity-85"
                       >
-                        [{tech}]
+                        [{n}]
                       </span>
                     ))}
                   </div>

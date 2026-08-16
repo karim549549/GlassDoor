@@ -5,7 +5,7 @@ import HeroSection from "./Hero/HeroSection";
 import ArenasSection from "./ArenasSection";
 import DirectiveSection from "./DirectiveSection";
 import { ThreeSidedPerspective } from "./ThreeSidedPerspective";
-import { ProofVerifier } from "./ProofVerifier";
+import { ForCompanies } from "./ForCompanies";
 import { GlickoLedgerExplorer } from "./GlickoLedgerExplorer";
 import { ConversionTerminal } from "./ConversionTerminal";
 import type { ArenaCardData } from "./Hero/arena-cards-data";
@@ -31,14 +31,15 @@ export function HeroAndArenas({
       {/* SECTION 3: Pinned Directive Statement with Character-by-Character Scrub (Dark Mode #0E0E0D) */}
       <DirectiveSection />
 
-      {/* SECTION 4: the arena deck, closed into a cube the reader can turn. */}
-      <ThreeSidedPerspective cards={cards} />
+      {/* SECTION 4: what a developer actually wins by entering an arena, and the
+          lifecycle they go through to get it. Same cube, different job - the
+          page had already shown arena cards three times by this point. */}
+      <ThreeSidedPerspective />
 
-      {/* SECTION 5: verify a credential rather than be told it is verifiable.
-          Replaces a 12-column split - layer picker beside an arena-card
-          carousel - where the carousel had nothing to do with proof packets and
-          the split was the wireframe the rest of the page avoids. */}
-      <ProofVerifier />
+      {/* SECTION 5: the hiring side - the first thing on the page addressed to
+          the people who pay. Replaced a SHA-256 verifier which was correct,
+          real, and a documentation page rather than a sales one. */}
+      <ForCompanies />
 
       {/* CHAPTER 6: Glicko-2 Multi-Domain Mathematical Ledger (Cyber Dark #070a0d) */}
       <GlickoLedgerExplorer />
