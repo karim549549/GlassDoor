@@ -53,36 +53,10 @@ export function DirectiveSection() {
         0
       );
 
-      // 2. Delayed Fox Image & Embers: starts ONLY after at least 50% of the text has appeared
-      masterTimeline.fromTo(
-        ".fox-neon-art",
-        {
-          opacity: 0,
-          scale: 0.9,
-          filter: "drop-shadow(0 0 10px rgba(255,107,0,0))",
-        },
-        {
-          opacity: 0.88,
-          scale: 1,
-          filter: "drop-shadow(0 0 45px rgba(255,107,0,0.6))",
-          ease: "power2.out",
-          duration: 0.5,
-        },
-        0.5 // Starts at 50% scroll progress
-      );
-
-      masterTimeline.fromTo(
-        ".fox-embers-canvas",
-        {
-          opacity: 0,
-        },
-        {
-          opacity: 1,
-          ease: "power1.out",
-          duration: 0.4,
-        },
-        0.55
-      );
+      // The fox is no longer driven from here. `FoxBackground` reads this
+      // section's own rect every frame inside its render loop, so its ignition
+      // stays locked to scroll position without a second timeline that could
+      // drift from this one - and it reverses for free on the way back up.
     }, sectionRef);
 
     return () => ctx.revert();
@@ -119,7 +93,16 @@ export function DirectiveSection() {
           {/* Original Typography & Styling: Letters start totally hidden and reveal via scroll */}
           <h2
             ref={textRef}
-            className="font-display italic text-[clamp(2.2rem,5.5vw,4.8rem)] font-normal uppercase tracking-tight leading-[1.08] text-[#F1EFE9] text-balance select-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]"
+            /* Two shadows doing two different jobs. The tight one is a dark
+               contact edge that separates the glyph from whatever is directly
+               behind it - that is what keeps thin serif strokes readable over
+               the fire. The wide one is an ambient pool that lifts the whole
+               block off the background. One shadow alone does neither well. */
+            style={{
+              textShadow:
+                "0 0 4px rgba(0,0,0,0.98), 0 0 10px rgba(0,0,0,0.92), 0 6px 34px rgba(0,0,0,0.85)",
+            }}
+            className="font-display italic text-[clamp(2.2rem,5.5vw,4.8rem)] font-normal uppercase tracking-tight leading-[1.08] text-[#F1EFE9] text-balance select-none"
           >
             {STATEMENT_PARTS.map((part, pIdx) => (
               <span

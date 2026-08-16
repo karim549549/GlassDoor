@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local agent configurations
 .claude/
+
+# design sources and references (kept on disk, out of git)
+design/
