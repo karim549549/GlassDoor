@@ -105,10 +105,33 @@ it gets trusted.
 
 These come up in almost every task. Assume them rather than re-deriving them.
 
-- **The database is currently unreachable** (invalid credentials, Prisma P1000).
-  Nothing can be verified at runtime. `npm run build` will fail — it runs
-  `prisma migrate deploy`. The green check is:
-  `npx prisma generate && npx tsc --noEmit && npx eslint && npx next build && npm test`
+- **The local database works. Production's does not.** This entry used to say
+  the database was unreachable everywhere and that `npm run build` would fail
+  because it ran `prisma migrate deploy`. Both were stale, and between them they
+  hid a live outage for a long time — so check rather than assume:
+  - Locally, `DATABASE_URL` in `.env` connects and `npx prisma migrate status`
+    reports the schema up to date. Runtime behaviour **can** be verified.
+  - `npm run build` is `prisma generate && next build --webpack`. It never
+    touches the database, which is why Vercel deployments succeed even while
+    every request there fails.
+  - On Vercel, `DATABASE_URL` holds a stale password: every runtime query fails
+    with **P1000 `credentials for 'postgres' are not valid`**, across
+    `/api/auth/login`, `/api/auth/me`, `/arena`, `/recruiter` and more. Supabase
+    Auth succeeds first, so login returns a 500 `PROFILE_SYNC_FAILED` rather
+    than a 401 — the password is right, the profile sync behind it cannot reach
+    Postgres. Fixing it means updating the env var in the Vercel dashboard; no
+    code change will help.
+  - The green check is:
+    `npx prisma generate && npx tsc --noEmit && npx eslint && npx next build && npm test`
+- **Nothing can be judged.** `ArenaJudge` and `JudgeAssignment` exist in the
+  schema, and `/api/arena/[id]/judge/assignments` is GET-only: there is no code
+  path anywhere that creates a judge roster entry or an assignment.
+  `submitJudgeVerdict` opens by looking one up with `findUnique`, so it can
+  never succeed. Join, teams, submit, rubric, scoring, commits, defense,
+  leaderboard and comments are all wired — this one missing write surface holds
+  the whole chain shut, which is why production has zero verdicts, zero ratings
+  and zero proof packets. It is the precondition for everything the employer
+  side sells.
 - **Arena status is DERIVED, never stored.** There is no `status` column and no
   scheduler. `deriveArenaStatus(windows, now)` in `lib/arena/status.ts` takes
   `now` as a parameter — never call `Date.now()` inside it, or arenas near a
