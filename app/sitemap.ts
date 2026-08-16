@@ -31,6 +31,10 @@ const STATIC_PATHS = [
   "/support",
   "/terms",
   "/privacy",
+  // The employer page. /recruiter is the real hiring product but is auth-gated
+  // and noindex, so this is the only crawlable page addressed to the people who
+  // pay - it should not be reachable to a crawler only via in-page anchors.
+  "/companies",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
