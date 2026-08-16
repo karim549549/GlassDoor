@@ -1,9 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { ProfileHeader } from "./ProfileHeader";
-import { EditProfileModal } from "./EditProfileModal";
+
+// Opens only when the owner clicks Edit, and pulls in the whole edit form
+// subtree. Visitors reading someone else's profile - the common case, and the
+// one recruiters are in - never open it, so it should not be in their bundle.
+const EditProfileModal = dynamic(
+  () => import("./EditProfileModal").then((m) => m.EditProfileModal),
+  { ssr: false }
+);
 import { DeveloperProfileCard } from "./view/DeveloperProfileCard";
 import { ArenaStatsCard } from "./view/ArenaStatsCard";
 import { ArenaPerformanceRecord } from "./view/ArenaPerformanceRecord";

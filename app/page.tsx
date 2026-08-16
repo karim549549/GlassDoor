@@ -1,7 +1,7 @@
 import { Billboard } from "@/components/home/Billboard";
 import { HeroAndArenas } from "@/components/home/HeroAndArenas";
 import { Footer } from "@/components/home/Footer";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { AuthModalMount } from "@/components/auth/AuthModalMount";
 import { Suspense } from "react";
 import { listArenas, getBoardSummary } from "@/lib/arena/service";
 import { getGlobalStandings } from "@/lib/arena/leaderboard-service";
@@ -156,7 +156,7 @@ export default async function Home() {
       </div>
 
       <Suspense fallback={null}>
-        <AuthModal />
+        <AuthModalMount />
       </Suspense>
     </div>
   );

@@ -1,5 +1,6 @@
 import "server-only";
 import prisma from "@/lib/server/prisma";
+import { checkDbIntegrity } from "@/lib/server/db-integrity";
 import { deriveArenaStatus } from "./status";
 
 export interface CriterionScoreInput {
@@ -27,6 +28,29 @@ export interface JudgingResult {
  * Enforces non-empty justifications, conflict-of-interest checks, and weighted scoring.
  */
 export async function submitJudgeVerdict(input: SubmitVerdictInput): Promise<JudgingResult> {
+  // The conflict-of-interest trigger on judge_assignments is what stops a judge
+  // scoring their own team, and Prisma does not model triggers - a `db push`, a
+  // schema reset or a restore from a logical dump drops it silently and the app
+  // keeps serving with the protection gone.
+  //
+  // lib/server/db-integrity.ts was written to catch exactly that and had no
+  // call site anywhere in the repo, so the check never ran. Its own doc names
+  // judge-assignment creation as the intended caller, but no code path creates
+  // an assignment yet; recording a verdict is the live write whose validity
+  // depends on that trigger having held, so it is checked here until the
+  // assignment path exists.
+  const integrity = await checkDbIntegrity();
+  if (!integrity.ok) {
+    // checkDbIntegrity already logged which trigger is missing and how to
+    // restore it. Refuse rather than record a score that may have come from a
+    // judge with an undetected conflict - a bad verdict taints every proof
+    // packet in the arena, and a packet is the product.
+    return {
+      error:
+        "Scoring is temporarily disabled: a required database safeguard is missing. This has been logged for the operators.",
+    };
+  }
+
   const assignment = await prisma.judgeAssignment.findUnique({
     where: { id: input.assignmentId },
     include: {

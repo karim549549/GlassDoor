@@ -1,8 +1,16 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
-import { CropperModal } from "./CropperModal";
+
+// Needed only once a file has been picked. CoverImageUploader already loads it
+// this way; this call site was still static, so the cropper shipped eagerly to
+// everyone viewing any profile.
+const CropperModal = dynamic(
+  () => import("./CropperModal").then((m) => m.CropperModal),
+  { ssr: false }
+);
 import { ProfileCoverImage } from "./header/ProfileCoverImage";
 import { ProfileIdentityCard } from "./header/ProfileIdentityCard";
 import { ProfileFollowButton } from "./header/ProfileFollowButton";

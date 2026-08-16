@@ -6,7 +6,7 @@ import { Search, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useRecentSearches } from "@/lib/client/useRecentSearches";
 import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
-import { MOCK_USERS, MOCK_COMPANIES, MOCK_CONTEXT } from "./nav-search-mock-data";
+import { useArenaSearch } from "@/lib/client/useArenaSearch";
 import { NavSearchRecent } from "./NavSearchRecent";
 import { NavSearchResults } from "./NavSearchResults";
 
@@ -34,32 +34,9 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
     }
   }, [debouncedQuery, isOpen, pathname]);
 
-  // Filter search items client-side
-  const trimmed = debouncedQuery.trim().toLowerCase();
-
-  const matchedUsers = trimmed
-    ? MOCK_USERS.filter(
-        (u) =>
-          u.name.toLowerCase().includes(trimmed) ||
-          u.handle.toLowerCase().includes(trimmed)
-      ).slice(0, 5)
-    : [];
-
-  const matchedCompanies = trimmed
-    ? MOCK_COMPANIES.filter(
-        (c) =>
-          c.name.toLowerCase().includes(trimmed) ||
-          c.sector.toLowerCase().includes(trimmed)
-      ).slice(0, 5)
-    : [];
-
-  const matchedContext = trimmed
-    ? MOCK_CONTEXT.filter(
-        (co) =>
-          co.title.toLowerCase().includes(trimmed) ||
-          co.description.toLowerCase().includes(trimmed)
-      ).slice(0, 5)
-    : [];
+  // Hits the real board. Only runs while the dialog is open - the debounced
+  // query is cleared on close, so a shut dialog holds no in-flight request.
+  const { hits, loading, failed } = useArenaSearch(isOpen ? debouncedQuery : "");
 
   const handleResultClick = (url: string) => {
     if (query.trim()) {
@@ -144,9 +121,9 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
           {query.trim() && (
             <NavSearchResults
               query={query}
-              matchedUsers={matchedUsers}
-              matchedCompanies={matchedCompanies}
-              matchedContext={matchedContext}
+              hits={hits}
+              loading={loading}
+              failed={failed}
               onResultClick={handleResultClick}
             />
           )}
