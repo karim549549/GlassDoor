@@ -5,7 +5,7 @@ import HeroSection from "./Hero/HeroSection";
 import ArenasSection from "./ArenasSection";
 import DirectiveSection from "./DirectiveSection";
 import { ThreeSidedPerspective } from "./ThreeSidedPerspective";
-import { ForCompanies } from "./ForCompanies";
+import { ASaturday } from "./ASaturday";
 import { ConversionTerminal } from "./ConversionTerminal";
 import type { ArenaCardData } from "./Hero/arena-cards-data";
 import type { BoardSummary } from "@/lib/arena/service";
@@ -41,10 +41,10 @@ export function HeroAndArenas({
           page had already shown arena cards three times by this point. */}
       <ThreeSidedPerspective />
 
-      {/* SECTION 5: the hiring side - the first thing on the page addressed to
-          the people who pay. Replaced a SHA-256 verifier which was correct,
-          real, and a documentation page rather than a sales one. */}
-      <ForCompanies />
+      {/* SECTION 5: what actually happens if you enter one. Replaced a hiring
+          pitch aimed at recruiters, which now lives on /companies where its
+          audience is - see PRD 1.2. */}
+      <ASaturday />
 
       {/* SECTION 6: the ask. Ready-to-join card, with the live standings rail
           beside it - the only place on the page that reports on people rather
