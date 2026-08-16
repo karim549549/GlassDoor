@@ -5,7 +5,7 @@ import HeroSection from "./Hero/HeroSection";
 import ArenasSection from "./ArenasSection";
 import DirectiveSection from "./DirectiveSection";
 import { ThreeSidedPerspective } from "./ThreeSidedPerspective";
-import { InteractiveProofVisualizer } from "./InteractiveProofVisualizer";
+import { ProofVerifier } from "./ProofVerifier";
 import { GlickoLedgerExplorer } from "./GlickoLedgerExplorer";
 import { ConversionTerminal } from "./ConversionTerminal";
 import type { ArenaCardData } from "./Hero/arena-cards-data";
@@ -31,11 +31,14 @@ export function HeroAndArenas({
       {/* SECTION 3: Pinned Directive Statement with Character-by-Character Scrub (Dark Mode #0E0E0D) */}
       <DirectiveSection />
 
-      {/* CHAPTER 4: Three-Sided Interactive Console (Light Cream #F1EFE9) */}
+      {/* SECTION 4: the arena deck, closed into a cube the reader can turn. */}
       <ThreeSidedPerspective cards={cards} />
 
-      {/* CHAPTER 5: Interactive Proof Packet Cryptographic Inspector & Reunited Arena Cards Carousel */}
-      <InteractiveProofVisualizer cards={cards} />
+      {/* SECTION 5: verify a credential rather than be told it is verifiable.
+          Replaces a 12-column split - layer picker beside an arena-card
+          carousel - where the carousel had nothing to do with proof packets and
+          the split was the wireframe the rest of the page avoids. */}
+      <ProofVerifier />
 
       {/* CHAPTER 6: Glicko-2 Multi-Domain Mathematical Ledger (Cyber Dark #070a0d) */}
       <GlickoLedgerExplorer />
