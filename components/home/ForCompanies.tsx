@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Reveal } from "./Reveal";
 
 /**
  * Section 5 - the hiring side.
@@ -67,7 +68,7 @@ export function ForCompanies() {
   return (
     <section className="relative z-20 w-full bg-background text-foreground border-t border-border">
       <div className="mx-auto max-w-6xl px-6 md:px-12 py-24 md:py-32">
-        <header className="max-w-2xl">
+        <Reveal as="div" className="max-w-2xl">
           <span className="block font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange">
             [04 / For companies]
           </span>
@@ -79,13 +80,15 @@ export function ForCompanies() {
             can this person actually build the thing. An arena answers it in
             public, before you ever speak to them.
           </p>
-        </header>
+        </Reveal>
 
         {/* The pipeline, with the stages that stop existing struck out. */}
         <ol className="mt-14 border-t border-border">
           {PIPELINE.map((s, i) => (
-            <li
+            <Reveal
+              as="li"
               key={s.label}
+              delay={i * 70}
               className="grid grid-cols-[2rem_1fr] md:grid-cols-[3rem_minmax(0,18rem)_1fr] gap-x-4 gap-y-1 border-b border-border py-5 items-baseline"
             >
               <span
@@ -120,21 +123,21 @@ export function ForCompanies() {
                   </span>
                 )}
               </p>
-            </li>
+            </Reveal>
           ))}
         </ol>
 
         {/* Why it holds up */}
         <div className="grid gap-px bg-border mt-16 md:grid-cols-3 border border-border">
-          {VALUE.map((v) => (
-            <div key={v.heading} className="bg-background p-6 md:p-7">
+          {VALUE.map((v, i) => (
+            <Reveal key={v.heading} delay={i * 90} className="bg-background p-6 md:p-7">
               <h3 className="font-display text-[1.2rem] leading-tight text-balance">{v.heading}</h3>
               <p className="text-[0.85rem] leading-relaxed text-foreground/70 mt-3">{v.body}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 mt-12">
+        <Reveal className="flex flex-wrap items-center gap-3 mt-12">
           <Link
             href="/companies"
             className="bg-foreground text-background border border-foreground px-7 py-3.5 font-mono text-[0.65rem] font-bold uppercase tracking-[0.2em] shadow-[3px_3px_0_0_var(--orange)] hover:shadow-[5px_5px_0_0_var(--orange)] hover:-translate-y-px active:translate-y-0 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -153,7 +156,7 @@ export function ForCompanies() {
           >
             Talk to us first &rarr;
           </Link>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

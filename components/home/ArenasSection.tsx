@@ -5,6 +5,8 @@ import Link from "next/link";
 import { HeroArenaCard } from "./Hero/HeroArenaCard";
 import { ARENA_CARDS, type ArenaCardData } from "./Hero/arena-cards-data";
 import type { BoardSummary } from "@/lib/arena/service";
+import type { GlobalStanding } from "@/lib/arena/leaderboard-service";
+import { LeaderboardRail } from "./LeaderboardRail";
 
 interface ArenasSectionProps extends React.ComponentProps<"section"> {
   containerRef?: React.RefObject<HTMLDivElement | null>;
@@ -12,6 +14,8 @@ interface ArenasSectionProps extends React.ComponentProps<"section"> {
   cards?: ArenaCardData[];
   /** Live counts for the board summary strip. */
   summary?: BoardSummary | null;
+  /** Real judged ratings for the rail beside the dock. Empty until someone competes. */
+  standings?: GlobalStanding[];
 }
 
 /**
@@ -41,7 +45,7 @@ const DOCK_SLOTS = [
 ];
 
 export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
-  ({ containerRef, cards, summary, ...props }, ref) => {
+  ({ containerRef, cards, summary, standings = [], ...props }, ref) => {
     const deck = (cards && cards.length > 0 ? cards : ARENA_CARDS).slice(0, 3);
     const docked = deck.length === 3 ? deck : [...deck, ...ARENA_CARDS.slice(deck.length)].slice(0, 3);
 
@@ -116,9 +120,11 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
           </dl>
         </div>
 
-        {/* Dynamic Center landing space for fanned cards */}
-        <div className="flex-1 w-full max-w-7xl mx-auto relative flex flex-col md:flex-row items-center justify-center min-h-[360px] md:overflow-visible overflow-hidden mt-6">
-          
+        {/* Docking area, with the standings rail alongside it. The rail is the
+            only thing in this section reporting on people rather than arenas. */}
+        <div className="flex-1 w-full max-w-7xl mx-auto relative flex flex-col lg:flex-row items-stretch gap-10 mt-6">
+          <div className="relative flex-1 flex flex-col md:flex-row items-center justify-center min-h-[360px] md:overflow-visible overflow-hidden">
+
           {/* Camera Viewfinder Slots */}
           {DOCK_SLOTS.map((slot, slotIdx) => (
             <div
@@ -152,6 +158,13 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
             arenasRef={ref as React.RefObject<HTMLDivElement | null>}
             cards={docked}
           />
+          </div>
+
+          {/* Rail sits above the cards in the stacking order so a docking card
+              cannot travel across it. */}
+          <div className="relative z-30 self-center lg:self-start lg:pt-6">
+            <LeaderboardRail standings={standings} />
+          </div>
         </div>
 
         {/* Enter the Arena Action Button (Contained naturally within vertical flex flow under the cards grid) */}

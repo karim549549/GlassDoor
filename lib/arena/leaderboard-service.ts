@@ -1,5 +1,6 @@
 import "server-only";
 import prisma from "@/lib/server/prisma";
+import type { RatingDomain } from "@prisma/client";
 
 export interface LeaderboardStanding {
   submissionId: string;
@@ -105,4 +106,49 @@ export async function getArenaLeaderboard(arenaId: string): Promise<ArenaLeaderb
     resultsPublishedAt: arena.resultsPublishedAt,
     standings,
   };
+}
+
+/**
+ * Global standings across every domain, for the board rail on the landing page.
+ *
+ * Reads RatingState, which is written only by a published judging run - so a
+ * name can appear here exactly once someone has been judged, and never before.
+ * There is deliberately no fallback to placeholder names: an invented
+ * leaderboard is the single most damaging thing a credential platform can
+ * publish, and this page carried one before (eight fictional winners on every
+ * arena). Empty is the correct output until somebody competes.
+ */
+export interface GlobalStanding {
+  userId: string;
+  handle: string | null;
+  fullName: string | null;
+  avatarUrl: string | null;
+  domain: RatingDomain;
+  rating: number;
+  /** Glicko-2 deviation. High means the rating is not yet settled. */
+  deviation: number;
+}
+
+export async function getGlobalStandings(limit = 12): Promise<GlobalStanding[]> {
+  const rows = await prisma.ratingState.findMany({
+    orderBy: { rating: "desc" },
+    take: limit,
+    select: {
+      userId: true,
+      domain: true,
+      rating: true,
+      deviation: true,
+      user: { select: { handle: true, fullName: true, avatarUrl: true } },
+    },
+  });
+
+  return rows.map((r) => ({
+    userId: r.userId,
+    handle: r.user?.handle ?? null,
+    fullName: r.user?.fullName ?? null,
+    avatarUrl: r.user?.avatarUrl ?? null,
+    domain: r.domain,
+    rating: Number(r.rating),
+    deviation: Number(r.deviation),
+  }));
 }

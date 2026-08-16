@@ -37,6 +37,12 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", "font-sans")}
     >
       <body className="min-h-full flex flex-col">
+        {/* Scroll-revealed content starts hidden and is unhidden by an
+            IntersectionObserver. Without JS that observer never runs, so this
+            restores it - the markup is already in the HTML either way. */}
+        <noscript>
+          <style>{`.reveal{opacity:1 !important;transform:none !important}`}</style>
+        </noscript>
         <AuthProvider>
           <ToastProvider>
             <Nav />
