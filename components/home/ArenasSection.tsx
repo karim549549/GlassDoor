@@ -3,6 +3,7 @@
 import React, { forwardRef } from "react";
 import Link from "next/link";
 import { HeroArenaCard } from "./Hero/HeroArenaCard";
+import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ARENA_CARDS, type ArenaCardData } from "./Hero/arena-cards-data";
 import type { BoardSummary } from "@/lib/arena/service";
 
@@ -56,8 +57,13 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
         className="arenas-section-container relative h-auto md:h-screen md:min-h-screen bg-background text-foreground flex flex-col justify-between py-12 md:py-16 px-6 md:px-12 transition-colors duration-300 overflow-visible z-10 border-b border-foreground"
         {...props}
       >
+        {/* Grid is drawn in currentColor, so it survives the light-to-dark
+            background morph this section makes on scroll rather than needing a
+            second copy for the dark state. */}
+        <BackgroundGrid opacity={0.08} />
+
         {/* Technical Section Header */}
-        <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-start gap-4">
+        <div className="relative z-10 max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="text-left space-y-2">
             <span className="font-mono text-[0.52rem] uppercase tracking-[0.25em] text-orange font-bold block">
               [02 / STAGE ARENA]

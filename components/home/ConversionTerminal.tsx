@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Terminal, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 import { HUDCornerReticle } from "./HUDCornerReticle";
 import { LeaderboardRail } from "./LeaderboardRail";
+import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import type { GlobalStanding } from "@/lib/arena/leaderboard-service";
 
 /**
@@ -16,8 +17,9 @@ import type { GlobalStanding } from "@/lib/arena/leaderboard-service";
  */
 export function ConversionTerminal({ standings = [] }: { standings?: GlobalStanding[] }) {
   return (
-    <section className="relative z-20 w-full py-24 md:py-36 px-6 md:px-12 bg-background border-b border-foreground/20">
-      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-start gap-10 lg:gap-14">
+    <section className="relative z-20 w-full py-24 md:py-36 px-6 md:px-12 bg-background border-b border-foreground/20 overflow-hidden">
+      <BackgroundGrid opacity={0.09} />
+      <div className="relative z-10 max-w-6xl mx-auto flex flex-col lg:flex-row items-start gap-10 lg:gap-14">
         <div className="flex-1 min-w-0">
         <HUDCornerReticle
           label="INITIALIZATION TERMINAL // CAIRO NETWORK"
