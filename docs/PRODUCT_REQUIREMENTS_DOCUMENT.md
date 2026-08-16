@@ -1,18 +1,20 @@
 # 📘 Master Product Requirements Document (PRD) & Technical Blueprint
 **Project**: Devs Arena Platform  
-**Document Version**: 10.0 (Positioning Correction — Show First, Marketplace Later)  
+**Document Version**: 10.0 (Positioning Correction — Community First, Marketplace Later)  
 **Classification**: High-Priority Product & Architecture Specification  
 **Lead Authors**: Senior Business Developer & Principal Systems Architect  
 **Status**: APPROVED FOR IMPLEMENTATION  
 
-> **v10.0 changes positioning, not architecture.** No schema, endpoint or enum in sections 2–11 is altered. What changed is what the platform is *sold as*, and to whom, in which order — see **§1.2** and **§1.3**. Versions up to 9.0 described a skill-based hiring platform; the product that exists and has an audience is a competitive coding show, and the hiring machinery is its future revenue rather than its current pitch. Every implementer who read 9.0 built employer-facing copy for a developer-facing audience, which is the drift §1.2 exists to stop.
+> **v10.0 changes positioning, not architecture.** No schema, endpoint or enum in sections 2–11 is altered. What changed is what the platform is *sold as*, and to whom, in which order — see **§1.2** and **§1.3**. Versions up to 9.0 described a skill-based hiring platform; the product that exists is a community coding-challenge platform, and the hiring machinery is its future revenue rather than its current pitch. Every implementer who read 9.0 built employer-facing copy for a developer-facing audience, which is the drift §1.2 exists to stop.
 
 ---
 
 ## 1. Document Overview & Strategic Mission
 
 ### 1.1 Executive Summary & Target Market Focus (Egypt)
-**Devs Arena** is a **competitive coding show** for the **Egyptian tech ecosystem** — timed team arenas with real prize money, judged live by named engineers who explain their verdicts, with the results published as an ongoing YouTube series.
+**Devs Arena** is a **community coding-challenge platform** for the **Egyptian tech ecosystem** — anyone can create a timed team arena around a playful brief, run it online or at a physical venue, and have entries judged by named engineers who explain their verdicts in writing.
+
+In one line: **Codeforces, for playful build challenges, community-run.**
 
 Following the **Codeforces/Kaggle philosophy**, it runs on **time-boxed coding execution ("Build, Not Claim")**. Every judged result also produces a durable, verifiable record of what a developer built — which is the foundation of the platform's future revenue, but is **not** how the platform is sold to the people who enter it.
 
@@ -24,7 +26,7 @@ Following the **Codeforces/Kaggle philosophy**, it runs on **time-boxed coding e
 
 #### The audience, today
 
-The people arriving now are developers who want a fun, competitive Saturday — the **Codeforces / Kaggle / Advent of Code** audience — and viewers of the show. **They are not job hunting.** They enter for prize money, a rating to climb, a team to enter with, and the chance to be on the show.
+The people arriving now are developers who want a fun, competitive Saturday — the **Codeforces / Kaggle / Advent of Code** audience. **They are not job hunting.** They enter for the fun of the brief, a team to enter with, the people they meet, prize money and a rating to climb.
 
 #### Why the ordering is load-bearing
 
@@ -32,19 +34,17 @@ A hiring credential has no value without a critical mass of competitors producin
 
 The sequence is therefore **game → density → marketplace**, which is the order Codeforces, Kaggle, TopCoder and Advent of Code all followed. None of them opened with an employer pitch; companies arrived after the community existed.
 
-#### The show is the marketing engine
+#### What the differentiator actually is
 
-The YouTube series is currently the platform's primary acquisition channel and its main differentiator against pure-algorithm sites. It is also the reason the judging model is shaped the way it is:
+Not a show — there isn't one (§1.3). Against pure-algorithm sites the difference is the **kind of thing you build and who you build it with**: a playful open-ended brief instead of an algorithm puzzle, a team instead of a solo submission, and a human verdict that explains itself instead of a green checkmark.
 
-**Human judges with mandatory written reasoning were specified for scoring integrity, but their real product value is as a broadcast format.** Auto-judged competition is dull to watch — a green checkmark is not television. Judges arguing about why one submission beat another is watchable, and it is the one thing an auto-graded competitor cannot replicate.
-
-Treat the show as a first-class product surface, not marketing collateral.
+**Human judges with mandatory written reasoning were specified for scoring integrity, but that reasoning is also the platform's only native content.** An auto-graded competitor has no equivalent — there is nothing to read after a test suite passes. Judge reasoning is already stored and already mandatory; it is the cheapest content the platform will ever have, and it is currently visible only inside a proof packet framed for recruiters.
 
 #### Phase map
 
 | Phase | Sold as | Primary surfaces | Employer machinery |
 |---|---|---|---|
-| **1 — now** | A competitive coding show with prize money | Arenas, leaderboard, teams, the show | Built and working, kept out of primary nav and off the hero |
+| **1 — now** | A community challenge board with prize money | Arenas, briefs, teams, leaderboard, connections | Built and working, kept out of primary nav and off the hero |
 | **2 — at density** | Same, plus "your record is worth something" | Adds prominent proof packets | Employer surfaces surfaced, feature-flagged on |
 | **3 — revenue** | Hiring pipeline as a paid product | `/companies`, `/recruiter` promoted | Monetised |
 
@@ -52,7 +52,7 @@ Treat the show as a first-class product surface, not marketing collateral.
 
 #### Copy rules that follow from this
 
-- Lead with prize money, rating, teams, rivalry and the show. **Never with employability.**
+- Lead with the brief itself, teams, people, prize money, rating and rivalry. **Never with employability, and never with a show that does not exist.**
 - The proof packet is a **souvenir the entrant may keep**, not the reason to enter. Mention once, framed as theirs.
 - Never describe the platform to a developer as a hiring, screening or assessment tool.
 - Employer-facing language belongs on employer-facing pages, and nowhere else.
@@ -89,26 +89,57 @@ The line to lead with is closer to: *you cannot join Web Dev Challenge — you c
 
 The reference format's briefs are jokes. The platform's own copy currently reads *"unforgeable hiring credentials"*, *"rubric frozen before entry"*, *"a conflict-of-interest database trigger"*. These describe the same activity from opposite universes, and the second one is what a first-time visitor currently sees.
 
-**Arena briefs and platform copy should sound like the show**: playful, specific, a little absurd. The integrity machinery is real and worth keeping, but it is plumbing — it belongs in documentation and on employer surfaces, not in the voice the product speaks to entrants.
+**Arena briefs and platform copy should sound like those briefs**: playful, specific, a little absurd. The integrity machinery is real and worth keeping, but it is plumbing — it belongs in documentation and on employer surfaces, not in the voice the product speaks to entrants.
 
 Note also that the reference format barely emphasises winning; it ends in a **demo**, and the interest is in what people made. The platform has built an elaborate scoring, rating and appeals apparatus. That apparatus is correct for the phase-2 credential and should be kept, but it should not be presented to entrants as the point of taking part. **The demo is the point.**
 
-#### The show as a product surface
+#### There is no Devs Arena show, and the product is not one
 
-The YouTube series is **live, with published episodes**, and is the primary acquisition channel. As of this revision it appears **nowhere in the application** — the only YouTube reference in the repo is a non-goal stating that video transcoding is out of scope.
+**Devs Arena has no YouTube channel and no episodes.** An earlier draft of this section claimed a live series that was the primary acquisition channel; that was wrong and is retracted. Nothing in the product or its copy may imply a back catalogue, a broadcast, or footage that does not exist.
 
-> **OPEN — needed before show surfaces are built:** the channel URL / handle. Deliberately left blank rather than guessed; do not invent a channel link.
+The relationship to _Web Dev Challenge_ is **tone and format only**: the kind of brief, the plan-then-build shape, the team size, the demo at the end. Not the production.
 
-An arena that has ended is currently a dead record. Attaching footage and demos turns a finished arena into **something worth revisiting**: the brief, what each team shipped, and the demo. That converts the platform's exhaust into its content library, and answers the cold-start problem — a new board with no history is unconvincing, whereas a back catalogue is evidence the thing is real, and it works on entrants, viewers and employers at once without claiming any scale.
+#### What the product is instead
 
-| Surface | Purpose |
-|---|---|
-| Demo / footage on a completed arena | The payoff the format is built around |
-| A watchable index of past arenas | The back catalogue; the cold-start answer |
-| The show on the homepage | The missing hook — what makes this not Codeforces |
-| Judge reasoning as readable content | Already stored, already mandatory, currently invisible |
+**Codeforces, for playful build challenges — community-run.**
 
-The last row costs least and returns most: `JudgeVerdict.feedbackText` and every `JudgeScore.justification` are already captured and cannot be empty. They are the most interesting prose the platform produces, and are currently visible only inside a proof packet, framed as evidence for recruiters — when they are also, simply, **good reading**. That is the written half of the show, already in the database.
+Anyone can create an arena. The platform supplies the format, the clock, the teams, the judging and the board; the community supplies the briefs and the entries. There is no producer, no invite list, and no filming.
+
+What developers come for, in order: **fun, people, and a reason to build something silly on a weekend.** Networking is an explicit product goal, not a side effect — see §6.2's connection graph, which is a phase-1 concern and currently under-surfaced.
+
+#### Content still accrues, without a camera
+
+An arena that has ended is currently a dead record, and that is the real gap — not missing video. A finished arena already contains everything worth revisiting: the brief, what each team shipped, and the judges' reasoning.
+
+`JudgeVerdict.feedbackText` and every `JudgeScore.justification` are already captured, already mandatory and cannot be empty. They are the most interesting prose the platform produces, and they are currently visible only inside a proof packet, framed as evidence for recruiters — when they are also, simply, **good reading**.
+
+Surfacing them costs almost nothing, uses data that already exists, needs no channel, and answers the cold-start problem: a board with no history is unconvincing, whereas an archive of past challenges and what judges said about them is evidence the thing is real — and it reads as evidence to entrants and companies at once, without claiming any scale.
+
+| Surface | Cost | Purpose |
+|---|---|---|
+| Judge reasoning as readable content | Low — data already stored | The archive; the best writing on the platform |
+| Past arenas as browsable challenges | Low | Cold-start answer; every brief is a reason to visit |
+| Community brief creation, made prominent | Low — `/arena/create` exists | The core loop; the platform's supply |
+| Connection graph surfaced (§6.2) | Medium | "Network with people" is a stated goal, currently buried |
+
+---
+
+### 1.4 Revenue Model — Developers Never Pay
+
+**Two sides, one of which is monetised:**
+
+| Side | Pays | Role |
+|---|---|---|
+| **Developers** | Never | The supply. Free forever, in every phase. |
+| **Companies** | Yes — the only revenue | The customer. Hiring access, hosted arenas, sponsorship. |
+
+This is the sharpest reason the phasing in §1.2 is not a matter of taste.
+
+**Developers are not customers; they are the inventory.** What a company eventually pays for is access to a population of developers with judged work attached. That population is the asset, and it is built by participation volume — so every developer-facing decision optimises for **participation and retention**, never for conversion-to-payment, because there is no payment to convert to.
+
+It follows that copy which suppresses participation destroys revenue *upstream*, before any company is ever asked for money. Framing arenas as assessed, permanent and recruiter-visible is precisely such copy: it is unattractive to someone deciding how to spend a Saturday, and it is the single most expensive mistake available here — it damages the only asset the business sells, in order to advertise a product that is not yet for sale.
+
+**Sell fun to developers. Sell developers to companies. Never the reverse, and never both on the same page.**
 
 ---
 

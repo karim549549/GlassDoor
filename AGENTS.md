@@ -6,8 +6,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # What this product actually is
 
-**Devs Arena is a competitive coding show first, and a hiring platform second —
-in that order, and the order is load-bearing.**
+**Devs Arena is a community coding-challenge platform first, and a hiring
+marketplace second — in that order, and the order is load-bearing.**
 
 Read this before writing any user-facing copy. The PRD and most of this repo's
 history are written around proof packets, Glicko ratings and verifiable hiring
@@ -16,10 +16,29 @@ documented. That weighting has repeatedly misled agents — including in the
 session that added this section — into putting the year-two revenue pitch on
 the year-one front door.
 
-**Who actually shows up today:** developers who want a fun, competitive Saturday
-— the Codeforces / Kaggle / Advent of Code audience — plus viewers of the
-YouTube show. They are not job hunting. Prize money, a rating to climb, teams,
-and the show are why they enter.
+**What it is in one line: Codeforces, for playful build challenges,
+community-run.** Anyone can create an arena. The platform supplies the format,
+the clock, the teams, the judging and the board; the community supplies the
+briefs and the entries.
+
+**There is no Devs Arena YouTube channel and no episodes.** Never write copy
+implying a show, footage or a back catalogue. (An earlier draft of the PRD
+claimed one; it was wrong and is retracted.)
+
+**Who actually shows up:** developers who want a fun Saturday — the Codeforces /
+Kaggle / Advent of Code audience. They are not job hunting. Fun, people, prize
+money and a rating to climb are why they enter. Networking is an explicit goal,
+not a side effect.
+
+**Developers never pay. Companies are the only revenue.** Developers are not
+customers — they are the supply, and what a company eventually buys is access to
+a population with judged work attached. So every developer-facing decision
+optimises for participation and retention, never conversion, because there is
+nothing to convert to. Copy that suppresses participation destroys revenue
+upstream, before a company is ever asked for money.
+
+**Sell fun to developers. Sell developers to companies. Never both on the same
+page.**
 
 **Why leading with the credential is self-defeating.** A hiring credential is
 worth nothing without a critical mass of competitors, and telling a casual
@@ -29,12 +48,13 @@ suppresses exactly the participation the credential depends on. Game first,
 density second, marketplace third — the order every comparable platform
 followed.
 
-**The judging is the show's format, not a credential feature.** Human judges
-with mandatory written reasoning were built for scoring integrity, but
-auto-judged competition (Codeforces, LeetCode) is dull to watch and a green
-checkmark is not television. Judges arguing about why one submission beat
-another is watchable, and it is the thing a pure-algorithms site structurally
-cannot copy.
+**Judge reasoning is content, not just a credential feature.** Human judges with
+mandatory written reasoning were built for scoring integrity, but
+`JudgeVerdict.feedbackText` and every `JudgeScore.justification` are already
+stored, already mandatory, and are the best prose the platform produces. They
+are currently visible only inside a proof packet, framed as evidence for
+recruiters — when they are also simply good reading, and the thing an
+auto-graded site (Codeforces, LeetCode) has no equivalent of.
 
 **The format follows CodeTV's _Web Dev Challenge_** — a brief, 30 minutes to
 plan, 4 hours to build, in teams, ending in a demo. Referenced as a format
@@ -43,9 +63,10 @@ arenas. Two consequences worth knowing before you touch anything:
 
 - `ideaPhaseStart/End` then `implPhaseStart/End` **is** "30 min to plan, 4 hours
   to build". Express format presets in those existing windows, not new fields.
-- **That show is something you watch; this is the same format you can enter,**
-  online or offline at a real venue. The offline mode is why the Egypt venue and
-  geocoding architecture exists — it is first-class, not an afterthought.
+- **That show is something you watch, with an invited cast. This is the same
+  format anyone can create and enter,** online or offline at a real venue. The
+  offline mode is why the Egypt venue and geocoding architecture exists — it is
+  first-class, not an afterthought.
 
 **Match the tone.** The reference format's briefs are jokes — "the most devious
 video player", "a site with zero business value". Platform copy currently says
@@ -57,7 +78,8 @@ voice the product uses with entrants. And the format barely emphasises winning �
 
 ## What this means when you write copy or build a surface
 
-- Lead with prize money, rating, teams, the show, and rivalry. Not employability.
+- Lead with fun, the brief itself, teams, people, prize money and rivalry. Not
+  employability, and never a show that does not exist.
 - The proof packet is a **souvenir the entrant may keep**, not the reason to
   enter. Mention it once, framed as theirs.
 - Employer surfaces (`/companies`, `/recruiter`, packets-as-credential framing)
