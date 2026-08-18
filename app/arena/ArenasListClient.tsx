@@ -9,6 +9,8 @@ import { ArenaRow } from "@/components/arena/list/ArenaRow";
 import { ArenaFilterBar, type ArenaFilterState } from "@/components/arena/list/ArenaFilterBar";
 import { ArenasFooterPagination } from "@/components/arena/list/ArenasPagination";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
+import { ArenaContainer } from "@/components/arena/ArenaContainer";
+import { BoardFacets, HostPrompt, type BoardFacetData } from "@/components/arena/list/BoardFacets";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
 
 /**
@@ -44,6 +46,7 @@ interface ArenasListClientProps {
   initialMyCount: number | null;
   /** The server's clock at render time, so the first paint agrees with the HTML. */
   nowIso: string;
+  facets: BoardFacetData;
 }
 
 export function ArenasListClient({
@@ -52,6 +55,7 @@ export function ArenasListClient({
   initialTotalCount,
   initialMyCount,
   nowIso,
+  facets,
 }: ArenasListClientProps) {
   const { user } = useAuthStore();
 
@@ -148,17 +152,28 @@ export function ArenasListClient({
     <main id="main-content" className="min-h-screen bg-background text-foreground">
       <div className="relative w-full overflow-hidden border-b-2 border-orange bg-foreground text-background">
         <BackgroundGrid opacity={0.06} patternSize={28} />
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 md:px-10 md:py-10">
+        <ArenaContainer className="relative z-10 py-8 md:py-10">
           <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange">
             [ The board ]
           </span>
           <h1 className="mt-2 font-display text-[clamp(1.4rem,3vw,2.1rem)] italic leading-tight text-background">
             Every arena you can enter, and every one you missed
           </h1>
-        </div>
+        </ArenaContainer>
       </div>
 
-      <div className="mx-auto w-full max-w-6xl px-6 py-8 md:px-10">
+      <ArenaContainer className="py-8">
+        <div className="mb-8">
+          <BoardFacets
+            facets={facets}
+            now={now}
+            activeStatus={filters.status}
+            activeDomain={filters.domain}
+            onStatus={(status) => patch({ status })}
+            onDomain={(domain) => patch({ domain })}
+          />
+        </div>
+
         <ArenaFilterBar
           value={filters}
           onChange={patch}
@@ -215,6 +230,10 @@ export function ArenasListClient({
           )}
         </div>
 
+        <div className="mt-8">
+          <HostPrompt />
+        </div>
+
         {totalPages > 1 && (
           <div className="mt-6">
             <ArenasFooterPagination
@@ -225,7 +244,7 @@ export function ArenasListClient({
             />
           </div>
         )}
-      </div>
+      </ArenaContainer>
     </main>
   );
 }

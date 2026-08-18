@@ -170,7 +170,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
     <li className="border-b border-foreground/12 last:border-b-0">
       <Link
         href={`/arena/${buildArenaSlug(arena.title, arena.id)}`}
-        className="group grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1 px-4 py-4 transition-colors hover:bg-foreground/[0.04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange md:grid-cols-[6rem_minmax(0,1fr)_auto] md:px-5"
+        className="group grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-5 gap-y-1 px-4 py-3 transition-colors hover:bg-foreground/[0.04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange md:grid-cols-[6.5rem_minmax(0,1fr)_11rem] md:px-6"
       >
         <span
           className={`flex items-center gap-1.5 font-mono text-[0.62rem] font-bold uppercase tracking-[0.14em] ${STATUS_TONE[status]}`}
@@ -209,7 +209,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
               </span>
             )}
           </span>
-          <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground/75">
+          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground/75">
             {domain && (
               <span className="border border-orange-ink/45 px-1.5 py-px font-bold text-orange-ink">
                 {domain}

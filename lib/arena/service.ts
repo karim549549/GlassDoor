@@ -375,6 +375,72 @@ export interface BoardSummary {
   nextDeadline: Date | null;
 }
 
+export interface BoardFacets {
+  open: number;
+  live: number;
+  finished: number;
+  total: number;
+  /** Only domains that actually have arenas, biggest first. */
+  domains: { domain: string; count: number }[];
+  /** When the next registration closes, for the urgency line. */
+  nextDeadline: Date | null;
+}
+
+/**
+ * The numbers that make the board a board rather than a list.
+ *
+ * Every one is a `count` or a `groupBy` - Postgres answers them with
+ * aggregates, no rows crossing the wire - and every one is also navigation: the
+ * status counts label the rail, and the domain counts are the quick filters.
+ * `getBoardSummary` above returns four numbers for the homepage and cannot
+ * answer either question.
+ *
+ * Deliberately unfiltered: these describe the whole public board, not the
+ * current query. A facet count that moved with the filters would tell a reader
+ * "0 in AI" the moment they picked a difficulty, which is the opposite of what
+ * a facet is for.
+ */
+export async function getBoardFacets(now: Date = new Date()): Promise<BoardFacets> {
+  const visible: Prisma.ArenaWhereInput = {
+    isDeleted: false,
+    isPrivate: false,
+    publishedAt: { not: null },
+    canceledAt: null,
+  };
+
+  const [total, open, live, finished, byDomain, next] = await Promise.all([
+    prisma.arena.count({ where: visible }),
+    prisma.arena.count({
+      where: { ...visible, registrationStart: { lte: now }, registrationEnd: { gt: now } },
+    }),
+    prisma.arena.count({
+      where: { ...visible, registrationEnd: { lte: now }, implPhaseEnd: { gt: now } },
+    }),
+    prisma.arena.count({ where: { ...visible, implPhaseEnd: { lte: now } } }),
+    prisma.arena.groupBy({
+      by: ["domain"],
+      where: visible,
+      _count: { _all: true },
+    }),
+    prisma.arena.findFirst({
+      where: { ...visible, registrationEnd: { gt: now } },
+      orderBy: { registrationEnd: "asc" },
+      select: { registrationEnd: true },
+    }),
+  ]);
+
+  return {
+    total,
+    open,
+    live,
+    finished,
+    domains: byDomain
+      .map((row) => ({ domain: row.domain as string, count: row._count._all }))
+      .sort((a, b) => b.count - a.count),
+    nextDeadline: next?.registrationEnd ?? null,
+  };
+}
+
 export async function getBoardSummary(now: Date = new Date()): Promise<BoardSummary> {
   const visible: Prisma.ArenaWhereInput = {
     isDeleted: false,

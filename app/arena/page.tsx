@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import ArenasListClient from "./ArenasListClient";
-import { listArenas } from "@/lib/arena/service";
+import { listArenas, getBoardFacets } from "@/lib/arena/service";
 import { DEFAULT_LIST_PARAMS } from "@/lib/arena/schema";
 import { getOptionalUser } from "@/lib/server/auth/require-user";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
@@ -23,11 +23,10 @@ export const dynamic = "force-dynamic";
 export default async function ArenasPage() {
   const now = new Date();
   const viewer = await getOptionalUser();
-  const { arenas, total, totalPages, myCount } = await listArenas({
-    ...DEFAULT_LIST_PARAMS,
-    userId: viewer?.id ?? null,
-    now,
-  });
+  const [{ arenas, total, totalPages, myCount }, facets] = await Promise.all([
+    listArenas({ ...DEFAULT_LIST_PARAMS, userId: viewer?.id ?? null, now }),
+    getBoardFacets(now),
+  ]);
 
   const formattedArenas: SerializedArenaListItem[] = arenas.map((a) => ({
     ...a,
@@ -49,6 +48,14 @@ export default async function ArenasPage() {
       initialTotalCount={total}
       initialMyCount={myCount}
       nowIso={now.toISOString()}
+      facets={{
+        open: facets.open,
+        live: facets.live,
+        finished: facets.finished,
+        total: facets.total,
+        domains: facets.domains,
+        nextDeadline: facets.nextDeadline ? facets.nextDeadline.toISOString() : null,
+      }}
     />
   );
 }
