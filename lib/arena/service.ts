@@ -148,8 +148,24 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
   //
   // Exhaustive over ArenaSortOption via the record, so adding an option without
   // an ordering is a type error rather than a silent fall-through to newest.
+  /**
+   * "Closing soonest" has to know what it is sorting.
+   *
+   * Ascending `registrationEnd` is right for a list of open arenas - the one
+   * shutting next comes first. On a mixed list it is exactly backwards: 102 of
+   * the 106 arenas here have already finished, so ascending order led the board
+   * with three arenas that closed two months ago. That shipped.
+   *
+   * Among arenas that have already closed, the meaningful order is the reverse:
+   * most recently finished first, because that is the history anyone wants -
+   * what happened last weekend, not what happened first. Prisma cannot express
+   * "future ascending, past descending" in one `orderBy`, and it does not need
+   * to: the direction follows the filter.
+   */
+  const closingDirection: Prisma.SortOrder = status === "open" ? "asc" : "desc";
+
   const ORDER_BY: Record<ArenaSortOption, Prisma.ArenaOrderByWithRelationInput> = {
-    closing: { registrationEnd: "asc" },
+    closing: { registrationEnd: closingDirection },
     newest: { createdAt: "desc" },
     prize: { totalPrizePool: { sort: "desc", nulls: "last" } },
     entrants: { entries: { _count: "desc" } },

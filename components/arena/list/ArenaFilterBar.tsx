@@ -50,7 +50,12 @@ const ENTRY_LABEL: Record<ArenaEntryFilter, string> = {
 };
 
 const SORT_LABEL: Record<ArenaSortOption, string> = {
-  closing: "Closing soonest",
+  // Reads "closing soonest" on the open list and "most recent" everywhere
+  // else, because that is what the ordering actually does - see the
+  // `closingDirection` note in lib/arena/service.ts. A label that says
+  // "closing soonest" over a list of arenas that closed two months ago is
+  // worse than no label.
+  closing: "Most relevant",
   newest: "Newest",
   prize: "Biggest prize",
   entrants: "Most entered",
