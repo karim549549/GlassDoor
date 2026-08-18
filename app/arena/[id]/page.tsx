@@ -1,6 +1,5 @@
 import { cache } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { parseArenaRef } from "@/lib/arena-slug";
 import { serializeJsonLd } from "@/lib/json-ld";
@@ -11,8 +10,8 @@ import { resolveViewer, toArenaDetailDto } from "@/lib/arena/dto";
 import { deriveArenaStatus } from "@/lib/arena/status";
 import { getOptionalUser } from "@/lib/server/auth/require-user";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
-import { PageMasthead } from "@/components/site/PageMasthead";
-import { ClockRibbon } from "@/components/arena/create/ClockRibbon";
+import { ArenaMasthead } from "@/components/arena/detail/ArenaMasthead";
+import { ArenaPhaseline } from "@/components/arena/detail/ArenaPhaseline";
 import { ArenaBrief } from "@/components/arena/detail/ArenaBrief";
 import { ArenaActionPanel } from "@/components/arena/detail/ArenaActionPanel";
 import { ArenaParticipants } from "@/components/arena/detail/ArenaParticipants";
@@ -23,7 +22,6 @@ import {
   DetailPanel,
   Fact,
   FactList,
-  authorityBadge,
   STATUS_COPY,
 } from "@/components/arena/detail/panels";
 
@@ -87,15 +85,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-const DATE = new Intl.DateTimeFormat("en-GB", {
-  weekday: "short",
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-  timeZone: "UTC",
-});
 
 export default async function ArenaDetailPage({ params }: PageProps) {
   const { id: slugParam } = await params;
@@ -122,6 +111,7 @@ export default async function ArenaDetailPage({ params }: PageProps) {
 
   const { arena: raw, meta } = result;
   const now = new Date();
+  const nowIso = now.toISOString();
   const status = deriveArenaStatus(raw, now);
 
   const viewer = resolveViewer({
@@ -177,9 +167,36 @@ export default async function ArenaDetailPage({ params }: PageProps) {
     ...(organizerName ? { organizer: { "@type": "Person", name: organizerName } } : {}),
   };
 
-  const tier = authorityBadge(arena.authority);
   const statusCopy = STATUS_COPY[status] ?? { label: status, tone: "past" as const };
-  const hostName = arena.creator.fullName ?? (arena.creator.handle ? `@${arena.creator.handle}` : "A host");
+  const hostName =
+    arena.creator.fullName ?? (arena.creator.handle ? `@${arena.creator.handle}` : "A host");
+
+  /**
+   * The one clock that matters right now.
+   *
+   * An arena has six timestamps and exactly one of them is the answer to "how
+   * long have I got" - which one depends on where in the run it is. Picking it
+   * here means the masthead never has to.
+   */
+  const countdown: { target: string; label: string } | null =
+    status === "SCHEDULED"
+      ? { target: arena.registrationStart, label: "Entries open in" }
+      : status === "REGISTRATION_OPEN"
+        ? { target: arena.registrationEnd, label: "Entries close in" }
+        : status === "IDEA_PHASE"
+          ? { target: arena.ideaPhaseEnd, label: "Building starts in" }
+          : status === "IMPLEMENTATION_PHASE"
+            ? { target: arena.implPhaseEnd, label: "Submissions lock in" }
+            : null;
+
+  const spine = [
+    isOnline ? "Online" : (arena.locationName ?? "In person"),
+    arena.isTeam ? `Teams of ${arena.minTeamSize}-${arena.maxTeamSize}` : "Solo",
+    arena.difficulty.charAt(0) + arena.difficulty.slice(1).toLowerCase(),
+    arena.maxParticipants
+      ? `${arena.entrantCount}/${arena.maxParticipants} in`
+      : `${arena.entrantCount} in`,
+  ];
 
   const deliverables = [
     arena.requireGithubUrl && "A repository",
@@ -212,52 +229,70 @@ export default async function ArenaDetailPage({ params }: PageProps) {
       <main id="main-content" className="relative min-h-screen bg-background text-foreground">
         <BackgroundGrid opacity={0.055} />
 
-        <PageMasthead eyebrow={statusCopy.label} title={arena.title}>
-          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[0.55rem] uppercase tracking-[0.14em] text-background/70">
-            {/* The tier, which this page never showed at all - and which is
-                the difference between an arena that carries rating and prize
-                money and one that does not. */}
-            {tier && (
-              <span
-                className={`border px-2 py-0.5 font-bold ${tier.className.replace("border-foreground bg-foreground text-background", "border-background bg-background text-foreground")}`}
-              >
-                {tier.label}
-              </span>
-            )}
+        <ArenaMasthead
+          title={arena.title}
+          statusLabel={statusCopy.label}
+          authority={arena.authority}
+          host={{
+            name: hostName,
+            handle: arena.creator.handle,
+            avatarUrl: arena.creator.avatarUrl,
+          }}
+          countdown={countdown}
+          nowIso={nowIso}
+          spine={spine}
+          prize={prize}
+          isPrivate={arena.isPrivate}
+        />
 
-            <span>
-              By{" "}
-              {arena.creator.handle ? (
-                <Link
-                  href={`/u/${arena.creator.handle}`}
-                  className="text-background underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
-                >
-                  {hostName}
-                </Link>
-              ) : (
-                <span className="text-background">{hostName}</span>
-              )}
-            </span>
+        <ArenaPhaseline
+          status={status}
+          nowIso={nowIso}
+          registrationStart={arena.registrationStart}
+          registrationEnd={arena.registrationEnd}
+          ideaPhaseStart={arena.ideaPhaseStart}
+          ideaPhaseEnd={arena.ideaPhaseEnd}
+          implPhaseStart={arena.implPhaseStart}
+          implPhaseEnd={arena.implPhaseEnd}
+        />
 
-            <span>{isOnline ? "Online" : (arena.locationName ?? "In person")}</span>
-            <span>{arena.isTeam ? `Teams of ${arena.minTeamSize}–${arena.maxTeamSize}` : "Solo"}</span>
-            {arena.isPrivate && <span>Invite only</span>}
-            {prize && <span className="text-orange">{prize}</span>}
-          </div>
-        </PageMasthead>
-
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 md:px-10">
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-10 md:px-10 md:py-12">
           {status === "CANCELED" && (
-            <p className="mb-6 border-2 border-accent bg-card px-4 py-3 font-sans text-sm leading-relaxed text-foreground">
+            <p className="mb-8 border-l-4 border-accent bg-card px-5 py-4 font-sans text-sm leading-relaxed text-foreground">
               <strong className="font-bold">This arena was called off.</strong> The
               page stays up so anyone who entered can see what happened.
             </p>
           )}
 
-          {/* Controls left, content right - the board's arrangement, so the two
-              pages read as one site. It also puts the action panel first on a
-              phone, where the column stacks and the thing you came to press
-              should not be below the brief. */}
+          {/* The brief comes first and comes wide, on paper rather than in a
+              card. It is the reason anyone opened this page, and boxing it at
+              the same weight as "Where" and "Hand in" was most of why the page
+              read as a listing: seven identical panels, one of which happened
+              to contain the writing. */}
+          <article className="mb-12 max-w-3xl">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.28em] text-orange-ink">
+                The brief
+              </span>
+              <span aria-hidden className="h-px flex-1 bg-foreground/15" />
+            </div>
+
+            <div className="mt-5 text-[1.02rem] leading-[1.75]">
+              <ArenaBrief markdown={arena.description} />
+            </div>
+
+            {arena.rulesText.trim().length > 0 && (
+              <div className="mt-10 border-t border-foreground/12 pt-6">
+                <span className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.28em] text-foreground/50">
+                  House rules
+                </span>
+                <div className="mt-4">
+                  <ArenaBrief markdown={arena.rulesText} />
+                </div>
+              </div>
+            )}
+          </article>
+
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[19rem_minmax(0,1fr)]">
             <aside className="flex flex-col gap-6">
               <ArenaActionPanel
@@ -273,47 +308,49 @@ export default async function ArenaDetailPage({ params }: PageProps) {
                 isEditable={!hasRun && status !== "CANCELED"}
               />
 
-              <DetailPanel title="The day">
-                <div className="px-4 py-4">
-                  <ClockRibbon
-                    registrationStart={arena.registrationStart}
-                    registrationEnd={arena.registrationEnd}
-                    ideaPhaseEnd={arena.ideaPhaseEnd}
-                    implPhaseEnd={arena.implPhaseEnd}
-                  />
-                </div>
-                <FactList>
-                  <Fact label="Registration closes">
-                    {DATE.format(new Date(arena.registrationEnd))} UTC
-                  </Fact>
-                  <Fact label="Build starts">
-                    {DATE.format(new Date(arena.implPhaseStart))} UTC
-                  </Fact>
-                  <Fact label="Submissions lock">
-                    {DATE.format(new Date(arena.implPhaseEnd))} UTC
-                  </Fact>
-                </FactList>
+              <DetailPanel title="Hand in" aside={`${deliverables.length}`}>
+                {deliverables.length === 0 ? (
+                  <p className="px-4 py-4 font-sans text-[0.8rem] text-foreground/60">
+                    Nothing beyond turning up and demoing.
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-foreground/10">
+                    {deliverables.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-foreground"
+                      >
+                        {/* The repo's own convention: a mark and a word, never
+                            colour alone. */}
+                        <span className="font-mono text-[0.6rem] font-bold text-orange-ink">
+                          [✓]
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </DetailPanel>
 
-              <DetailPanel title="Where">
-                <FactList>
-                  <Fact label="Format">{isOnline ? "Online" : "In person"}</Fact>
-                  {arena.locationName && <Fact label="Venue">{arena.locationName}</Fact>}
-                  {arena.googleMapsUrl && (
-                    <Fact label="Map">
-                      <a
-                        href={arena.googleMapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-orange-ink underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
-                      >
-                        Open in Maps
-                      </a>
-                    </Fact>
-                  )}
-                  <Fact label="Difficulty">{arena.difficulty.toLowerCase()}</Fact>
-                </FactList>
-              </DetailPanel>
+              {(!isOnline || arena.googleMapsUrl) && (
+                <DetailPanel title="Where">
+                  <FactList>
+                    {arena.locationName && <Fact label="Venue">{arena.locationName}</Fact>}
+                    {arena.googleMapsUrl && (
+                      <Fact label="Map">
+                        <a
+                          href={arena.googleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-orange-ink underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+                        >
+                          Open in Maps
+                        </a>
+                      </Fact>
+                    )}
+                  </FactList>
+                </DetailPanel>
+              )}
 
               {prize && (
                 <DetailPanel title="Prize" accent>
@@ -340,66 +377,6 @@ export default async function ArenaDetailPage({ params }: PageProps) {
             </aside>
 
             <div className="flex min-w-0 flex-col gap-8">
-              <section className="border border-foreground/15 bg-card p-6 md:p-8">
-                <h2 className="mb-4 font-mono text-[0.55rem] font-bold uppercase tracking-[0.18em] text-orange-ink">
-                  The brief
-                </h2>
-                <ArenaBrief markdown={arena.description} />
-              </section>
-
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <DetailPanel title="Hand in" aside={`${deliverables.length}`}>
-                  {deliverables.length === 0 ? (
-                    <p className="px-4 py-4 font-sans text-[0.8rem] text-foreground/60">
-                      Nothing required beyond turning up and demoing.
-                    </p>
-                  ) : (
-                    <ul className="divide-y divide-foreground/10">
-                      {deliverables.map((item) => (
-                        <li
-                          key={item}
-                          className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-foreground"
-                        >
-                          {/* The repo's own convention: a mark and a word, never
-                              colour alone. */}
-                          <span className="font-mono text-[0.6rem] font-bold text-orange-ink">
-                            [✓]
-                          </span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </DetailPanel>
-
-                <DetailPanel title="Who can enter">
-                  <FactList>
-                    <Fact label="Entry">
-                      {arena.isTeam
-                        ? `Teams of ${arena.minTeamSize} to ${arena.maxTeamSize}`
-                        : "Solo"}
-                    </Fact>
-                    <Fact label="Seats">
-                      {arena.maxParticipants
-                        ? `${arena.entrantCount} of ${arena.maxParticipants} taken`
-                        : `${arena.entrantCount} in, no cap`}
-                    </Fact>
-                    <Fact label="Access">
-                      {arena.isPrivate ? "Invite only" : "Open to anyone"}
-                    </Fact>
-                  </FactList>
-                </DetailPanel>
-              </div>
-
-              {arena.rulesText.trim().length > 0 && (
-                <section className="border border-foreground/15 bg-card p-6 md:p-8">
-                  <h2 className="mb-4 font-mono text-[0.55rem] font-bold uppercase tracking-[0.18em] text-foreground/70">
-                    Rules
-                  </h2>
-                  <ArenaBrief markdown={arena.rulesText} />
-                </section>
-              )}
-
               <ArenaParticipants participants={arena.participants} isTeam={arena.isTeam} />
 
               {hasRun && <ArenaLeaderboard arenaId={arena.id} />}
