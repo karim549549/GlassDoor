@@ -111,10 +111,9 @@ function SpotlightList({
 
 export function BoardSidebar({ data, now }: { data: BoardSidebarData; now: Date }) {
   return (
-    // Sticky so the rail stays with a reader working down a long board, and
-    // scrollable in its own right for the short viewports where it would
-    // otherwise trap its own bottom off-screen.
-    <aside className="flex flex-col gap-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+    // A plain stack. Positioning belongs to the rail that contains this, not
+    // to a component that no longer knows whether it is the whole column.
+    <div className="flex flex-col gap-5">
       <Panel title="Closing soonest" accent>
         <SpotlightList
           items={data.closingSoon}
@@ -134,7 +133,7 @@ export function BoardSidebar({ data, now }: { data: BoardSidebarData; now: Date 
       </Panel>
 
       <HostPrompt compact />
-    </aside>
+    </div>
   );
 }
 

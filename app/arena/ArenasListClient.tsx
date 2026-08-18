@@ -174,7 +174,15 @@ export function ArenasListClient({
             again, controls first, because a rail beside a phone screen is just
             a longer page. */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[19rem_minmax(0,1fr)]">
-          <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1">
+          {/* No max-height, no inner scrollbar, and deliberately not sticky.
+
+              A sticky element taller than the viewport traps its own bottom:
+              it pins at the top and the last panel becomes unreachable, so
+              the fix for that was an inner scroll area - a second scrollbar
+              beside the page's own, which is worse than the problem. The rail
+              takes the height it needs and scrolls with the document, which
+              is what a column of content should do. */}
+          <aside className="flex flex-col gap-6">
             <BoardFacets
               facets={facets}
               now={now}
