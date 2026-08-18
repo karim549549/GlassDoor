@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import ArenasListClient from "./ArenasListClient";
-import { listArenas, getBoardFacets } from "@/lib/arena/service";
+import { listArenas, getBoardFacets, getBoardSpotlight } from "@/lib/arena/service";
 import { DEFAULT_LIST_PARAMS } from "@/lib/arena/schema";
 import { getOptionalUser } from "@/lib/server/auth/require-user";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
@@ -23,10 +23,14 @@ export const dynamic = "force-dynamic";
 export default async function ArenasPage() {
   const now = new Date();
   const viewer = await getOptionalUser();
-  const [{ arenas, total, totalPages, myCount }, facets] = await Promise.all([
+  const [{ arenas, total, totalPages, myCount }, facets, spotlight] = await Promise.all([
     listArenas({ ...DEFAULT_LIST_PARAMS, userId: viewer?.id ?? null, now }),
     getBoardFacets(now),
+    getBoardSpotlight(now),
   ]);
+
+  const serializeSpotlight = (rows: typeof spotlight.closingSoon) =>
+    rows.map((r) => ({ id: r.id, title: r.title, at: r.at.toISOString(), entered: r.entered }));
 
   const formattedArenas: SerializedArenaListItem[] = arenas.map((a) => ({
     ...a,
@@ -55,6 +59,11 @@ export default async function ArenasPage() {
         total: facets.total,
         domains: facets.domains,
         nextDeadline: facets.nextDeadline ? facets.nextDeadline.toISOString() : null,
+      }}
+      spotlight={{
+        closingSoon: serializeSpotlight(spotlight.closingSoon),
+        runningNow: serializeSpotlight(spotlight.runningNow),
+        justFinished: serializeSpotlight(spotlight.justFinished),
       }}
     />
   );

@@ -375,6 +375,85 @@ export interface BoardSummary {
   nextDeadline: Date | null;
 }
 
+export interface SpotlightArena {
+  id: string;
+  title: string;
+  /** The moment this arena's current phase turns over. */
+  at: Date;
+  entered: number;
+}
+
+export interface BoardSpotlight {
+  closingSoon: SpotlightArena[];
+  runningNow: SpotlightArena[];
+  justFinished: SpotlightArena[];
+}
+
+/**
+ * Three short lists for the board's rail.
+ *
+ * The rail exists for two reasons at once. The obvious one is content - the
+ * page was a filter bar and a column of rows, and read thin. The less obvious
+ * one is that it fixes the rows: on a full-width container the middle column
+ * stretched, so a short title left a long empty gap before the countdown on the
+ * right. Narrowing the list to make room for the rail closes that gap without
+ * inventing anything to put in it.
+ *
+ * `take: 3` and a four-field select each, so the whole rail costs less than one
+ * row of the old list query did.
+ */
+export async function getBoardSpotlight(now: Date = new Date()): Promise<BoardSpotlight> {
+  const visible: Prisma.ArenaWhereInput = {
+    isDeleted: false,
+    isPrivate: false,
+    publishedAt: { not: null },
+    canceledAt: null,
+  };
+
+  const select = {
+    id: true,
+    title: true,
+    registrationEnd: true,
+    implPhaseEnd: true,
+    _count: { select: { entries: true } },
+  } satisfies Prisma.ArenaSelect;
+
+  const [closing, running, finished] = await Promise.all([
+    prisma.arena.findMany({
+      where: { ...visible, registrationStart: { lte: now }, registrationEnd: { gt: now } },
+      orderBy: { registrationEnd: "asc" },
+      take: 3,
+      select,
+    }),
+    prisma.arena.findMany({
+      where: { ...visible, registrationEnd: { lte: now }, implPhaseEnd: { gt: now } },
+      orderBy: { implPhaseEnd: "asc" },
+      take: 3,
+      select,
+    }),
+    prisma.arena.findMany({
+      where: { ...visible, implPhaseEnd: { lte: now } },
+      orderBy: { implPhaseEnd: "desc" },
+      take: 4,
+      select,
+    }),
+  ]);
+
+  const shape = (rows: typeof closing, field: "registrationEnd" | "implPhaseEnd") =>
+    rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      at: r[field],
+      entered: r._count.entries,
+    }));
+
+  return {
+    closingSoon: shape(closing, "registrationEnd"),
+    runningNow: shape(running, "implPhaseEnd"),
+    justFinished: shape(finished, "implPhaseEnd"),
+  };
+}
+
 export interface BoardFacets {
   open: number;
   live: number;

@@ -10,7 +10,8 @@ import { ArenaFilterBar, type ArenaFilterState } from "@/components/arena/list/A
 import { ArenasFooterPagination } from "@/components/arena/list/ArenasPagination";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
-import { BoardFacets, HostPrompt, type BoardFacetData } from "@/components/arena/list/BoardFacets";
+import { BoardFacets, type BoardFacetData } from "@/components/arena/list/BoardFacets";
+import { BoardSidebar, type BoardSidebarData } from "@/components/arena/list/BoardSidebar";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
 
 /**
@@ -47,6 +48,7 @@ interface ArenasListClientProps {
   /** The server's clock at render time, so the first paint agrees with the HTML. */
   nowIso: string;
   facets: BoardFacetData;
+  spotlight: BoardSidebarData;
 }
 
 export function ArenasListClient({
@@ -56,6 +58,7 @@ export function ArenasListClient({
   initialMyCount,
   nowIso,
   facets,
+  spotlight,
 }: ArenasListClientProps) {
   const { user } = useAuthStore();
 
@@ -182,6 +185,8 @@ export function ArenasListClient({
           total={totalCount}
         />
 
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_21rem]">
+          <div className="min-w-0">
         <div className="mt-6 border border-foreground/15 bg-card">
           {loadError ? (
             <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
@@ -230,10 +235,6 @@ export function ArenasListClient({
           )}
         </div>
 
-        <div className="mt-8">
-          <HostPrompt />
-        </div>
-
         {totalPages > 1 && (
           <div className="mt-6">
             <ArenasFooterPagination
@@ -244,6 +245,10 @@ export function ArenasListClient({
             />
           </div>
         )}
+          </div>
+
+          <BoardSidebar data={spotlight} now={now} />
+        </div>
       </ArenaContainer>
     </main>
   );

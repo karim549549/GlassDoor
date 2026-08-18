@@ -148,21 +148,39 @@ export function BoardFacets({
  * exactly the person who should be asked to write one - they have just read
  * everything on offer and found nothing they wanted.
  */
-export function HostPrompt() {
+export function HostPrompt({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="flex flex-col items-start gap-4 border border-foreground/15 bg-card p-6 sm:flex-row sm:items-center sm:justify-between md:p-8">
-      <div className="max-w-xl">
-        <h2 className="font-display text-[1.35rem] italic leading-tight text-foreground">
+    <div
+      className={
+        compact
+          ? "border-2 border-orange bg-orange/10 p-4"
+          : "flex flex-col items-start gap-4 border border-foreground/15 bg-card p-6 sm:flex-row sm:items-center sm:justify-between md:p-8"
+      }
+    >
+      <div className={compact ? "" : "max-w-xl"}>
+        <h2
+          className={`font-display italic leading-tight text-foreground ${
+            compact ? "text-[1.1rem]" : "text-[1.35rem]"
+          }`}
+        >
           Nothing you fancy?
         </h2>
-        <p className="mt-1.5 font-sans text-sm leading-relaxed text-foreground/70">
+        <p
+          className={`mt-1.5 font-sans leading-relaxed text-foreground/75 ${
+            compact ? "text-[0.8rem]" : "text-sm"
+          }`}
+        >
           Anyone can post a brief. Write the one you wanted to find, set the
           clock, and see who turns up.
         </p>
       </div>
       <Link
         href="/arena/create"
-        className="shrink-0 border-2 border-orange bg-orange px-5 py-2.5 font-mono text-[0.6rem] font-bold uppercase tracking-[0.16em] text-[#0E0E0D] shadow-[3px_3px_0_0_var(--foreground)] transition-all hover:shadow-none active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+        className={`border-2 border-orange bg-orange font-mono font-bold uppercase tracking-[0.16em] text-[#0E0E0D] shadow-[3px_3px_0_0_var(--foreground)] transition-all hover:shadow-none active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${
+          compact
+            ? "mt-3 block px-4 py-2 text-center text-[0.58rem]"
+            : "shrink-0 px-5 py-2.5 text-[0.6rem]"
+        }`}
       >
         Write a brief
       </Link>

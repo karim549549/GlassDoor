@@ -170,7 +170,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
     <li className="border-b border-foreground/12 last:border-b-0">
       <Link
         href={`/arena/${buildArenaSlug(arena.title, arena.id)}`}
-        className="group grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-5 gap-y-1 px-4 py-3 transition-colors hover:bg-foreground/[0.04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange md:grid-cols-[6.5rem_minmax(0,1fr)_11rem] md:px-6"
+        className="group grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-5 gap-y-1 px-4 py-3 transition-colors hover:bg-foreground/[0.04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange md:grid-cols-[6rem_minmax(0,1fr)_auto] md:px-5"
       >
         <span
           className={`flex items-center gap-1.5 font-mono text-[0.62rem] font-bold uppercase tracking-[0.14em] ${STATUS_TONE[status]}`}
