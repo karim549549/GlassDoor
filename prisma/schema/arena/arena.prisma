@@ -183,6 +183,10 @@ model ArenaInvitation {
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 
+  /// One invitation per person per arena. Without it a double-clicked
+  /// button invites someone twice, and the service check that guards against
+  /// it loses to two requests in the same second.
+  @@unique([arenaId, receiverId])
   @@index([arenaId])
   @@index([receiverId])
   @@index([senderId])

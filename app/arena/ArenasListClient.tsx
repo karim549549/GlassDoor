@@ -16,6 +16,10 @@ import { PageMasthead } from "@/components/site/PageMasthead";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { BoardFacets, type BoardFacetData } from "@/components/arena/list/BoardFacets";
 import { BoardSidebar, type BoardSidebarData } from "@/components/arena/list/BoardSidebar";
+import {
+  InvitationsPanel,
+  type PendingInvitation,
+} from "@/components/arena/list/InvitationsPanel";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
 
 /**
@@ -51,6 +55,8 @@ interface ArenasListClientProps {
   nowIso: string;
   facets: BoardFacetData;
   spotlight: BoardSidebarData;
+  /** Pending invitations addressed to this reader. Empty for a guest. */
+  invitations: PendingInvitation[];
 }
 
 export function ArenasListClient({
@@ -61,6 +67,7 @@ export function ArenasListClient({
   nowIso,
   facets,
   spotlight,
+  invitations,
 }: ArenasListClientProps) {
   const { user } = useAuthStore();
 
@@ -183,6 +190,11 @@ export function ArenasListClient({
               takes the height it needs and scrolls with the document, which
               is what a column of content should do. */}
           <aside className="flex flex-col gap-6">
+            {/* First in the rail, and only when there is something in it. An
+                invitation has a clock on it and is addressed to this reader by
+                name; the filters can wait behind that. */}
+            <InvitationsPanel invitations={invitations} now={now} />
+
             <BoardFacets
               facets={facets}
               now={now}

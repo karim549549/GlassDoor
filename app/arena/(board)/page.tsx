@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ArenasListClient from "../ArenasListClient";
 import { listArenas, getBoardFacets, getBoardSpotlight } from "@/lib/arena/service";
+import { listInvitationsForUser } from "@/lib/arena/invitation-service";
 import { DEFAULT_LIST_PARAMS } from "@/lib/arena/schema";
 import { getOptionalUser } from "@/lib/server/auth/require-user";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
@@ -23,11 +24,14 @@ export const dynamic = "force-dynamic";
 export default async function ArenasPage() {
   const now = new Date();
   const viewer = await getOptionalUser();
-  const [{ arenas, total, totalPages, myCount }, facets, spotlight] = await Promise.all([
-    listArenas({ ...DEFAULT_LIST_PARAMS, userId: viewer?.id ?? null, now }),
-    getBoardFacets(now),
-    getBoardSpotlight(now),
-  ]);
+  const [{ arenas, total, totalPages, myCount }, facets, spotlight, invitations] =
+    await Promise.all([
+      listArenas({ ...DEFAULT_LIST_PARAMS, userId: viewer?.id ?? null, now }),
+      getBoardFacets(now),
+      getBoardSpotlight(now),
+      // A guest has none by definition, and asking costs a query to prove it.
+      viewer ? listInvitationsForUser(viewer.id, now) : Promise.resolve([]),
+    ]);
 
   const serializeSpotlight = (rows: typeof spotlight.closingSoon) =>
     rows.map((r) => ({ id: r.id, title: r.title, at: r.at.toISOString(), entered: r.entered }));
@@ -59,6 +63,15 @@ export default async function ArenasPage() {
         total: facets.total,
         nextDeadline: facets.nextDeadline ? facets.nextDeadline.toISOString() : null,
       }}
+      invitations={invitations.map((i) => ({
+        id: i.id,
+        arenaId: i.arena.id,
+        arenaTitle: i.arena.title,
+        senderName: i.sender.fullName ?? (i.sender.handle ? `@${i.sender.handle}` : "A host"),
+        senderHandle: i.sender.handle,
+        registrationEnd: i.arena.registrationEnd.toISOString(),
+        isPrivate: i.arena.isPrivate,
+      }))}
       spotlight={{
         closingSoon: serializeSpotlight(spotlight.closingSoon),
         runningNow: serializeSpotlight(spotlight.runningNow),

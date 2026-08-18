@@ -33,7 +33,12 @@ export interface BoardSidebarData {
   runningNow: SpotlightItem[];
 }
 
-function Panel({
+/**
+ * The rail's panel chrome. Exported because the invitations panel sits in the
+ * same column and has to look like it belongs there, and a second hand-rolled
+ * copy of a header rule is how two panels start disagreeing about a border.
+ */
+export function RailPanel({
   title,
   accent,
   children,
@@ -114,23 +119,23 @@ export function BoardSidebar({ data, now }: { data: BoardSidebarData; now: Date 
     // A plain stack. Positioning belongs to the rail that contains this, not
     // to a component that no longer knows whether it is the whole column.
     <div className="flex flex-col gap-5">
-      <Panel title="Closing soonest" accent>
+      <RailPanel title="Closing soonest" accent>
         <SpotlightList
           items={data.closingSoon}
           now={now}
           verb="closes in"
           emptyText="Nothing open right now"
         />
-      </Panel>
+      </RailPanel>
 
-      <Panel title="Being built now">
+      <RailPanel title="Being built now">
         <SpotlightList
           items={data.runningNow}
           now={now}
           verb="ends in"
           emptyText="No arena is running"
         />
-      </Panel>
+      </RailPanel>
 
       <HostPrompt compact />
     </div>
