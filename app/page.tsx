@@ -4,7 +4,6 @@ import { HeroAndArenas } from "@/components/home/HeroAndArenas";
 import { AuthModalMount } from "@/components/auth/AuthModalMount";
 import { Suspense } from "react";
 import { listArenas, getBoardSummary } from "@/lib/arena/service";
-import { getGlobalStandings } from "@/lib/arena/leaderboard-service";
 import { toArenaCardData } from "@/components/home/Hero/arena-cards-data";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
@@ -118,10 +117,9 @@ export default async function Home() {
   // Resolved once and threaded into every status derivation below, so an arena
   // sitting on a phase boundary cannot derive two different states.
   const now = new Date();
-  const [{ cards, openCount }, summary, standings] = await Promise.all([
+  const [{ cards, openCount }, summary] = await Promise.all([
     loadHeroCards(now),
     getBoardSummary(now).catch(() => null),
-    getGlobalStandings(12).catch(() => []),
   ]);
 
   return (
@@ -156,7 +154,7 @@ export default async function Home() {
             separate the page's substance from its chrome - and this is the one
             page most likely to be read by something other than a browser. */}
         <main className="flex flex-col">
-          <HeroAndArenas cards={cards} openCount={openCount} summary={summary} standings={standings} />
+          <HeroAndArenas cards={cards} openCount={openCount} summary={summary} />
         </main>
       </div>
 

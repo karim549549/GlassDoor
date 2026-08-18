@@ -4,23 +4,24 @@ import React from "react";
 import Link from "next/link";
 import { Terminal, ArrowRight, PenLine, Zap } from "lucide-react";
 import { HUDCornerReticle } from "./HUDCornerReticle";
-import { LeaderboardRail } from "./LeaderboardRail";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
-import type { GlobalStanding } from "@/lib/arena/leaderboard-service";
 
 /**
- * The ask, and the standings beside it.
+ * The ask.
  *
- * The rail lives here rather than in section 2 for a reason: it is the only
- * thing on the page reporting on people, and it belongs next to the invitation
- * to become one of them, not next to a list of arenas.
+ * A global standings rail used to sit beside this, fed by `getGlobalStandings`
+ * over `RatingState`. There is no global leaderboard: PRD 7.1 awards rating
+ * only on OFFICIAL and COMPANY arenas, so on a board of community arenas the
+ * table is empty by design - and a rail that renders nothing is worse than no
+ * rail. Ordering is per-arena now (`getArenaLeaderboard`), and a global ladder
+ * returns when vetted-judge arenas exist to feed it.
  */
-export function ConversionTerminal({ standings = [] }: { standings?: GlobalStanding[] }) {
+export function ConversionTerminal() {
   return (
     <section className="relative z-20 w-full py-24 md:py-36 px-6 md:px-12 bg-background border-b border-foreground/20 overflow-hidden">
       <BackgroundGrid opacity={0.09} />
-      <div className="relative z-10 max-w-6xl mx-auto flex flex-col lg:flex-row items-start gap-10 lg:gap-14">
-        <div className="flex-1 min-w-0">
+      <div className="relative z-10 max-w-4xl mx-auto">
+        <div className="min-w-0">
         <HUDCornerReticle
           label="INITIALIZATION TERMINAL // CAIRO NETWORK"
           coordinate="STATUS: READY FOR INGEST"
@@ -77,11 +78,6 @@ export function ConversionTerminal({ standings = [] }: { standings?: GlobalStand
             <span className="text-orange-ink font-bold">SOLO OR TEAMS OF 2&ndash;4</span>
           </div>
         </HUDCornerReticle>
-        </div>
-
-        {/* Standings sit beside the invitation, not beside the arena list. */}
-        <div className="w-full lg:w-[19rem] shrink-0 text-foreground">
-          <LeaderboardRail standings={standings} />
         </div>
       </div>
     </section>

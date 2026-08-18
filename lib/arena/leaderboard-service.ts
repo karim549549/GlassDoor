@@ -118,37 +118,20 @@ export async function getArenaLeaderboard(arenaId: string): Promise<ArenaLeaderb
  * publish, and this page carried one before (eight fictional winners on every
  * arena). Empty is the correct output until somebody competes.
  */
-export interface GlobalStanding {
-  userId: string;
-  handle: string | null;
-  fullName: string | null;
-  avatarUrl: string | null;
-  domain: RatingDomain;
-  rating: number;
-  /** Glicko-2 deviation. High means the rating is not yet settled. */
-  deviation: number;
-}
 
-export async function getGlobalStandings(limit = 12): Promise<GlobalStanding[]> {
-  const rows = await prisma.ratingState.findMany({
-    orderBy: { rating: "desc" },
-    take: limit,
-    select: {
-      userId: true,
-      domain: true,
-      rating: true,
-      deviation: true,
-      user: { select: { handle: true, fullName: true, avatarUrl: true } },
-    },
-  });
-
-  return rows.map((r) => ({
-    userId: r.userId,
-    handle: r.user?.handle ?? null,
-    fullName: r.user?.fullName ?? null,
-    avatarUrl: r.user?.avatarUrl ?? null,
-    domain: r.domain,
-    rating: Number(r.rating),
-    deviation: Number(r.deviation),
-  }));
-}
+/**
+ * A global standings query used to live here, reading `RatingState` ordered by
+ * rating, and fed a rail on the homepage plus a `/billboard` page.
+ *
+ * There is no global leaderboard. PRD 7.1 awards rating only on OFFICIAL and
+ * COMPANY arenas - a community marketplace cannot have an honest global ladder,
+ * because the creator appoints the judge, so anyone could host an arena, name a
+ * friendly judge and score themselves. On a board of community arenas that
+ * table is therefore empty by design, and both surfaces rendered nothing.
+ *
+ * Ordering is per-arena: `getArenaLeaderboard` above. A global ladder returns
+ * when vetted-judge arenas exist to feed it, and `RatingState` /
+ * `RatingEvent` are still in the schema waiting for exactly that. Deleted
+ * rather than left dormant, because an unused export that "will be needed
+ * later" is how this repo accumulated the orphans it has been clearing out.
+ */

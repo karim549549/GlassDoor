@@ -77,10 +77,10 @@ export function CairoBillboard({ arenas }: CairoBillboardProps) {
       {/* See More button at the bottom */}
       <div className="pt-4 mt-3 border-t border-dashed border-foreground/10 relative z-10">
         <Link
-          href="/billboard"
+          href="/arena"
           className="w-full py-2 bg-orange text-white border-2 border-foreground font-mono text-[0.58rem] font-bold tracking-widest uppercase hover:bg-transparent hover:text-foreground transition-all duration-150 shadow-[2px_2px_0px_0px_var(--foreground)] hover:shadow-none active:translate-y-0.5 flex items-center justify-center gap-1"
         >
-          See More Standings [→]
+          See All Arenas [→]
         </Link>
       </div>
 

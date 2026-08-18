@@ -338,6 +338,40 @@ Returns the active session authorization payload:
 | **`COMPANY`** | Verified Corporate Accounts | Blue `[ COMPANY ARENA ]` | 🟢 **FULL XP** | 🟢 **YES** (Paid Tier) |
 | **`COMMUNITY`** | Any Developer Contestant | Neutral `[ COMMUNITY ARENA ]` | 🔴 **0 XP** (Anti-Cheat) | 🔴 **BLOCKED (V1)** |
 
+### 7.1a No Global Leaderboard — Ordering Is Per-Arena
+
+**Decided 2026-08-18.** There is no global ladder, and 7.1's `0 XP` for
+COMMUNITY is not a temporary limitation to be engineered around — it is the
+only honest answer available.
+
+**Why a global rating cannot work in a marketplace.** Codeforces-style rating
+depends on four things: centrally authored problems, objective automatic
+grading, everyone competing simultaneously on identical problems, and
+difficulty calibrated against a known population. None hold here. Briefs are
+written by anyone, judged by a human **the creator appoints**, at a time the
+creator picks, with no calibration. So there is no defensible answer to "what
+is this challenge worth", and the gaming path is one step long: host an arena,
+appoint a friendly judge, score yourself.
+
+**What exists instead.** Each arena has its own ordering of entrants —
+`getArenaLeaderboard` — and that is the whole competitive surface for community
+arenas. A developer's profile carries **the record**: arenas entered, submitted,
+placings, the judges' written verdicts, and pending invitations. History, not an
+aggregate score.
+
+**What returns, and when.** A global ladder is an OFFICIAL and COMPANY feature,
+exactly as 7.1 says, because those arenas have vetted judges behind them.
+`RatingState`, `RatingEvent`, `RatingPeriod` and the Glicko-2 implementation
+stay in the schema, dormant and unused, waiting for that.
+
+**Removed on this decision:** the `/billboard` page (a placeholder promising
+"global developer sprint scorecards"), the homepage standings rail, and
+`getGlobalStandings`. All three read `RatingState`, which is empty by design on
+a community board — so all three rendered nothing while advertising that
+something was coming.
+
+---
+
 ### 7.2 Non-Custodial Prize Pool Legal Shield
 - **Prize Fields**: `hasPrizePool`, `totalPrizePool`, `prizeCurrency` (`PrizeCurrency` enum, default: `EGP`), `firstPlacePrize`, `secondPlacePrize`, `thirdPlacePrize`.
 - **Non-Custodial Legal Disclaimer**:

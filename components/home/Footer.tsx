@@ -17,7 +17,6 @@ const PRODUCT = [
   { label: "Browse arenas", href: "/arena" },
   { label: "Host an arena", href: "/arena/create" },
   { label: "Proof packets", href: "/proof" },
-  { label: "Billboard", href: "/billboard" },
 ];
 
 const AUDIENCE = [

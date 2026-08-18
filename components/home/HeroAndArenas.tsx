@@ -29,18 +29,15 @@ import { ConversionTerminal } from "./ConversionTerminal";
  */
 import type { ArenaCardData } from "./Hero/arena-cards-data";
 import type { BoardSummary } from "@/lib/arena/service";
-import type { GlobalStanding } from "@/lib/arena/leaderboard-service";
 
 export function HeroAndArenas({
   cards,
   openCount = 0,
   summary,
-  standings = [],
 }: {
   cards?: ArenaCardData[];
   openCount?: number;
   summary?: BoardSummary | null;
-  standings?: GlobalStanding[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const arenasRef = useRef<HTMLDivElement>(null);
@@ -66,10 +63,10 @@ export function HeroAndArenas({
           audience is - see PRD 1.2. */}
       <ASaturday />
 
-      {/* SECTION 6: the ask. Ready-to-join card, with the live standings rail
+      {/* SECTION 6: the ask. Ready-to-join card. The global standings rail that
           beside it - the only place on the page that reports on people rather
           than arenas, and the right place for it: last, next to the CTA. */}
-      <ConversionTerminal standings={standings} />
+      <ConversionTerminal />
     </div>
   );
 }
