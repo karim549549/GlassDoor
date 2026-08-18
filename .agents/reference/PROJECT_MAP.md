@@ -6,9 +6,9 @@
 Auto-derived inventory of Devs Arena. Read this before exploring the codebase —
 it exists so an agent does not spend tokens rediscovering structure.
 
-Generated from 38 models, 34 API routes, 14 pages, 10 test files.
+Generated from 36 models, 37 API routes, 23 pages, 17 test files.
 
-## Data model (38 models, 13 migrations)
+## Data model (36 models, 16 migrations)
 
 - `prisma/schema/arena/arena.prisma` — Arena, ArenaEntry, ArenaInvitation, ArenaTeam, ArenaTeamMember
 - `prisma/schema/arena/comment.prisma` — ArenaComment
@@ -22,7 +22,6 @@ Generated from 38 models, 34 API routes, 14 pages, 10 test files.
 - `prisma/schema/rating/rating.prisma` — RatingState, RatingEvent, RatingPeriod
 - `prisma/schema/role/role.prisma` — Role
 - `prisma/schema/skill/skill.prisma` — Skill
-- `prisma/schema/tag/tag.prisma` — Tag, TagOnArena
 - `prisma/schema/user/user.prisma` — User
 - `prisma/schema/user_job_type/user_job_type.prisma` — UserJobType
 - `prisma/schema/user_role/role.user.role.prisma` — UserRole
@@ -31,8 +30,6 @@ Generated from 38 models, 34 API routes, 14 pages, 10 test files.
 ### Enums
 - `AppealStatus` — PENDING · ACCEPTED · REJECTED
 - `ArenaAuthority` — OFFICIAL · COMPANY · COMMUNITY
-- `ArenaFormat` — REP · LIVE · ARENA
-- `ArenaIntent` — HIRING_ASSESSMENT · BRAND_HACKATHON · COMMUNITY_FUN
 - `CompanyRole` — OWNER · ADMIN · RECRUITER · BILLING_MANAGER
 - `CompanySize` — SEED · STARTUP · GROWTH · MID_MARKET · ENTERPRISE
 - `DifficultyTier` — NOVICE · INTERMEDIATE · ADVANCED · GRANDMASTER
@@ -59,16 +56,20 @@ Generated from 38 models, 34 API routes, 14 pages, 10 test files.
 - `20260815170000_rating_ledger_and_domain_states`
 - `20260815180000_proof_packets_tamper_evident_credentials`
 - `20260815190000_comments_governance_defense_and_coi_trigger`
+- `20260818140000_drop_arena_cover_image`
+- `20260818200000_drop_tags_format_intent`
+- `20260819120000_arena_invitation_unique_receiver`
 
-## API routes (34)
+## API routes (37)
 
 | Route | Methods | Auth | Rate limited |
 |---|---|---|---|
 | `/api/arena` | POST, GET | requireUser | yes |
-| `/api/arena/[id]` | GET | optional | no |
+| `/api/arena/[id]` | GET, PATCH, DELETE | requireUser | yes |
 | `/api/arena/[id]/comments` | GET, POST | requireUser | yes |
 | `/api/arena/[id]/commits` | POST, GET | requireUser | yes |
 | `/api/arena/[id]/defense` | GET, POST | requireUser | yes |
+| `/api/arena/[id]/invitations` | GET, POST | requireUser | yes |
 | `/api/arena/[id]/join` | POST | requireUser | yes |
 | `/api/arena/[id]/judge/assignments` | GET | requireUser | no |
 | `/api/arena/[id]/judge/score` | POST | requireUser | yes |
@@ -78,72 +79,90 @@ Generated from 38 models, 34 API routes, 14 pages, 10 test files.
 | `/api/arena/[id]/rubric` | GET, POST, PATCH | requireUser | yes |
 | `/api/arena/[id]/submit` | POST, GET | requireUser | yes |
 | `/api/arena/[id]/teams` | POST | requireUser | yes |
-| `/api/arena/tags` | GET | public | no |
-| `/api/arena/upload` | POST | requireUser | yes |
 | `/api/auth/callback` | GET | public | no |
 | `/api/auth/change-password` | POST | requireUser | yes |
 | `/api/auth/login` | POST | public | yes |
 | `/api/auth/logout` | POST | public | no |
 | `/api/auth/me` | GET | public | no |
 | `/api/auth/oauth` | GET | public | no |
+| `/api/auth/resend-otp` | POST | public | yes |
 | `/api/auth/reset-password` | POST | public | yes |
 | `/api/auth/signup` | POST | public | yes |
+| `/api/auth/verify-otp` | POST | public | yes |
 | `/api/companies` | GET | public | no |
 | `/api/cron/rating-period` | POST | public | no |
 | `/api/disputes` | POST, GET, PATCH | requireRole | yes |
+| `/api/invitations/[id]` | PATCH | requireUser | yes |
 | `/api/notifications` | GET, PATCH | requireUser | yes |
 | `/api/profile/metadata` | GET | public | no |
 | `/api/profile/update` | POST | requireUser | no |
 | `/api/profile/upload` | POST | requireUser | yes |
 | `/api/recruiter/pipeline` | GET, POST | requireUser | yes |
+| `/api/search` | GET | optional | no |
 | `/api/user/[id]` | GET | optional | no |
 | `/api/user/follow` | POST | requireUser | no |
 
-## Pages (14)
+## Pages (23)
 
 - `/`
+- `/(auth)/forgot-password`
+- `/(auth)/login`
+- `/(auth)/signup`
+- `/about`
 - `/admin`
-- `/arena`
+- `/arena/(board)`
 - `/arena/[id]`
+- `/arena/[id]/edit`
 - `/arena/create`
-- `/billboard`
+- `/companies`
 - `/companies/[id]`
 - `/judge`
 - `/judge/[submissionId]`
+- `/privacy`
 - `/profile`
 - `/proof`
 - `/proof/[slug]`
 - `/recruiter`
+- `/support`
+- `/terms`
+- `/u/[handle]`
 - `/user/[id]`
 
 ## Domain libraries
 
-- `lib/arena/` — comment-dto.ts, comment-service.ts, commit-sync.ts, defense-service.ts, formats.ts, judging-service.ts, leaderboard-service.ts, participation-service.ts, requirement-service.ts, rubric-service.ts, schema.ts, service.ts, status.ts, submission-service.ts, types.ts, useCoverImageUpload.ts
-- `lib/auth/` — schema.ts
-- `lib/client/` — logger.ts, saved-accounts.ts, useAuthStore.ts, useDebouncedValue.ts, useRecentSearches.ts
-- `lib/companies/` — data.ts, dto.ts, format.ts, schema.ts, service.ts, types.ts
+- `lib/arena/` — authority.ts, comment-dto.ts, comment-service.ts, commit-sync.ts, defense-service.ts, dto.ts, edit-rules.ts, formats.ts, invitation-service.ts, judging-service.ts, leaderboard-service.ts, participation-service.ts, requirement-service.ts, rubric-service.ts, schedule-presets.ts, schema.ts, service.ts, status.ts, submission-service.ts, taxonomy.ts, types.ts
+- `lib/auth/` — dev-otp-policy.ts, landing.ts, otp.ts, schema.ts
+- `lib/client/` — logger.ts, redirect-target.ts, saved-accounts.ts, search-dialog.ts, useAuthStore.ts, useDebouncedValue.ts, useRecentSearches.ts, useSiteSearch.ts
+- `lib/companies/` — dto.ts, schema.ts, service.ts, types.ts
 - `lib/governance/` — audit-service.ts, dispute-service.ts, dto.ts, notification-service.ts, schema.ts
 - `lib/profile/` — constants.ts, schema.ts, service.ts
-- `lib/proof/` — hash.ts, proof-service.ts
+- `lib/proof/` — canonicalize.ts, hash.ts, proof-service.ts
 - `lib/rating/` — glicko2.ts, rating-service.ts
 - `lib/recruiter/` — dto.ts, pipeline-service.ts, schema.ts
 - `lib/runner/` — index.ts, judge0-adapter.ts, stub-adapter.ts, types.ts
 - `lib/server/` — api-route.ts, db-integrity.ts, logger.ts, prisma.ts, rate-limit.ts, upload.ts
 - `lib/taxonomy/` — seniority.ts
-- `lib/user/` — dto.ts, service.ts
+- `lib/user/` — dto.ts, handle.ts, service.ts
 
-## Tests (10 files)
+## Tests (17 files)
 
 - `lib/arena-slug.test.ts`
+- `lib/arena/authority.test.ts`
 - `lib/arena/commit-sync.test.ts`
+- `lib/arena/dto.test.ts`
+- `lib/arena/edit-rules.test.ts`
 - `lib/arena/formats.test.ts`
+- `lib/arena/schedule-presets.test.ts`
 - `lib/arena/schema.test.ts`
 - `lib/arena/status.test.ts`
+- `lib/auth/dev-otp-policy.test.ts`
+- `lib/auth/otp.test.ts`
 - `lib/json-ld.test.ts`
 - `lib/proof/hash.test.ts`
 - `lib/rating/glicko2.test.ts`
 - `lib/runner/index.test.ts`
 - `lib/url.test.ts`
+- `lib/user/handle.test.ts`
 
 Run with `npm test` (uses `scripts/run-tests.mjs`; Node 20 here cannot glob in
 `node --test`, so the runner walks `lib/` itself).
