@@ -7,6 +7,7 @@ import {
   scheduleSegments,
   formatDuration,
   toDateTimeLocal,
+  nextWeekendStart,
 } from "./schedule-presets";
 
 const classic = findPreset("classic")!;
@@ -104,6 +105,38 @@ test("a zero-length contest yields no segments rather than dividing by zero", ()
     scheduleSegments({ registrationStart: t, registrationEnd: t, ideaPhaseEnd: t, implPhaseEnd: t }),
     []
   );
+});
+
+test("next weekend start lands on Saturday at 10:00", () => {
+  // Tuesday 18 Aug 2026 -> Saturday 22 Aug.
+  const from = nextWeekendStart(new Date(2026, 7, 18, 14, 30));
+  assert.equal(from.getDay(), 6);
+  assert.equal(toDateTimeLocal(from), "2026-08-22T10:00");
+});
+
+test("on a Saturday before 10:00 it keeps today", () => {
+  const from = nextWeekendStart(new Date(2026, 7, 22, 7, 15));
+  assert.equal(toDateTimeLocal(from), "2026-08-22T10:00");
+});
+
+test("on a Saturday after 10:00 it moves a week, not a day", () => {
+  const from = nextWeekendStart(new Date(2026, 7, 22, 11, 0));
+  assert.equal(from.getDay(), 6);
+  assert.equal(toDateTimeLocal(from), "2026-08-29T10:00");
+});
+
+test("exactly 10:00 on a Saturday is already gone", () => {
+  // The boundary: a host opening the form at 10:00 sharp cannot register for
+  // something that starts at 10:00 sharp.
+  assert.equal(toDateTimeLocal(nextWeekendStart(new Date(2026, 7, 22, 10, 0))), "2026-08-29T10:00");
+});
+
+test("the default prefill produces a valid Classic day", () => {
+  const now = new Date(2026, 7, 18, 14, 30);
+  const s = deriveSchedule({ startsAt: nextWeekendStart(now), opensAt: now, preset: classic });
+  assert.equal(s.registrationStart, "2026-08-18T14:30");
+  assert.equal(s.registrationEnd, "2026-08-22T10:00");
+  assert.equal(s.implPhaseEnd, "2026-08-22T14:30");
 });
 
 test("durations read the way a person would say them", () => {

@@ -121,6 +121,41 @@ export function deriveSchedule(params: {
   };
 }
 
+/**
+ * The next Saturday morning, which is what an arena is for.
+ *
+ * The form used to open with six empty datetime fields, so the first thing a
+ * host met was the most tedious part of the job. Prefilling the machinery -
+ * never the brief - lets someone write a title and a description and post
+ * something that works.
+ *
+ * Saturday because that is the day the product is about; 10:00 because a
+ * Classic arena then finishes at 14:30, which is still the same morning.
+ * Today counts if it is Saturday and the hour has not passed, so a host
+ * setting one up on the morning itself is not pushed a week out.
+ *
+ * `now` is a parameter, the same rule the rest of this module and
+ * `deriveArenaStatus` follow.
+ */
+export const DEFAULT_START_HOUR = 10;
+
+export function nextWeekendStart(now: Date): Date {
+  const candidate = new Date(now);
+  candidate.setHours(DEFAULT_START_HOUR, 0, 0, 0);
+
+  const SATURDAY = 6;
+  const daysUntilSaturday = (SATURDAY - candidate.getDay() + 7) % 7;
+
+  // Already Saturday: keep today only if 10:00 has not gone by.
+  if (daysUntilSaturday === 0 && candidate.getTime() <= now.getTime()) {
+    candidate.setDate(candidate.getDate() + 7);
+    return candidate;
+  }
+
+  candidate.setDate(candidate.getDate() + daysUntilSaturday);
+  return candidate;
+}
+
 /** A phase's share of the whole run, for the proportional ribbon in the UI. */
 export interface ScheduleSegment {
   key: "registration" | "plan" | "build";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +15,12 @@ import { logger } from "@/lib/client/logger";
 import { CreateStepper, type CreateStep } from "@/components/arena/create/CreateStepper";
 import { StepPanel } from "@/components/arena/create/fields";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
+import { FirstRunNote } from "@/components/arena/create/FirstRunNote";
+import {
+  deriveSchedule,
+  findPreset,
+  nextWeekendStart,
+} from "@/lib/arena/schedule-presets";
 import { BriefStep } from "@/components/arena/create/steps/BriefStep";
 import { KindStep } from "@/components/arena/create/steps/KindStep";
 import { WhenStep } from "@/components/arena/create/steps/WhenStep";
@@ -74,9 +80,15 @@ export default function CreateArenaPage() {
       difficulty: "INTERMEDIATE",
       locationType: "ONLINE",
       isPrivate: false,
-      isTeam: false,
-      minTeamSize: 1,
-      maxTeamSize: 1,
+      // Teams, not solo. PRD 1.3 is explicit that the reference format is
+      // "small teams, not solo", and this defaulted to `false` with sizes of
+      // 1 - so the arena a host got without touching anything was the one
+      // shape the product is not about, and every one of them had to notice
+      // and change it. Solo is now the deliberate choice rather than the
+      // accidental one.
+      isTeam: true,
+      minTeamSize: 2,
+      maxTeamSize: 4,
       allowLeaderAccessControl: true,
       requireGithubUrl: true,
       requireFigmaUrl: false,
@@ -147,6 +159,43 @@ export default function CreateArenaPage() {
       locationType, locationName, isTeam, minTeam, maxTeam, isPrivate, inviteCode,
     ]
   );
+
+  /**
+   * Prefill the machinery, never the brief.
+   *
+   * The form used to open with six empty datetime fields, so the first thing a
+   * host met was the most tedious part of the job - and an arena cannot be
+   * posted without all six. Registration opens now, the arena starts next
+   * Saturday at 10:00, and the shape is Classic, which is a complete and valid
+   * day someone can post after writing two fields.
+   *
+   * Title and description are deliberately left empty. Prefilling those would
+   * get the example posted verbatim, and the brief is the one part that has to
+   * be the host's.
+   *
+   * Runs once, and only into empty fields, so it cannot overwrite anything
+   * typed. `Date.now()` is read here rather than inside the pure helper, which
+   * takes `now` as a parameter for exactly this reason.
+   */
+  // A ref, not state: this only has to stop the effect running twice, and
+  // nothing renders from it. As state it would be a setState inside an effect,
+  // which schedules a second render pass for a value no one reads.
+  const prefilled = useRef(false);
+  useEffect(() => {
+    if (prefilled.current || regStart || regEnd) return;
+
+    const now = new Date();
+    const derived = deriveSchedule({
+      startsAt: nextWeekendStart(now),
+      opensAt: now,
+      preset: findPreset("classic")!,
+    });
+
+    for (const [field, value] of Object.entries(derived)) {
+      setValue(field as keyof ArenaFormInput, value);
+    }
+    prefilled.current = true;
+  }, [regStart, regEnd, setValue]);
 
   const activeIndex = steps.findIndex((s) => s.id === activeStep);
   const isLastStep = activeIndex === steps.length - 1;
@@ -232,6 +281,9 @@ export default function CreateArenaPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate>
+          <div className="pt-6">
+            <FirstRunNote />
+          </div>
           {/* Every step stays mounted. Unmounting the inactive ones would drop
               their registered inputs from react-hook-form, so a value typed on
               step one would be gone by the time step six submits. */}
