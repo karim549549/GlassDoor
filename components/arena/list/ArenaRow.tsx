@@ -39,13 +39,16 @@ const STATUS_LABEL: Record<ArenaStatus, string> = {
  * the dot is a redundant cue rather than the message.
  */
 const STATUS_TONE: Record<ArenaStatus, string> = {
-  DRAFT: "text-muted-foreground",
-  SCHEDULED: "text-muted-foreground",
+  DRAFT: "text-foreground/60",
+  SCHEDULED: "text-foreground/70",
+  // Open and running are the two a reader is hunting for, so they take the
+  // accent. Everything past its build window steps back deliberately - it is
+  // still legible, it just is not competing with what can be entered.
   REGISTRATION_OPEN: "text-orange-ink",
-  IDEA_PHASE: "text-foreground",
-  IMPLEMENTATION_PHASE: "text-foreground",
-  UNDER_JUDGING: "text-muted-foreground",
-  COMPLETED: "text-muted-foreground",
+  IDEA_PHASE: "text-orange-ink",
+  IMPLEMENTATION_PHASE: "text-orange-ink",
+  UNDER_JUDGING: "text-foreground/60",
+  COMPLETED: "text-foreground/60",
   CANCELED: "text-accent",
 };
 
@@ -143,14 +146,25 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
   const entered = arena._count.entries;
   const prize = prizeLabel(arena);
 
-  const meta = [
-    domainLabel(arena.domain),
+  /**
+   * The domain and the prize carry the accent; everything else is ink.
+   *
+   * All six facts used to be one run of `text-muted-foreground` at 0.55rem -
+   * #6A6860 on #FAF8F5, which is 5.3:1 and technically passes AA, but at
+   * 8.8px uppercase with letter-spacing it reads as grey mush and nothing in
+   * it is findable at a glance. The rest is darker and a shade larger now, and
+   * two fields are pulled out in `--orange-ink` (#B0450A, 5.35:1 on the card):
+   * the domain, because it is the categorical anchor a reader scans for, and
+   * the prize, because money is the loudest thing on any board. Spending the
+   * accent on more than that would spend it on nothing.
+   */
+  const facts = [
     arena.difficulty.charAt(0) + arena.difficulty.slice(1).toLowerCase(),
     teamShape(arena),
     arena.locationType === "ONLINE" ? "online" : arena.locationName || "in person",
     entered === 1 ? "1 entered" : `${entered} entered`,
-    prize,
-  ].filter(Boolean) as string[];
+  ];
+  const domain = domainLabel(arena.domain);
 
   return (
     <li className="border-b border-foreground/12 last:border-b-0">
@@ -159,16 +173,16 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
         className="group grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1 px-4 py-4 transition-colors hover:bg-foreground/[0.04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange md:grid-cols-[6rem_minmax(0,1fr)_auto] md:px-5"
       >
         <span
-          className={`flex items-center gap-1.5 font-mono text-[0.58rem] font-bold uppercase tracking-[0.14em] ${STATUS_TONE[status]}`}
+          className={`flex items-center gap-1.5 font-mono text-[0.62rem] font-bold uppercase tracking-[0.14em] ${STATUS_TONE[status]}`}
         >
           <span
             aria-hidden
             className={`h-1.5 w-1.5 shrink-0 ${
-              status === "REGISTRATION_OPEN"
-                ? "bg-orange-ink"
-                : status === "IMPLEMENTATION_PHASE" || status === "IDEA_PHASE"
-                  ? "bg-foreground"
-                  : "border border-foreground/30"
+              status === "REGISTRATION_OPEN" ||
+              status === "IDEA_PHASE" ||
+              status === "IMPLEMENTATION_PHASE"
+                ? "bg-orange"
+                : "border border-foreground/40"
             }`}
           />
           {STATUS_LABEL[status]}
@@ -176,7 +190,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
 
         <span className="min-w-0">
           <span className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-            <span className="font-display text-[1.05rem] leading-snug text-foreground group-hover:text-orange-ink transition-colors">
+            <span className="font-display text-[1.12rem] leading-snug text-foreground transition-colors group-hover:text-orange-ink">
               {arena.title}
             </span>
             {isHost && (
@@ -195,15 +209,37 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
               </span>
             )}
           </span>
-          <span className="mt-1 block font-mono text-[0.55rem] uppercase tracking-[0.1em] text-muted-foreground">
-            {meta.join(" · ")}
+          <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground/75">
+            {domain && (
+              <span className="border border-orange-ink/45 px-1.5 py-px font-bold text-orange-ink">
+                {domain}
+              </span>
+            )}
+            {facts.map((fact, i) => (
+              <span key={fact} className="flex items-center gap-2">
+                {i > 0 && (
+                  <span aria-hidden className="text-foreground/30">
+                    ·
+                  </span>
+                )}
+                {fact}
+              </span>
+            ))}
+            {prize && (
+              <span className="flex items-center gap-2">
+                <span aria-hidden className="text-foreground/30">
+                  ·
+                </span>
+                <span className="font-bold text-orange-ink">{prize}</span>
+              </span>
+            )}
           </span>
         </span>
 
         {/* Third column on wide screens; on narrow it wraps under the title,
             which is why the countdown repeats the verb ("closes in") rather
             than relying on the column header it no longer sits beneath. */}
-        <span className="col-start-2 font-mono text-[0.58rem] tabular-nums uppercase tracking-[0.1em] text-foreground/70 md:col-start-3 md:text-right">
+        <span className="col-start-2 font-mono text-[0.62rem] font-bold tabular-nums uppercase tracking-[0.1em] text-foreground md:col-start-3 md:text-right">
           {deadline(arena, status, now)}
         </span>
       </Link>

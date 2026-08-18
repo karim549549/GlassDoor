@@ -79,7 +79,7 @@ export interface ArenaFilterBarProps {
 }
 
 const SELECT_CLASS =
-  "border border-foreground/20 bg-card px-2.5 py-2 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground " +
+  "border border-foreground/25 bg-card px-2.5 py-2 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-foreground " +
   "focus:border-orange focus:outline-none focus:ring-1 focus:ring-orange/30 transition-colors";
 
 export function ArenaFilterBar({
@@ -115,7 +115,7 @@ export function ArenaFilterBar({
                 className={`border-b-2 px-3 py-2.5 font-mono text-[0.6rem] font-bold uppercase tracking-[0.14em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ${
                   value.tab === scope
                     ? "border-orange text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
+                    : "border-transparent text-foreground/60 hover:text-foreground"
                 }`}
               >
                 {scope === "all" ? "Every arena" : `Mine (${myCount})`}
@@ -133,8 +133,8 @@ export function ArenaFilterBar({
             aria-pressed={value.status === status}
             className={`border-b-2 px-3 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.14em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ${
               value.status === status
-                ? "border-orange font-bold text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "border-orange font-bold text-orange-ink"
+                : "border-transparent text-foreground/60 hover:text-foreground"
             }`}
           >
             {STATUS_LABEL[status]}
@@ -147,7 +147,7 @@ export function ArenaFilterBar({
         <div className="relative min-w-[12rem] flex-1">
           <Search
             aria-hidden
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground/50"
           />
           <input
             id={`${id}-search`}
@@ -259,7 +259,7 @@ export function ArenaFilterBar({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p
           aria-live="polite"
-          className="font-mono text-[0.55rem] uppercase tracking-[0.12em] tabular-nums text-muted-foreground"
+          className="font-mono text-[0.6rem] font-bold uppercase tracking-[0.12em] tabular-nums text-orange-ink"
         >
           {total === 1 ? "1 arena" : `${total.toLocaleString()} arenas`}
         </p>
@@ -268,7 +268,7 @@ export function ArenaFilterBar({
           <button
             type="button"
             onClick={onReset}
-            className="flex items-center gap-1.5 font-mono text-[0.55rem] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+            className="flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.12em] text-foreground/65 transition-colors hover:text-orange-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
           >
             <X className="h-3 w-3" />
             Clear filters
