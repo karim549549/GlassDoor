@@ -5,13 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { loginSchema } from "@/lib/auth/schema";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { upsertSavedAccount } from "@/lib/client/saved-accounts";
 import { logger } from "@/lib/client/logger";
 import { authLandingPath } from "@/lib/auth/landing";
+import { currentRedirectTo } from "@/lib/client/redirect-target";
 import { useAuthFormAnimation } from "@/components/login/shared/useAuthFormAnimation";
 import { AuthErrorBanner } from "@/components/login/shared/AuthErrorBanner";
 import { OAuthOptions } from "@/components/login/shared/OAuthOptions";
@@ -26,9 +27,7 @@ interface LoginFormProps {
 
 export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFormProps = {}) {
   const { setAuth } = useAuthStore();
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const redirectTo = searchParams.get("redirectTo") || "";
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -86,7 +85,7 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
           setAuth(result.user, ["USER"]);
         }
 
-        const finalTarget = authLandingPath(result.user.id, redirectTo);
+        const finalTarget = authLandingPath(result.user.id, currentRedirectTo());
         router.push(finalTarget);
         router.refresh();
       }
@@ -133,7 +132,7 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
         </div>
       </form>
 
-      <OAuthOptions redirectTo={redirectTo} />
+      <OAuthOptions />
 
       <div ref={footerRef} className="mt-8 pt-6 border-t border-border/60 text-center">
         <p className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-wider">

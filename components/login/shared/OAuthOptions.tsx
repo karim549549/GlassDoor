@@ -1,21 +1,23 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
+import { currentRedirectTo } from "@/lib/client/redirect-target";
 
-interface OAuthOptionsProps {
-  /**
-   * When provided (including an empty string), it is forwarded to the OAuth
-   * route as a `redirectTo` query param. When omitted entirely, the param is
-   * left off the request URL.
-   */
-  redirectTo?: string;
-}
-
-function oauthHref(provider: "google" | "github", redirectTo?: string): string {
+/**
+ * Reads `redirectTo` off the address bar at click time rather than taking it
+ * as a prop. The prop forced both callers to call useSearchParams() during
+ * render, which opts the nearest Suspense boundary out of server rendering -
+ * so the statically prerendered /login and /signup pages shipped an empty
+ * panel and painted the form only after hydration.
+ */
+function oauthHref(provider: "google" | "github"): string {
   const base = `/api/auth/oauth?provider=${provider}`;
-  return redirectTo === undefined ? base : `${base}&redirectTo=${encodeURIComponent(redirectTo)}`;
+  const redirectTo = currentRedirectTo();
+  return redirectTo ? `${base}&redirectTo=${encodeURIComponent(redirectTo)}` : base;
 }
 
 /** "or" divider + Google/GitHub sign-in buttons, shared by the login and signup forms. */
-export function OAuthOptions({ redirectTo }: OAuthOptionsProps) {
+export function OAuthOptions() {
   return (
     <>
       <div className="my-5 flex items-center justify-between gap-3">
@@ -30,7 +32,7 @@ export function OAuthOptions({ redirectTo }: OAuthOptionsProps) {
           variant="outline"
           className="flex items-center justify-center gap-2"
           onClick={() => {
-            window.location.href = oauthHref("google", redirectTo);
+            window.location.href = oauthHref("google");
           }}
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -46,7 +48,7 @@ export function OAuthOptions({ redirectTo }: OAuthOptionsProps) {
           variant="outline"
           className="flex items-center justify-center gap-2"
           onClick={() => {
-            window.location.href = oauthHref("github", redirectTo);
+            window.location.href = oauthHref("github");
           }}
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">

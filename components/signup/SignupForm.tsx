@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -17,6 +17,7 @@ import { RoleSelector } from "./RoleSelector";
 import { SignupFormFields } from "./SignupFormFields";
 import { VerifyCodeForm } from "@/components/auth/VerifyCodeForm";
 import { authLandingPath } from "@/lib/auth/landing";
+import { currentRedirectTo } from "@/lib/client/redirect-target";
 
 /**
  * The shared schema defaults `roleName`, so its input and output types differ:
@@ -28,9 +29,6 @@ type SignupSubmitValues = z.output<typeof signupSchema>;
 
 export default function SignupForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo");
-
   const [serverError, setServerError] = useState<string | null>(null);
   // The address awaiting a code. Null until signup succeeds, which is also
   // what switches this form over to the verification step.
@@ -113,7 +111,7 @@ export default function SignupForm() {
         purpose="signup"
         onBack={() => setPendingEmail(null)}
         onVerified={(user) => {
-          router.push(authLandingPath(user.id, redirectTo));
+          router.push(authLandingPath(user.id, currentRedirectTo()));
           router.refresh();
         }}
       />

@@ -82,7 +82,7 @@ export function ArenaDetailClient({ arena, meta, isGuest }: ArenaDetailClientPro
 
   const handleLoginRedirect = () => {
     if (typeof window !== "undefined") {
-      window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname)}`;
+      window.location.href = `/login?redirectTo=${encodeURIComponent(window.location.pathname)}`;
     }
   };
 

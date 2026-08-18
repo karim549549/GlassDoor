@@ -58,23 +58,13 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    // /login, /signup, /forgot-password are intentionally modal-over-home UX:
-    // AuthModal reads the pathname/searchParams and renders the right form while
-    // the actual page served is always "/". This is not a bug - the URL is
-    // cosmetic so these routes are linkable/shareable/bookmarkable.
+    // /login, /signup and /forgot-password used to be rewritten to "/" here,
+    // with AuthModal reading the pathname to choose a form. They are real
+    // pages now (app/(auth)/**): rendering the whole homepage - GSAP, the
+    // three.js fox, the arena board and its three database queries - to show
+    // an email field was the cost, and inheriting the homepage's document
+    // meant none of them could carry a title or a canonical of its own.
     return [
-      {
-        source: "/login",
-        destination: "/",
-      },
-      {
-        source: "/signup",
-        destination: "/",
-      },
-      {
-        source: "/forgot-password",
-        destination: "/",
-      },
       {
         source: "/user/:id/edit",
         destination: "/user/:id",
