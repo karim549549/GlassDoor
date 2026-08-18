@@ -1,8 +1,8 @@
 "use client";
 
 import type { UseFormRegister, UseFormSetValue, UseFormWatch, FieldErrors } from "react-hook-form";
-import type { ArenaFormInput } from "@/lib/arena/schema";
-import { Field, FieldLabel, LineTextarea } from "../fields";
+import { type ArenaFormInput, RULES_MAX } from "@/lib/arena/schema";
+import { CharCount, FieldLabel, LineTextarea } from "../fields";
 
 const DELIVERABLES = [
   {
@@ -100,21 +100,22 @@ export function HandInStep({
         </ul>
       </fieldset>
 
-      <div className="flex max-w-[68ch] flex-col gap-2">
-        <Field
-          label="Anything else"
-          hint="Optional"
-          htmlFor="arena-rules"
-          error={errors.rulesText?.message}
-        >
-          <LineTextarea
-            id="arena-rules"
-            rows={5}
-            placeholder="No pre-built starters. Any stack. Be nice in the chat."
-            invalid={Boolean(errors.rulesText)}
-            {...register("rulesText")}
-          />
-        </Field>
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <FieldLabel htmlFor="arena-rules" error={errors.rulesText?.message}>
+            Anything else
+          </FieldLabel>
+          <CharCount value={watch("rulesText") ?? ""} max={RULES_MAX} />
+        </div>
+        <LineTextarea
+          id="arena-rules"
+          rows={6}
+          maxLength={RULES_MAX}
+          placeholder="No pre-built starters. Any stack. Be nice in the chat."
+          invalid={Boolean(errors.rulesText)}
+          className="max-w-[72ch]"
+          {...register("rulesText")}
+        />
       </div>
     </div>
   );

@@ -77,6 +77,41 @@ export function Field({
   );
 }
 
+/* ----------------------------------------------------------------- counter */
+
+/**
+ * Characters used against the ceiling.
+ *
+ * Both text fields were previously unbounded in the form *and* in the schema,
+ * so a host had no idea whether a paragraph was welcome or whether their essay
+ * would come back rejected. The numbers come from `lib/arena/schema.ts` so the
+ * counter cannot disagree with the validator - a counter saying "fine" while
+ * the API says "too long" is worse than no counter at all.
+ *
+ * Turns amber near the limit and red past it rather than only at rejection
+ * time, and `aria-live="polite"` so it is announced without interrupting
+ * typing.
+ */
+export function CharCount({ value, max, min }: { value: string; max: number; min?: number }) {
+  const used = value?.length ?? 0;
+  const over = used > max;
+  const near = !over && used > max * 0.9;
+  const under = min !== undefined && used > 0 && used < min;
+
+  return (
+    <span
+      aria-live="polite"
+      className={[
+        "font-mono text-[0.55rem] tabular-nums uppercase tracking-wider",
+        over || under ? "text-accent" : near ? "text-orange-ink" : "text-muted-foreground",
+      ].join(" ")}
+    >
+      {under ? `${min} min · ` : ""}
+      {used}/{max}
+    </span>
+  );
+}
+
 /* ------------------------------------------------------------------ inputs */
 
 /**

@@ -102,6 +102,29 @@ body {
   font-family: var(--font-body);
 }
 
+/* Tailwind 4 removed the `cursor: pointer` its preflight used to put on
+   buttons, so every <button> in this app has been showing an arrow. Fixed
+   once here rather than by sprinkling `cursor-pointer` across a few hundred
+   components and forgetting it on the next one.
+
+   `label` is included because several controls here are a visually hidden
+   input with a styled label as its whole hit area (the OTP boxes, the
+   segmented choices, the deliverable checkboxes) - the label IS the button as
+   far as the reader is concerned. Only labels that own a control are matched,
+   so a plain field caption is untouched. */
+button:not(:disabled):not([aria-disabled="true"]),
+summary,
+[role="button"]:not([aria-disabled="true"]),
+label:has(> input:not(:disabled)),
+label[for]:not(:has(*)) {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }

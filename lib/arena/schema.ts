@@ -2,14 +2,40 @@ import * as z from "zod";
 import { validateArenaTimeline } from "@/lib/arena/formats";
 
 /**
+ * Length bounds, exported so the form can render a counter against the same
+ * numbers the API enforces. A counter that disagrees with the validator is
+ * worse than no counter: it tells the reader they are fine right up until the
+ * request is rejected.
+ */
+export const TITLE_MAX = 90;
+export const DESCRIPTION_MAX = 1200;
+export const RULES_MAX = 2000;
+
+/**
  * Base field-level rules, exported separately from `arenaSchema` so callers
  * (e.g. the create form's per-section progress indicator) can validate a
  * subset of fields via `.pick()` without needing the cross-field `.refine()`
  * below, which zod only allows on the full object.
  */
 export const arenaBaseSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
+  // Upper bounds, not just lower ones. Both fields were open-ended, so the
+  // form invited a novel into a field the board renders on one line - and the
+  // API accepted it, since `@db.Text` has no length of its own. A ceiling here
+  // is the only thing that stops a card layout being decided by whoever typed
+  // the most.
+  //
+  // 90 is about the longest headline that still sets on two lines at the
+  // display size the brief is rendered in.
+  title: z
+    .string()
+    .trim()
+    .min(3, "Title must be at least 3 characters")
+    .max(TITLE_MAX, `Title must be at most ${TITLE_MAX} characters`),
+  description: z
+    .string()
+    .trim()
+    .min(10, "Description must be at least 10 characters")
+    .max(DESCRIPTION_MAX, `Description must be at most ${DESCRIPTION_MAX} characters`),
   isPrivate: z.boolean().default(false),
   inviteCode: z.string().optional().nullable(),
 
@@ -70,7 +96,10 @@ export const arenaBaseSchema = z.object({
   requireFigmaUrl: z.boolean().default(false),
   requireVideoUrl: z.boolean().default(false),
   requireWriteup: z.boolean().default(true),
-  rulesText: z.string().default(""),
+  rulesText: z
+    .string()
+    .max(RULES_MAX, `Rules must be at most ${RULES_MAX} characters`)
+    .default(""),
 
   // Tags (IDs or Slugs)
   tags: z.array(z.string()).default([]),

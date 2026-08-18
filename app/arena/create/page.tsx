@@ -14,6 +14,7 @@ import { useToast } from "@/components/providers/ToastProvider";
 import { logger } from "@/lib/client/logger";
 import { CreateStepper, type CreateStep } from "@/components/arena/create/CreateStepper";
 import { StepPanel } from "@/components/arena/create/fields";
+import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { BriefStep } from "@/components/arena/create/steps/BriefStep";
 import { KindStep } from "@/components/arena/create/steps/KindStep";
 import { WhenStep } from "@/components/arena/create/steps/WhenStep";
@@ -25,17 +26,19 @@ import { HandInStep } from "@/components/arena/create/steps/HandInStep";
  * Write a brief.
  *
  * The page this replaces opened with a near-black masthead - `pt-24 pb-12` of
- * `bg-foreground` carrying a shrunken preview of the arena card - which took
- * roughly the top half of the viewport before a single field. Beside the form
- * sat a "[PROGRESS REGISTER HUD]" listing the same sections again with
- * strikethrough. Between them, two panels showing state and none taking input.
+ * `bg-foreground` carrying a shrunken preview of the arena card in a second
+ * column - which together took roughly the top half of the viewport before a
+ * single field. Beside the form sat a "[PROGRESS REGISTER HUD]" listing the
+ * same sections again with strikethrough: two panels showing state, neither
+ * taking input.
  *
- * Both are gone. The preview previewed a card design that no longer exists
- * (arenas lost their cover image), and progress now lives in the step rail,
- * where it is also the navigation.
+ * The band stays, because it is what makes this page look like the rest of the
+ * site - at a third of the height, with nothing beside the title. The preview
+ * is gone (it previewed a card design that no longer exists, arenas having
+ * lost their cover image) and so is the HUD, because progress now lives in the
+ * step rail where it is also the navigation.
  *
- * What is left is six steps of one concern each on cream, in the same type and
- * hairlines as the homepage and the doc pages. Free navigation rather than a
+ * Below it, six steps of one concern each. Free navigation rather than a
  * wizard: a host who wants to set the clock first should be able to.
  */
 
@@ -199,17 +202,28 @@ export default function CreateArenaPage() {
 
   return (
     <main id="main-content" className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto w-full max-w-4xl px-6 pb-16 pt-10 md:px-10 md:pt-14">
-        <header className="flex flex-col gap-2">
-          <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange-ink">
+      {/* The masthead, kept but cut down. The version this replaces ran
+          `pt-24 pb-12` and carried a live preview of the arena card in a second
+          column, which together took roughly the top half of the viewport
+          before a single field. The band and its blueprint grid are what make
+          this page look like the rest of the site, so they stay - at a third
+          of the height, and with nothing beside the title. */}
+      <div className="relative w-full overflow-hidden border-b-2 border-orange bg-foreground text-background">
+        <BackgroundGrid opacity={0.06} patternSize={28} />
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 md:px-10 md:py-10">
+          <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange">
             [ New brief ]
           </span>
-          <h1 className="font-display text-[clamp(1.3rem,2.6vw,1.85rem)] italic leading-tight">
+          <h1 className="mt-2 font-display text-[clamp(1.4rem,3vw,2.1rem)] italic leading-tight text-background">
             Write something you would want to build on a Saturday
           </h1>
-        </header>
+        </div>
+      </div>
 
-        <div className="mt-8">
+      <div className="mx-auto w-full max-w-6xl px-6 pb-16 pt-8 md:px-10">
+        {/* The rail sits on its own surface so the tabs read as a control
+            strip rather than as a line of links floating on the page. */}
+        <div className="border border-foreground/15 bg-card px-4 md:px-6">
           <CreateStepper
             steps={steps}
             activeId={activeStep}
@@ -228,7 +242,7 @@ export default function CreateArenaPage() {
                 title="The brief"
                 lead="The challenge itself, and what teams are allowed to assume. Both are public - the brief is the reason anyone clicks."
               >
-                <BriefStep register={register} errors={errors} />
+                <BriefStep register={register} errors={errors} watch={watch} />
               </StepPanel>
             </div>
             <div hidden={activeStep !== "kind"}>
