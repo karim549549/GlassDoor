@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -14,7 +15,8 @@ import { AuthErrorBanner } from "@/components/login/shared/AuthErrorBanner";
 import { OAuthOptions } from "@/components/login/shared/OAuthOptions";
 import { RoleSelector } from "./RoleSelector";
 import { SignupFormFields } from "./SignupFormFields";
-import { SignupSuccessPanel } from "./SignupSuccessPanel";
+import { VerifyCodeForm } from "@/components/auth/VerifyCodeForm";
+import { authLandingPath } from "@/lib/auth/landing";
 
 /**
  * The shared schema defaults `roleName`, so its input and output types differ:
@@ -25,8 +27,14 @@ export type SignupSchemaType = z.input<typeof signupSchema>;
 type SignupSubmitValues = z.output<typeof signupSchema>;
 
 export default function SignupForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
+
   const [serverError, setServerError] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
+  // The address awaiting a code. Null until signup succeeds, which is also
+  // what switches this form over to the verification step.
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,7 +88,7 @@ export default function SignupForm() {
           name: data.fullName || data.email.split("@")[0],
         });
 
-        setIsSuccess(true);
+        setPendingEmail(data.email);
         setIsLoading(false);
       }
     } catch (err) {
@@ -92,8 +100,24 @@ export default function SignupForm() {
     }
   };
 
-  if (isSuccess) {
-    return <SignupSuccessPanel />;
+  // Note the anti-enumeration trade this inherits from /api/auth/signup: that
+  // route answers an already-registered address with the same success body as
+  // a new one, so this screen also appears for an address that will never
+  // receive a code. That is deliberate - the alternative tells an
+  // unauthenticated caller which developers already have accounts - and the
+  // "Use a different email" escape is why it is not a trap.
+  if (pendingEmail) {
+    return (
+      <VerifyCodeForm
+        email={pendingEmail}
+        purpose="signup"
+        onBack={() => setPendingEmail(null)}
+        onVerified={(user) => {
+          router.push(authLandingPath(user.id, redirectTo));
+          router.refresh();
+        }}
+      />
+    );
   }
 
   return (
@@ -106,7 +130,7 @@ export default function SignupForm() {
           Create account
         </h1>
         <p className="font-mono text-[0.6rem] text-muted-foreground uppercase mt-2 tracking-widest">
-          Join the community for Egyptian market transparency
+          Free to enter, solo or in teams of two to four
         </p>
       </div>
 

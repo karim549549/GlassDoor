@@ -11,6 +11,7 @@ import { loginSchema } from "@/lib/auth/schema";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { upsertSavedAccount } from "@/lib/client/saved-accounts";
 import { logger } from "@/lib/client/logger";
+import { authLandingPath } from "@/lib/auth/landing";
 import { useAuthFormAnimation } from "@/components/login/shared/useAuthFormAnimation";
 import { AuthErrorBanner } from "@/components/login/shared/AuthErrorBanner";
 import { OAuthOptions } from "@/components/login/shared/OAuthOptions";
@@ -85,7 +86,7 @@ export default function LoginForm({ prefilledEmail, onBackToSwitcher }: LoginFor
           setAuth(result.user, ["USER"]);
         }
 
-        const finalTarget = redirectTo || `/user/${result.user.id}`;
+        const finalTarget = authLandingPath(result.user.id, redirectTo);
         router.push(finalTarget);
         router.refresh();
       }

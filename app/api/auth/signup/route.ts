@@ -14,7 +14,7 @@ import { logger } from "@/lib/server/logger";
  */
 const UNIFORM_RESPONSE = {
   success: true,
-  message: "Check your email to confirm your account.",
+  message: "Check your email for a confirmation code.",
 } as const;
 
 export async function POST(request: NextRequest) {

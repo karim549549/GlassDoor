@@ -6,8 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
 import { logger } from "@/lib/client/logger";
+import { VerifyCodeForm } from "@/components/auth/VerifyCodeForm";
+import { ChangePasswordForm } from "./ChangePasswordForm";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -19,10 +21,24 @@ interface ForgotPasswordFormProps {
   onBackToLogin: () => void;
 }
 
+/**
+ * Reset in three steps in one place: address, code, new password.
+ *
+ * It used to be two disconnected halves - this form said "check your email"
+ * and stopped, and the actual password field lived behind a mailed link that
+ * reopened the site at /?action=reset-password. Anyone whose mail client
+ * opened that link in its own embedded browser got a session in a window they
+ * were not using, and the tab they started in sat on a dead end.
+ *
+ * The final step is the existing ChangePasswordForm, unchanged: verifying the
+ * code establishes a real session, which is exactly what
+ * /api/auth/change-password already requires.
+ */
 export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [verified, setVerified] = useState(false);
   const emailId = useId();
 
   const {
@@ -36,7 +52,6 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const res = await fetch("/api/auth/reset-password", {
@@ -47,9 +62,9 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
 
       const body = await res.json();
       if (!res.ok) {
-        setError(body.error || "Failed to send reset link.");
+        setError(body.error || "Failed to send a code.");
       } else {
-        setSuccess(body.message || "Reset link sent! Check your inbox.");
+        setSentTo(data.email);
       }
     } catch (err) {
       logger.error("Reset password request failed", {
@@ -61,27 +76,20 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
     }
   };
 
-  if (success) {
+  if (verified) {
+    return <ChangePasswordForm onSuccess={onBackToLogin} />;
+  }
+
+  if (sentTo) {
     return (
-      <div className="flex flex-col h-full justify-between">
-        <div className="text-center py-8">
-          <CheckCircle className="h-12 w-12 text-foreground mx-auto mb-4" />
-          <h2 className="font-display text-[2rem] leading-none mb-4 text-foreground">
-            Check your email
-          </h2>
-          <p className="font-mono text-[0.75rem] text-muted-foreground uppercase tracking-wide leading-relaxed">
-            {success}
-          </p>
-        </div>
-        <Button
-          onClick={onBackToLogin}
-          variant="outline"
-          className="w-full flex items-center justify-center gap-2"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Sign In
-        </Button>
-      </div>
+      <VerifyCodeForm
+        email={sentTo}
+        purpose="recovery"
+        title="Enter your code"
+        onVerified={() => setVerified(true)}
+        onBack={() => setSentTo(null)}
+        backLabel="Use a different email"
+      />
     );
   }
 
@@ -100,7 +108,7 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
           Reset password
         </h2>
         <p className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-wider mb-8">
-          Enter your email to receive a recovery link
+          Enter your email to receive a six-digit code
         </p>
 
         {error && (
@@ -134,7 +142,7 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
             className="w-full flex items-center justify-center gap-2 mt-2"
           >
             <Mail className="h-3.5 w-3.5" />
-            Send recovery link
+            Send code
           </Button>
         </form>
       </div>

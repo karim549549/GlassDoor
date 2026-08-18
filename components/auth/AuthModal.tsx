@@ -136,14 +136,14 @@ export function AuthModal() {
                 Devs Arena
               </span>
               <h3 className="font-display text-[2.4rem] leading-tight italic mt-12 font-medium">
-                Real builds.<br />
-                Real judging.<br />
-                Proof an employer can verify.
+                Pick a brief.<br />
+                Grab a team.<br />
+                Four hours on the clock.
               </h3>
             </div>
             
             <div className="font-mono text-[0.55rem] tracking-wider opacity-40 uppercase mt-auto">
-              Devs Arena © 2026 · Build, Not Claim
+              Devs Arena © 2026 · Free to enter, always
             </div>
           </div>
         </div>

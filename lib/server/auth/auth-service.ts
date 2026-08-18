@@ -103,6 +103,45 @@ export async function syncUser(params: {
 }
 
 /**
+ * Flip `emailVerified` after a verification code has been accepted.
+ *
+ * Deliberately NOT syncUser(). That function upserts a UserRole row as well,
+ * defaulting to "USER" - so calling it here would silently grant USER to an
+ * account that signed up as COMPANY. The role was already assigned during
+ * signup; this step only confirms the address.
+ *
+ * The missing-row fallback covers the case where signup's own sync failed and
+ * left a Supabase identity with no profile. Passing
+ * allowStaleEmailReconciliation is safe at this call site and only here:
+ * verifyOtp has just established a real session, so the id is a genuine
+ * identity rather than the throwaway signUp returns for a known address.
+ */
+export async function markEmailVerified(params: {
+  id: string;
+  email: string;
+  fullName?: string | null;
+}) {
+  const { id, email, fullName } = params;
+
+  const existing = await prisma.user.findUnique({ where: { id }, select: { id: true } });
+
+  if (!existing) {
+    return syncUser({
+      id,
+      email,
+      fullName: fullName ?? undefined,
+      emailVerified: true,
+      allowStaleEmailReconciliation: true,
+    });
+  }
+
+  return prisma.user.update({
+    where: { id },
+    data: { email, emailVerified: true },
+  });
+}
+
+/**
  * Retrieve all roles assigned to a user.
  */
 export async function getUserRoles(userId: string): Promise<string[]> {

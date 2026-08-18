@@ -24,11 +24,12 @@ export async function POST(request: NextRequest) {
       }
 
       const supabase = await createClient();
-      const origin = new URL(request.url).origin;
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${origin}/api/auth/callback?redirectTo=/?action=reset-password`,
-      });
+      // No `redirectTo`: the recovery mail carries a six-digit code now, and
+      // the reader types it back into the tab they are already in. The link
+      // variant is still honoured by /api/auth/callback for any mail sent
+      // before the template changed.
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
 
       // Uniform response whether or not the address is registered, and whether
       // or not Supabase accepted the send. resetPasswordForEmail is itself
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: "If that address has an account, a reset link is on its way.",
+        message: "If that address has an account, a code is on its way.",
       });
     },
     "An unexpected error occurred.",
