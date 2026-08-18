@@ -6,7 +6,7 @@ import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
 import { logger } from "@/lib/server/logger";
 import { publicAuthError } from "@/lib/server/auth/supabase-error";
-import { devOtpActive } from "@/lib/server/auth/dev-otp";
+import { devOtpActive, devCreateConfirmedUser } from "@/lib/server/auth/dev-otp";
 
 /**
  * Deliberately uniform: every outcome below - new account, address already
@@ -38,6 +38,32 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: first?.message ?? "Invalid request." }, { status: 400 });
       }
       const { email, password, fullName, roleName } = parsed.data;
+
+      // With DEV_OTP_CODE set, skip Supabase's mail entirely. signUp() sends
+      // a confirmation email, and the built-in service allows roughly two an
+      // hour - so past that cap the account was never created and the fixed
+      // code had nothing to sign in to. The dev bypass has to cover account
+      // creation as well or it only solves half of its own problem.
+      if (devOtpActive()) {
+        const created = await devCreateConfirmedUser({ email, password, fullName });
+
+        if (!created.ok) {
+          // Most often "email address already registered". Uniform, as ever -
+          // the reason is logged, not returned.
+          logger.warn("Dev signup rejected", { reason: created.reason });
+          return NextResponse.json({ ...UNIFORM_RESPONSE, devBypass: true });
+        }
+
+        await syncUser({
+          id: created.user.id,
+          email: created.user.email ?? email,
+          fullName,
+          roleName,
+          emailVerified: true,
+        });
+
+        return NextResponse.json({ ...UNIFORM_RESPONSE, devBypass: true });
+      }
 
       const supabase = await createClient();
       const origin = new URL(request.url).origin;

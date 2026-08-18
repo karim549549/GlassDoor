@@ -96,3 +96,50 @@ export async function devSignIn(email: string): Promise<DevSignInResult> {
     },
   };
 }
+
+type DevCreateResult =
+  | { ok: true; user: { id: string; email: string | null } }
+  | { ok: false; reason: string };
+
+/**
+ * Create an already-confirmed account without sending mail.
+ *
+ * Without this the bypass only solved half the problem. signUp() sends a
+ * confirmation email, so on the built-in mail service - roughly two an hour -
+ * the account was never created at all once the cap was hit, and the fixed
+ * code had nothing to sign in to. Testing the flow five times in an hour is
+ * completely ordinary, and that is exactly what happened.
+ *
+ * admin.createUser sends nothing. The password is set here as well, so the
+ * account still works through the normal password login afterwards - a user
+ * created without one would be a dead end the moment the bypass is removed.
+ */
+export async function devCreateConfirmedUser(params: {
+  email: string;
+  password: string;
+  fullName?: string;
+}): Promise<DevCreateResult> {
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch (err) {
+    return { ok: false, reason: err instanceof Error ? err.message : String(err) };
+  }
+
+  const { data, error } = await admin.auth.admin.createUser({
+    email: params.email,
+    password: params.password,
+    email_confirm: true,
+    user_metadata: { full_name: params.fullName },
+  });
+
+  if (error || !data.user) {
+    return { ok: false, reason: error?.message ?? "createUser returned no user" };
+  }
+
+  logger.warn("DEV_OTP_CODE is set - account created pre-confirmed, no email sent", {
+    email: params.email,
+  });
+
+  return { ok: true, user: { id: data.user.id, email: data.user.email ?? null } };
+}
