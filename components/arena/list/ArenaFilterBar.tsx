@@ -71,7 +71,6 @@ export interface ArenaFilterBarProps {
   onReset: () => void;
   /** Null when signed out - the "Mine" scope is hidden rather than disabled. */
   myCount: number | null;
-  total: number;
 }
 
 /** Add or remove one member of a filter set. */
@@ -125,7 +124,6 @@ export function ArenaFilterBar({
   onChange,
   onReset,
   myCount,
-  total,
 }: ArenaFilterBarProps) {
   const isFiltered =
     value.status !== "all" ||
@@ -215,44 +213,61 @@ export function ArenaFilterBar({
         </ChipGroup>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-foreground/10 pt-3">
-        <div className="flex items-center gap-3">
-          <p
-            aria-live="polite"
-            className="font-mono text-[0.6rem] font-bold uppercase tracking-[0.12em] tabular-nums text-orange-ink"
-          >
-            {total === 1 ? "1 arena" : `${total.toLocaleString()} arenas`}
-          </p>
+      {isFiltered && (
+        <button
+          type="button"
+          onClick={onReset}
+          className="flex items-center gap-1.5 self-start font-mono text-[0.6rem] uppercase tracking-[0.12em] text-foreground/65 transition-colors hover:text-orange-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+        >
+          <X className="h-3 w-3" />
+          Clear filters
+        </button>
+      )}
+    </div>
+  );
+}
 
-          {isFiltered && (
-            <button
-              type="button"
-              onClick={onReset}
-              className="flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.12em] text-foreground/65 transition-colors hover:text-orange-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
-            >
-              <X className="h-3 w-3" />
-              Clear
-            </button>
-          )}
-        </div>
+/**
+ * The count and the sort, beside the list rather than in the rail.
+ *
+ * They describe the result; the rail sets it. Keeping them here is also what
+ * lets the first row sit near the top of the screen - every control that moved
+ * left is vertical space the list got back.
+ */
+export function BoardToolbar({
+  total,
+  sortBy,
+  onSort,
+}: {
+  total: number;
+  sortBy: ArenaSortOption;
+  onSort: (next: ArenaSortOption) => void;
+}) {
+  return (
+    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <p
+        aria-live="polite"
+        className="font-mono text-[0.6rem] font-bold uppercase tracking-[0.12em] tabular-nums text-orange-ink"
+      >
+        {total === 1 ? "1 arena" : `${total.toLocaleString()} arenas`}
+      </p>
 
-        <label className="flex items-center gap-2">
-          <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.18em] text-foreground/55">
-            Sort
-          </span>
-          <select
-            value={value.sortBy}
-            onChange={(e) => onChange({ sortBy: e.target.value as ArenaSortOption })}
-            className="border border-foreground/25 bg-card px-2.5 py-1.5 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground transition-colors focus:border-orange focus:outline-none focus:ring-1 focus:ring-orange/30"
-          >
-            {ARENA_SORT_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {SORT_LABEL[s]}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <label className="flex items-center gap-2">
+        <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.18em] text-foreground/55">
+          Sort
+        </span>
+        <select
+          value={sortBy}
+          onChange={(e) => onSort(e.target.value as ArenaSortOption)}
+          className="border border-foreground/25 bg-card px-2.5 py-1.5 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground transition-colors focus:border-orange focus:outline-none focus:ring-1 focus:ring-orange/30"
+        >
+          {ARENA_SORT_OPTIONS.map((s) => (
+            <option key={s} value={s}>
+              {SORT_LABEL[s]}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }

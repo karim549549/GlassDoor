@@ -70,7 +70,7 @@ export function BoardFacets({
               type="button"
               onClick={() => onStatus(active ? "all" : stat.key)}
               aria-pressed={active}
-              className={`flex flex-col items-start gap-1 px-5 py-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange ${
+              className={`flex flex-col items-start gap-0.5 px-4 py-3.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange ${
                 active ? "bg-orange text-[#0E0E0D]" : "bg-card hover:bg-foreground/5"
               }`}
             >
@@ -83,13 +83,6 @@ export function BoardFacets({
               </span>
               <span className="font-mono text-[0.6rem] font-bold uppercase tracking-[0.16em]">
                 {stat.label}
-              </span>
-              <span
-                className={`font-mono text-[0.52rem] uppercase tracking-[0.12em] ${
-                  active ? "text-[#0E0E0D]/70" : "text-foreground/60"
-                }`}
-              >
-                {stat.hint}
               </span>
             </button>
           );

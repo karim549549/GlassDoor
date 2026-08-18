@@ -15,6 +15,7 @@ import { logger } from "@/lib/client/logger";
 import { CreateStepper, type CreateStep } from "@/components/arena/create/CreateStepper";
 import { StepPanel } from "@/components/arena/create/fields";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
+import { PageMasthead } from "@/components/site/PageMasthead";
 import { FirstRunNote } from "@/components/arena/create/FirstRunNote";
 import {
   deriveSchedule,
@@ -248,23 +249,18 @@ export default function CreateArenaPage() {
   return (
     <main id="main-content" className="relative min-h-screen bg-background text-foreground">
       <BackgroundGrid opacity={0.055} />
-      {/* The masthead, kept but cut down. The version this replaces ran
-          `pt-24 pb-12` and carried a live preview of the arena card in a second
-          column, which together took roughly the top half of the viewport
-          before a single field. The band and its blueprint grid are what make
-          this page look like the rest of the site, so they stay - at a third
-          of the height, and with nothing beside the title. */}
-      <div className="relative w-full overflow-hidden border-b-2 border-orange bg-foreground text-background">
-        <BackgroundGrid opacity={0.06} patternSize={28} />
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 md:px-10 md:py-10">
-          <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange">
-            [ New brief ]
-          </span>
-          <h1 className="mt-2 font-display text-[clamp(1.4rem,3vw,2.1rem)] italic leading-tight text-background">
-            Write something you would want to build on a Saturday
-          </h1>
-        </div>
-      </div>
+      {/* The same band as the board, from the same component.
+
+          It was written twice and the copies had already drifted: this one ran
+          `py-8 md:py-10` against the board's `py-14 md:py-20`, with a different
+          headline clamp and a different grid opacity. `short` here because the
+          form below is the point and the band is orientation. */}
+      <PageMasthead
+        eyebrow="New brief"
+        title="Write something you would want to build on a Saturday"
+        standfirst="Pick the challenge you wanted to find, set the clock, and see who turns up. Free to run, online or in a room."
+        size="short"
+      />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-16 pt-8 md:px-10">
         {/* The rail sits on its own surface so the tabs read as a control

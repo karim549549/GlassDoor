@@ -5,9 +5,14 @@ import Link from "next/link";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { logger } from "@/lib/client/logger";
 import { ArenaRow, ArenaRowSkeleton } from "@/components/arena/list/ArenaRow";
-import { ArenaFilterBar, type ArenaFilterState } from "@/components/arena/list/ArenaFilterBar";
+import {
+  ArenaFilterBar,
+  BoardToolbar,
+  type ArenaFilterState,
+} from "@/components/arena/list/ArenaFilterBar";
 import { ArenasFooterPagination } from "@/components/arena/list/ArenasPagination";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
+import { PageMasthead } from "@/components/site/PageMasthead";
 import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { BoardFacets, type BoardFacetData } from "@/components/arena/list/BoardFacets";
 import { BoardSidebar, type BoardSidebarData } from "@/components/arena/list/BoardSidebar";
@@ -83,9 +88,6 @@ export function ArenasListClient({
   // data - two full list queries on every visit.
   const isInitialRender = useRef(true);
 
-  // No debounce needed any more: every remaining control is discrete, and
-  // free-text search moved to the site-wide dialog.
-
   const patch = useCallback((next: Partial<ArenaFilterState>) => {
     setFilters((prev) => ({ ...prev, ...next }));
     // Any filter change invalidates the page number: page 4 of the old result
@@ -109,7 +111,6 @@ export function ArenasListClient({
     if (filters.place.length) params.set("place", filters.place.join(","));
     if (filters.entry.length) params.set("entry", filters.entry.join(","));
     if (filters.difficulty.length) params.set("difficulty", filters.difficulty.join(","));
-    if (filters.prized) params.set("prized", "true");
     return params.toString();
   }, [page, filters]);
 
@@ -152,105 +153,79 @@ export function ArenasListClient({
       {/* The same blueprint grid the homepage sits on. It reads as one site
           rather than a marketing page and a set of unrelated tools. */}
       <BackgroundGrid opacity={0.055} />
-      {/* The masthead, sized to hold a cover image.
 
-          No image ships with it. Pulling a stock photo off the web and
-          committing it would put an asset in this repo whose licence nobody
-          can point to, and a licence problem in a public repo is not a thing
-          to discover later - so the slot is built and left empty rather than
-          filled with something borrowed.
-
-          Dropping one in is one line: put a .webp at
-          `public/board-cover.webp` and uncomment the <Image> below. The
-          mask is already here - a near-opaque ink wash over the image, with
-          the grid on top - so any photograph resolves to texture behind the
-          type instead of competing with it, and the headline keeps its
-          contrast whatever the picture turns out to be. */}
-      <div className="relative w-full overflow-hidden border-b-2 border-orange bg-foreground text-background">
-        {/*
-        <Image
-          src="/board-cover.webp"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-30 mix-blend-luminosity"
-        />
-        */}
-
-        {/* The wash the image would sit under, which also stands on its own:
-            a diagonal lift from the ink so the band is not one flat colour. */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-[linear-gradient(115deg,rgba(224,94,24,0.16),transparent_45%,rgba(224,94,24,0.07))]"
-        />
-        <BackgroundGrid opacity={0.07} patternSize={28} />
-
-        <ArenaContainer className="relative z-10 py-14 md:py-20">
-          <span className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.3em] text-orange">
-            [ The board ]
-          </span>
-          <h1 className="mt-4 max-w-3xl font-display text-[clamp(1.9rem,5vw,3.4rem)] italic leading-[1.05] text-background">
-            Every arena you can enter, and every one you missed
-          </h1>
-          <p className="mt-4 max-w-xl font-sans text-sm leading-relaxed text-background/70">
-            Somebody posts a brief with no business existing. A few teams build
-            it against a clock. Free to enter, online or in a room in Cairo.
-          </p>
-        </ArenaContainer>
-      </div>
+      <PageMasthead
+        eyebrow="The board"
+        title="Every arena you can enter, and every one you missed"
+        standfirst="Somebody posts a brief with no business existing. A few teams build it against a clock. Free to enter, online or in a room in Cairo."
+      />
 
       <ArenaContainer className="relative z-10 py-8">
-        <div className="mb-8">
-          <BoardFacets
-            facets={facets}
-            now={now}
-            activeStatus={filters.status}
-            onStatus={(status) => patch({ status })}
-          />
-        </div>
+        {/* Controls left, list right.
 
-        <ArenaFilterBar
-          value={filters}
-          onChange={patch}
-          onReset={reset}
-          myCount={user ? myCount : null}
-          total={totalCount}
-        />
+            They were stacked above the list: masthead, then stat cards, then a
+            search field, then three rows of chips, then a count - so on a
+            laptop the first arena sat below the fold and the page opened on
+            nothing but chrome. A board whose first screen contains no rows is
+            not a board.
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_21rem]">
+            Everything that sets the query moves into a sticky rail, and the
+            list starts at the top of its own column. Below `lg` it stacks
+            again, controls first, because a rail beside a phone screen is just
+            a longer page. */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[19rem_minmax(0,1fr)]">
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1">
+            <BoardFacets
+              facets={facets}
+              now={now}
+              activeStatus={filters.status}
+              onStatus={(status) => patch({ status })}
+            />
+
+            <ArenaFilterBar
+              value={filters}
+              onChange={patch}
+              onReset={reset}
+              myCount={user ? myCount : null}
+            />
+
+            <BoardSidebar data={spotlight} now={now} />
+          </aside>
+
           <div className="min-w-0">
-        <div className="mt-6 border border-foreground/15 bg-card">
-          {loadError ? (
-            <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-accent">
-                {loadError}
-              </p>
-              <button
-                type="button"
-                onClick={() => setRetryNonce((n) => n + 1)}
-                className="border-2 border-foreground px-4 py-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.14em] transition-colors hover:bg-foreground hover:text-background"
-              >
-                Try again
-              </button>
-            </div>
-          ) : isLoading && arenas.length === 0 ? (
-            // Only on a genuinely empty load. When rows are already on screen
-            // they stay and dim, because replacing real content with grey bars
-            // is a downgrade, not a loading state.
-            <ul>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <ArenaRowSkeleton key={i} />
-              ))}
-            </ul>
-          ) : arenas.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-              <p className="font-display text-lg italic text-foreground">
-                {isLoading ? "Looking…" : "Nothing here"}
-              </p>
-              {!isLoading && (
-                <>
-                  <p className="max-w-sm font-sans text-sm text-muted-foreground">
+            <BoardToolbar
+              total={totalCount}
+              sortBy={filters.sortBy}
+              onSort={(sortBy) => patch({ sortBy })}
+            />
+
+            <div className="border border-foreground/15 bg-card">
+              {loadError ? (
+                <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-accent">
+                    {loadError}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setRetryNonce((n) => n + 1)}
+                    className="border-2 border-foreground px-4 py-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.14em] transition-colors hover:bg-foreground hover:text-background"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : isLoading && arenas.length === 0 ? (
+                // Only on a genuinely empty load. When rows are already on
+                // screen they stay and dim, because replacing real content with
+                // grey bars is a downgrade, not a loading state.
+                <ul>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <ArenaRowSkeleton key={i} />
+                  ))}
+                </ul>
+              ) : arenas.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
+                  <p className="font-display text-lg italic text-foreground">Nothing here</p>
+                  <p className="max-w-sm font-sans text-sm text-foreground/65">
                     No arena matches that. Widen the filters, or write the brief
                     you were looking for.
                   </p>
@@ -260,36 +235,32 @@ export function ArenasListClient({
                   >
                     Write a brief
                   </Link>
-                </>
+                </div>
+              ) : (
+                <ul className={isLoading ? "opacity-60 transition-opacity" : "transition-opacity"}>
+                  {arenas.map((arena) => (
+                    <ArenaRow
+                      key={arena.id}
+                      arena={arena}
+                      now={now}
+                      viewerId={user?.id ?? null}
+                    />
+                  ))}
+                </ul>
               )}
             </div>
-          ) : (
-            <ul className={isLoading ? "opacity-60 transition-opacity" : "transition-opacity"}>
-              {arenas.map((arena) => (
-                <ArenaRow
-                  key={arena.id}
-                  arena={arena}
-                  now={now}
-                  viewerId={user?.id ?? null}
+
+            {totalPages > 1 && (
+              <div className="mt-6">
+                <ArenasFooterPagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  isLoading={isLoading}
+                  onPageChange={setPage}
                 />
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="mt-6">
-            <ArenasFooterPagination
-              currentPage={page}
-              totalPages={totalPages}
-              isLoading={isLoading}
-              onPageChange={setPage}
-            />
+              </div>
+            )}
           </div>
-        )}
-          </div>
-
-          <BoardSidebar data={spotlight} now={now} />
         </div>
       </ArenaContainer>
     </main>
