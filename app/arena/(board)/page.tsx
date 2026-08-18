@@ -34,7 +34,13 @@ export default async function ArenasPage() {
     ]);
 
   const serializeSpotlight = (rows: typeof spotlight.closingSoon) =>
-    rows.map((r) => ({ id: r.id, title: r.title, at: r.at.toISOString(), entered: r.entered }));
+    rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      slug: r.slug,
+      at: r.at.toISOString(),
+      entered: r.entered,
+    }));
 
   const formattedArenas: SerializedArenaListItem[] = arenas.map((a) => ({
     ...a,
@@ -67,6 +73,7 @@ export default async function ArenasPage() {
         id: i.id,
         arenaId: i.arena.id,
         arenaTitle: i.arena.title,
+        arenaSlug: i.arena.slug,
         senderName: i.sender.fullName ?? (i.sender.handle ? `@${i.sender.handle}` : "A host"),
         senderHandle: i.sender.handle,
         registrationEnd: i.arena.registrationEnd.toISOString(),

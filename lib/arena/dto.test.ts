@@ -19,6 +19,7 @@ function row(over: Partial<ArenaDetailRow> = {}): ArenaDetailRow {
   return {
     id: "arena-1",
     title: "The most devious video player",
+    slug: "the-most-devious-video-player",
     description: "Build it.",
     rulesText: "No rules.",
     authority: "COMMUNITY",

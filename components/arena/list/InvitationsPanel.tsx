@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { buildArenaSlug } from "@/lib/arena-slug";
 import { useToast } from "@/components/providers/ToastProvider";
 import { logger } from "@/lib/client/logger";
 import { RailPanel } from "./BoardSidebar";
@@ -26,6 +25,7 @@ export interface PendingInvitation {
   id: string;
   arenaId: string;
   arenaTitle: string;
+  arenaSlug: string;
   senderName: string;
   senderHandle: string | null;
   /** ISO. When registration on that arena shuts. */
@@ -95,7 +95,7 @@ export function InvitationsPanel({
           return (
             <li key={invitation.id} className="px-4 py-3.5">
               <Link
-                href={`/arena/${buildArenaSlug(invitation.arenaTitle, invitation.arenaId)}`}
+                href={`/arena/${invitation.arenaSlug}`}
                 className="font-sans text-sm font-semibold leading-snug text-foreground underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
               >
                 {invitation.arenaTitle}

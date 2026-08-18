@@ -4,7 +4,6 @@ import { searchUsers } from "@/lib/user/service";
 import { getOptionalUser } from "@/lib/server/auth/require-user";
 import { withApiErrorHandling } from "@/lib/server/api-route";
 import { DEFAULT_LIST_PARAMS } from "@/lib/arena/schema";
-import { buildArenaSlug } from "@/lib/arena-slug";
 
 /**
  * One search, every public surface.
@@ -75,7 +74,7 @@ export async function GET(request: NextRequest) {
           subtitle: a.isTeam
             ? `Teams of ${a.minTeamSize}–${a.maxTeamSize}`
             : "Solo entry",
-          href: `/arena/${buildArenaSlug(a.title, a.id)}`,
+          href: `/arena/${a.slug}`,
         })),
       },
       {

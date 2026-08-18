@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { memo } from "react";
-import { buildArenaSlug } from "@/lib/arena-slug";
 import { deriveArenaStatus, type ArenaStatus } from "@/lib/arena/status";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
 
@@ -231,7 +230,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
         <span className="min-w-0">
           <span className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
             <Link
-              href={`/arena/${buildArenaSlug(arena.title, arena.id)}`}
+              href={`/arena/${arena.slug}`}
               className="font-display text-[1.12rem] leading-snug text-foreground transition-colors after:absolute after:inset-0 after:content-[''] group-hover/row:text-orange-ink focus-visible:outline-none"
             >
               {arena.title}

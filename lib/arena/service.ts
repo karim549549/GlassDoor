@@ -4,6 +4,7 @@ import { mayHavePrizePool, type ArenaAuthorityValue } from "./authority";
 import prisma from "@/lib/server/prisma";
 import { arenaStatusWhere } from "./status";
 import { checkScheduleEdit } from "./edit-rules";
+import { arenaSlugBase, uniqueArenaSlug, type ArenaRef } from "@/lib/arena-slug";
 import type { ArenaFormOutput, ArenaListQuery, ArenaSortOption } from "./schema";
 import {
   ARENA_LIST_SELECT,
@@ -223,32 +224,44 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
  * detail select no longer ships anyone's `userId`.
  */
 export async function getArenaDetail(
-  uuid: string,
+  ref: ArenaRef,
   currentUserId: string | null
 ): Promise<{ arena: ArenaDetailRow; meta: ArenaDetailMeta } | null> {
-  const [arena, viewerEntry] = await Promise.all([
-    prisma.arena.findFirst({
-      where: { id: uuid, isDeleted: false, publishedAt: { not: null } },
-      select: ARENA_DETAIL_SELECT,
-    }),
-    currentUserId
-      ? prisma.arenaEntry.findFirst({
-          where: {
-            arenaId: uuid,
-            withdrawnAt: null,
-            OR: [
-              { userId: currentUserId },
-              { team: { members: { some: { userId: currentUserId } } } },
-            ],
-          },
-          select: { id: true },
-        })
-      : Promise.resolve(null),
-  ]);
+  /**
+   * Either form resolves. The slug is canonical and what every link now
+   * carries; the id is what legacy `title-uuid` links carry and what client
+   * code holds, and the page redirects one to the other rather than serving
+   * an arena at two addresses.
+   */
+  const identity: Prisma.ArenaWhereInput =
+    ref.kind === "id" ? { id: ref.id } : { slug: ref.slug };
+
+  const arena = await prisma.arena.findFirst({
+    where: { ...identity, isDeleted: false, publishedAt: { not: null } },
+    select: ARENA_DETAIL_SELECT,
+  });
 
   if (!arena) {
     return null;
   }
+
+  // Sequential rather than parallel now, because the viewer probe needs the
+  // arena's id and a slug lookup does not have one yet. One extra round trip
+  // on a page that already makes several, in exchange for not resolving the
+  // slug twice.
+  const viewerEntry = await (currentUserId
+    ? prisma.arenaEntry.findFirst({
+        where: {
+          arenaId: arena.id,
+          withdrawnAt: null,
+          OR: [
+            { userId: currentUserId },
+            { team: { members: { some: { userId: currentUserId } } } },
+          ],
+        },
+        select: { id: true },
+      })
+    : Promise.resolve(null));
 
   const isOwner = currentUserId ? arena.creatorId === currentUserId : false;
   const isRegistered = viewerEntry !== null;
@@ -268,6 +281,31 @@ export async function getArenaDetail(
       canAccessPrivate: true,
     },
   };
+}
+
+/**
+ * A free slug for this title.
+ *
+ * Reads only the slugs that could possibly collide - everything starting with
+ * the base - rather than the whole table, so the uniqueness check costs one
+ * indexed prefix scan whatever the arena count is.
+ *
+ * There is still a race between this and the insert, and that is fine: the
+ * unique index refuses the loser, and the caller retries. A pre-check that
+ * pretended to be a guarantee would be the worse version.
+ */
+async function nextArenaSlug(title: string, excludeId?: string): Promise<string> {
+  const base = arenaSlugBase(title) || "arena";
+
+  const neighbours = await prisma.arena.findMany({
+    where: {
+      slug: { startsWith: base },
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+    select: { slug: true },
+  });
+
+  return uniqueArenaSlug(base, neighbours.map((row) => row.slug));
 }
 
 export type CreateArenaResult = { id: string } | { error: string };
@@ -304,6 +342,7 @@ export async function createArena(
   const arena = await prisma.arena.create({
     data: {
       title: data.title,
+      slug: await nextArenaSlug(data.title),
       description: data.description,
       authority: data.authority as ArenaAuthority,
       difficulty: data.difficulty as DifficultyTier,
@@ -360,6 +399,7 @@ export async function createArena(
 const ARENA_EDIT_FORM_SELECT = {
   id: true,
   title: true,
+  slug: true,
   description: true,
   rulesText: true,
   difficulty: true,
@@ -407,12 +447,16 @@ export type ArenaEditFormRow = Prisma.ArenaGetPayload<{
  * above can only render a form it was allowed to fetch.
  */
 export async function getArenaForEdit(
-  arenaId: string,
+  ref: ArenaRef,
   userId: string,
   now: Date = new Date()
 ): Promise<ArenaEditFormRow | null> {
   const arena = await prisma.arena.findFirst({
-    where: { id: arenaId, isDeleted: false, creatorId: userId },
+    where: {
+      ...(ref.kind === "id" ? { id: ref.id } : { slug: ref.slug }),
+      isDeleted: false,
+      creatorId: userId,
+    },
     select: ARENA_EDIT_FORM_SELECT,
   });
 
@@ -437,6 +481,8 @@ export async function getArenaForEdit(
  */
 const ARENA_EDIT_GUARD_SELECT = {
   id: true,
+  title: true,
+  slug: true,
   creatorId: true,
   canceledAt: true,
   resultsPublishedAt: true,
@@ -449,7 +495,7 @@ const ARENA_EDIT_GUARD_SELECT = {
 } satisfies Prisma.ArenaSelect;
 
 export type MutateArenaResult =
-  | { ok: true; id: string }
+  | { ok: true; id: string; slug: string }
   | { ok: false; status: 400 | 403 | 404 | 409; error: string };
 
 /**
@@ -523,10 +569,31 @@ export async function updateArena(
 
   const prizesAllowed = mayHavePrizePool(data.authority);
 
+  /**
+   * The slug follows a rename only until someone has entered.
+   *
+   * After that the address has been bookmarked, pasted into a group chat and
+   * indexed, and a rename that moved it would break every one of those to fix
+   * a typo. Before that it has been seen by the host and nobody else, so
+   * keeping a wrong slug forever would be pedantry.
+   *
+   * The old slug is not kept as an alias. A redirect table is the right answer
+   * once arenas are renamed often enough to need one; today no arena has ever
+   * been renamed at all.
+   */
+  const entered = await prisma.arenaEntry.count({
+    where: { arenaId, withdrawnAt: null },
+  });
+  const slug =
+    entered === 0 && data.title !== current.title
+      ? await nextArenaSlug(data.title, arenaId)
+      : undefined;
+
   await prisma.arena.update({
     where: { id: arenaId },
     data: {
       title: data.title,
+      ...(slug ? { slug } : {}),
       description: data.description,
       authority: data.authority as ArenaAuthority,
       difficulty: data.difficulty as DifficultyTier,
@@ -563,7 +630,7 @@ export async function updateArena(
     },
   });
 
-  return { ok: true, id: arenaId };
+  return { ok: true, id: arenaId, slug: slug ?? current.slug };
 }
 
 /**
@@ -592,7 +659,7 @@ export async function cancelArena(
   if (current.canceledAt) {
     // Idempotent on purpose: a double-submit is a double-submit, not an error
     // worth showing someone who already got what they asked for.
-    return { ok: true, id: arenaId };
+    return { ok: true, id: arenaId, slug: current.slug };
   }
 
   if (now >= current.implPhaseEnd) {
@@ -608,7 +675,7 @@ export async function cancelArena(
     data: { canceledAt: now },
   });
 
-  return { ok: true, id: arenaId };
+  return { ok: true, id: arenaId, slug: current.slug };
 }
 
 /**
@@ -638,6 +705,7 @@ export interface BoardSummary {
 export interface SpotlightArena {
   id: string;
   title: string;
+  slug: string;
   /** The moment this arena's current phase turns over. */
   at: Date;
   entered: number;
@@ -673,6 +741,7 @@ export async function getBoardSpotlight(now: Date = new Date()): Promise<BoardSp
   const select = {
     id: true,
     title: true,
+    slug: true,
     registrationEnd: true,
     implPhaseEnd: true,
     _count: { select: { entries: true } },
@@ -703,6 +772,7 @@ export async function getBoardSpotlight(now: Date = new Date()): Promise<BoardSp
     rows.map((r) => ({
       id: r.id,
       title: r.title,
+      slug: r.slug,
       at: r[field],
       entered: r._count.entries,
     }));

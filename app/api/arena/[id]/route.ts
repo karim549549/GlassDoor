@@ -41,7 +41,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // Optionally get the authenticated user (not required — public page)
     const user = await getOptionalUser();
 
-    const result = await getArenaDetail(uuid, user?.id ?? null);
+    const result = await getArenaDetail({ kind: "id", id: uuid }, user?.id ?? null);
 
     /**
      * 404, never 403.
@@ -160,7 +160,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       if (!result.ok) {
         return NextResponse.json({ error: result.error }, { status: result.status });
       }
-      return NextResponse.json({ success: true, id: result.id });
+      return NextResponse.json({ success: true, id: result.id, slug: result.slug });
     },
     "An unexpected error occurred while saving this arena.",
     request
@@ -199,7 +199,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       if (!result.ok) {
         return NextResponse.json({ error: result.error }, { status: result.status });
       }
-      return NextResponse.json({ success: true, id: result.id });
+      return NextResponse.json({ success: true, id: result.id, slug: result.slug });
     },
     "An unexpected error occurred while calling off this arena.",
     request

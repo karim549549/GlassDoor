@@ -41,6 +41,7 @@ export const RECEIVED_INVITATION_SELECT = {
     select: {
       id: true,
       title: true,
+      slug: true,
       isTeam: true,
       isPrivate: true,
       difficulty: true,

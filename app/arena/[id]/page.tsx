@@ -1,8 +1,8 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { buildArenaSlug, extractUuidFromSlug } from "@/lib/arena-slug";
+import { notFound, permanentRedirect } from "next/navigation";
+import { parseArenaRef } from "@/lib/arena-slug";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
 import { getArenaDetail } from "@/lib/arena/service";
@@ -47,9 +47,10 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-const loadArena = cache((uuid: string, viewerId: string | null) =>
-  getArenaDetail(uuid, viewerId)
-);
+const loadArena = cache((ref: string, viewerId: string | null) => {
+  const parsed = parseArenaRef(ref);
+  return parsed ? getArenaDetail(parsed, viewerId) : Promise.resolve(null);
+});
 
 function toMetaText(description: string, maxLength: number): string {
   return description.replace(/[#*`>]/g, "").slice(0, maxLength).trim();
@@ -57,8 +58,7 @@ function toMetaText(description: string, maxLength: number): string {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id: slugParam } = await params;
-  const uuid = extractUuidFromSlug(decodeURIComponent(slugParam));
-  const result = uuid ? await loadArena(uuid, null) : null;
+  const result = await loadArena(slugParam, null);
 
   if (!result) {
     return { title: "Arena Not Found" };
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { arena } = result;
   const cleanDescription = toMetaText(arena.description, 160);
-  const canonicalUrl = `${getSiteUrl()}/arena/${buildArenaSlug(arena.title, arena.id)}`;
+  const canonicalUrl = `${getSiteUrl()}/arena/${arena.slug}`;
 
   return {
     title: `${arena.title} | Devs Arena`,
@@ -99,13 +99,25 @@ const DATE = new Intl.DateTimeFormat("en-GB", {
 
 export default async function ArenaDetailPage({ params }: PageProps) {
   const { id: slugParam } = await params;
-  const uuid = extractUuidFromSlug(decodeURIComponent(slugParam));
 
   const viewerUser = await getOptionalUser();
-  const result = uuid ? await loadArena(uuid, viewerUser?.id ?? null) : null;
+  const result = await loadArena(slugParam, viewerUser?.id ?? null);
 
   if (!result) {
     notFound();
+  }
+
+  /**
+   * One arena, one address.
+   *
+   * Every link shared before slugs existed ends in `title-uuid`, and those
+   * still resolve - but they redirect here rather than rendering, so a
+   * history dropdown converges on the readable form instead of accumulating
+   * two entries per arena. 308 because the move is permanent and the method
+   * must survive it.
+   */
+  if (slugParam !== result.arena.slug) {
+    permanentRedirect(`/arena/${result.arena.slug}`);
   }
 
   const { arena: raw, meta } = result;
@@ -127,7 +139,7 @@ export default async function ArenaDetailPage({ params }: PageProps) {
     ? await listInvitationsForArena(arena.id, viewerUser!.id)
     : null;
 
-  const canonicalUrl = `${getSiteUrl()}/arena/${buildArenaSlug(arena.title, arena.id)}`;
+  const canonicalUrl = `${getSiteUrl()}/arena/${arena.slug}`;
   const isOnline = arena.locationType === "ONLINE";
 
   const location = isOnline
@@ -251,6 +263,7 @@ export default async function ArenaDetailPage({ params }: PageProps) {
               <ArenaActionPanel
                 arenaId={arena.id}
                 arenaTitle={arena.title}
+                slug={arena.slug}
                 relationship={viewer.relationship}
                 status={status}
                 isPrivate={arena.isPrivate}

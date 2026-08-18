@@ -47,6 +47,8 @@ const participantSchema = z.object({
 export const arenaDetailDtoSchema = z.object({
   id: z.string(),
   title: z.string(),
+  /** The canonical URL segment. Every link to this arena is built from it. */
+  slug: z.string(),
   description: z.string(),
   rulesText: z.string(),
   status: z.string(),
@@ -200,6 +202,7 @@ export function toArenaDetailDto(
   return arenaDetailDtoSchema.parse({
     id: raw.id,
     title: raw.title,
+    slug: raw.slug,
     description: raw.description,
     rulesText: raw.rulesText,
     status,

@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/lib/site-url";
-import { buildArenaSlug } from "@/lib/arena-slug";
 import { listArenas } from "@/lib/arena/service";
 import { listCompanySlugs } from "@/lib/companies/service";
 import { logger } from "@/lib/server/logger";
@@ -79,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const arena of arenas) {
       entries.push({
-        url: `${siteUrl}/arena/${buildArenaSlug(arena.title, arena.id)}`,
+        url: `${siteUrl}/arena/${arena.slug}`,
         changeFrequency: "weekly",
         priority: 0.6,
       });

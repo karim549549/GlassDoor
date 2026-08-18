@@ -19,6 +19,7 @@ import { ArenaForm } from "@/components/arena/create/ArenaForm";
  */
 export interface EditableArena {
   id: string;
+  slug: string;
   title: string;
   description: string;
   rulesText: string;
@@ -112,7 +113,10 @@ export function EditArenaClient({ arena }: { arena: EditableArena }) {
       }
 
       toast("Changes saved.", "success");
-      router.push(`/arena/${arena.id}`);
+      // The saved slug, not the one this page loaded with: renaming an arena
+      // nobody has entered moves its URL, and pushing the old one would land
+      // on a redirect at best.
+      router.push(`/arena/${result.slug ?? arena.slug}`);
       // The arena page is server-rendered, so without this the host lands on
       // the cached version of what they just edited and concludes it failed.
       router.refresh();

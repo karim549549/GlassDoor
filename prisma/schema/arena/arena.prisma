@@ -45,6 +45,16 @@ enum InvitationStatus {
 model Arena {
   id                       String            @id @default(uuid()) @db.Uuid
   title                    String
+  /// The URL. Generated from the title at creation and unique across arenas.
+  ///
+  /// URLs used to be {slugified-title}-{uuid}, so every link carried 36
+  /// characters of hex that were doing the actual lookup while the words were
+  /// decoration. A URL is read by people - in a history dropdown, in a shared
+  /// message, in a search result - and a primary key improves none of those.
+  ///
+  /// It stops changing once anyone has entered: at that point the address has
+  /// been bookmarked and posted, and a rename must not break it.
+  slug                     String            @unique
   description              String            @db.Text
   creatorId                String            @db.Uuid
   creator                  User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)

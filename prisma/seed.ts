@@ -2,6 +2,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 config({ path: ".env" });
 import { prisma } from "../lib/server/prisma";
+import { arenaSlugBase, uniqueArenaSlug } from "../lib/arena-slug";
 
 const ROLES = [
   {
@@ -153,11 +154,19 @@ async function main() {
     { title: "The zero-JavaScript challenge", description: "A genuinely interactive page. No JavaScript ships to the browser. Yes, really.", phase: "finished", difficulty: "ADVANCED", isTeam: false },
   ];
 
+  // Slugs come from the same helper the application uses, so seeded rows are
+  // indistinguishable from ones a host created.
+  const takenSlugs: string[] = [];
+
   for (const [i, spec] of specs.entries()) {
     const w = windows(spec.phase);
+    const slug = uniqueArenaSlug(arenaSlugBase(spec.title), takenSlugs);
+    takenSlugs.push(slug);
+
     await prisma.arena.create({
       data: {
         title: spec.title,
+        slug,
         description: spec.description,
         creatorId: creator.id,
         publishedAt: at(-30),

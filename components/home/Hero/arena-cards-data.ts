@@ -1,4 +1,3 @@
-import { buildArenaSlug } from "@/lib/arena-slug";
 import { deriveArenaStatus } from "@/lib/arena/status";
 import type { ArenaListItem } from "@/lib/arena/types";
 
@@ -159,7 +158,7 @@ export function toArenaCardData(arena: ArenaListItem, now: Date): ArenaCardData 
     timeLabel,
     timeValue,
     isLive,
-    href: `/arena/${buildArenaSlug(arena.title, arena.id)}`,
+    href: `/arena/${arena.slug}`,
     trackLabel,
     trackInitials: initialsOf(trackLabel),
   };

@@ -25,6 +25,7 @@ import { Prisma } from "@prisma/client";
 export const ARENA_LIST_SELECT = {
   id: true,
   title: true,
+  slug: true,
   description: true,
   authority: true,
   difficulty: true,
@@ -135,6 +136,7 @@ export type SerializedArenaListItem = Omit<ArenaListItem, (typeof SERIALIZED_DAT
 export const ARENA_DETAIL_SELECT = {
   id: true,
   title: true,
+  slug: true,
   description: true,
   rulesText: true,
   authority: true,

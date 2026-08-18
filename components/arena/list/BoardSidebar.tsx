@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { buildArenaSlug } from "@/lib/arena-slug";
 import { timeUntil } from "./ArenaRow";
 import { HostPrompt } from "./BoardFacets";
 
@@ -23,6 +22,7 @@ import { HostPrompt } from "./BoardFacets";
 export interface SpotlightItem {
   id: string;
   title: string;
+  slug: string;
   /** ISO. The moment this arena's current phase turns over. */
   at: string;
   entered: number;
@@ -89,7 +89,7 @@ function SpotlightList({
         return (
           <li key={item.id} className="border-b border-foreground/10 last:border-b-0">
             <Link
-              href={`/arena/${buildArenaSlug(item.title, item.id)}`}
+              href={`/arena/${item.slug}`}
               className="block px-4 py-3 transition-colors hover:bg-foreground/[0.04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange"
             >
               <span className="block font-display text-[0.95rem] leading-snug text-foreground">

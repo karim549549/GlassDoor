@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { extractUuidFromSlug } from "@/lib/arena-slug";
+import { parseArenaRef } from "@/lib/arena-slug";
 import { getArenaForEdit } from "@/lib/arena/service";
 import { requireUser } from "@/lib/server/auth/require-user";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
@@ -19,14 +19,14 @@ interface PageProps {
 
 export default async function EditArenaPage({ params }: PageProps) {
   const { id: slugParam } = await params;
-  const uuid = extractUuidFromSlug(decodeURIComponent(slugParam));
+  const ref = parseArenaRef(slugParam);
 
   const auth = await requireUser();
   if ("response" in auth) {
     redirect(`/login?redirectTo=/arena/${encodeURIComponent(slugParam)}/edit`);
   }
 
-  const arena = uuid ? await getArenaForEdit(uuid, auth.user.id) : null;
+  const arena = ref ? await getArenaForEdit(ref, auth.user.id) : null;
 
   /**
    * One 404 for four different refusals: no such arena, not yours, called off,
@@ -44,6 +44,7 @@ export default async function EditArenaPage({ params }: PageProps) {
 
   const editable: EditableArena = {
     id: arena.id,
+    slug: arena.slug,
     title: arena.title,
     description: arena.description,
     rulesText: arena.rulesText,

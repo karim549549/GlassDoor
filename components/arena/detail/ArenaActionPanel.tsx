@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { buildArenaSlug } from "@/lib/arena-slug";
 import { useToast } from "@/components/providers/ToastProvider";
 import { logger } from "@/lib/client/logger";
 import type { ViewerRelationship } from "@/lib/arena/dto";
@@ -39,6 +38,8 @@ function Note({ children }: { children: React.ReactNode }) {
 export interface ArenaActionPanelProps {
   arenaId: string;
   arenaTitle: string;
+  /** Canonical URL segment, for the links this panel renders. */
+  slug: string;
   relationship: ViewerRelationship;
   status: string;
   isPrivate: boolean;
@@ -56,6 +57,7 @@ export interface ArenaActionPanelProps {
 export function ArenaActionPanel({
   arenaId,
   arenaTitle,
+  slug,
   relationship,
   status,
   isPrivate,
@@ -69,7 +71,6 @@ export function ArenaActionPanel({
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState("");
 
-  const slug = buildArenaSlug(arenaTitle, arenaId);
   const registrationOpen = status === "REGISTRATION_OPEN";
   const isFull = maxParticipants !== null && entrantCount >= maxParticipants;
 
