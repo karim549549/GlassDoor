@@ -29,9 +29,9 @@ import type { SerializedArenaListItem } from "@/lib/arena/types";
 
 const DEFAULTS: ArenaFilterState = {
   status: "all",
-  place: "all",
-  entry: "all",
-  difficulty: "",
+  place: [],
+  entry: [],
+  difficulty: [],
   prized: false,
   sortBy: "closing",
   tab: "all",
@@ -102,11 +102,13 @@ export function ArenasListClient({
     const params = new URLSearchParams();
     params.set("page", String(page));
     params.set("status", filters.status);
-    params.set("place", filters.place);
-    params.set("entry", filters.entry);
     params.set("sortBy", filters.sortBy);
     params.set("tab", filters.tab);
-    if (filters.difficulty) params.set("difficulty", filters.difficulty);
+    // Comma-separated rather than repeated keys: readable in an address bar,
+    // and omitted entirely when empty so the URL says only what was chosen.
+    if (filters.place.length) params.set("place", filters.place.join(","));
+    if (filters.entry.length) params.set("entry", filters.entry.join(","));
+    if (filters.difficulty.length) params.set("difficulty", filters.difficulty.join(","));
     if (filters.prized) params.set("prized", "true");
     return params.toString();
   }, [page, filters]);
@@ -146,7 +148,10 @@ export function ArenasListClient({
   }, [query, retryNonce]);
 
   return (
-    <main id="main-content" className="min-h-screen bg-background text-foreground">
+    <main id="main-content" className="relative min-h-screen bg-background text-foreground">
+      {/* The same blueprint grid the homepage sits on. It reads as one site
+          rather than a marketing page and a set of unrelated tools. */}
+      <BackgroundGrid opacity={0.055} />
       <div className="relative w-full overflow-hidden border-b-2 border-orange bg-foreground text-background">
         <BackgroundGrid opacity={0.06} patternSize={28} />
         <ArenaContainer className="relative z-10 py-8 md:py-10">
@@ -159,7 +164,7 @@ export function ArenasListClient({
         </ArenaContainer>
       </div>
 
-      <ArenaContainer className="py-8">
+      <ArenaContainer className="relative z-10 py-8">
         <div className="mb-8">
           <BoardFacets
             facets={facets}

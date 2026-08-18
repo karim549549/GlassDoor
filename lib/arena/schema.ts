@@ -188,8 +188,15 @@ export type ArenaFormOutput = z.output<typeof arenaSchema>;
  * returns when judging does.
  */
 export const ARENA_STATUS_FILTERS = ["all", "open", "live", "finished"] as const;
-export const ARENA_PLACE_FILTERS = ["all", "online", "in_person"] as const;
-export const ARENA_ENTRY_FILTERS = ["all", "solo", "team"] as const;
+/**
+ * Multi-select, so an empty set means "no restriction".
+ *
+ * "all" is gone as a value: it was a third option meaning the absence of the
+ * other two, which a set expresses by being empty. Picking both `online` and
+ * `in_person` and picking neither now mean the same thing, and both are true.
+ */
+export const ARENA_PLACE_FILTERS = ["online", "in_person"] as const;
+export const ARENA_ENTRY_FILTERS = ["solo", "team"] as const;
 
 /**
  * `closing` is the default, and that matters. The board used to lead with
@@ -202,6 +209,28 @@ export const ARENA_TAB_SCOPES = ["all", "my"] as const;
 export type ArenaStatusFilter = (typeof ARENA_STATUS_FILTERS)[number];
 export type ArenaPlaceFilter = (typeof ARENA_PLACE_FILTERS)[number];
 export type ArenaEntryFilter = (typeof ARENA_ENTRY_FILTERS)[number];
+export type ArenaDifficultyFilter = (typeof ARENA_DIFFICULTY_VALUES)[number];
+
+/**
+ * A comma-separated list in the query string - `?difficulty=NOVICE,ADVANCED` -
+ * rather than a repeated key. Both are valid HTTP; one is readable in an
+ * address bar and survives being copied out of it.
+ *
+ * Unknown values are dropped rather than rejected, and an absent value parses
+ * to an empty array. Both mean a malformed filter widens the results instead of
+ * emptying them, which is the safer way for a URL someone edited by hand to
+ * fail.
+ */
+const csvOf = <T extends readonly string[]>(values: T) =>
+  z
+    .string()
+    .optional()
+    .transform((raw) =>
+      (raw ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s): s is T[number] => values.includes(s))
+    );
 export type ArenaSortOption = (typeof ARENA_SORT_OPTIONS)[number];
 export type ArenaTabScope = (typeof ARENA_TAB_SCOPES)[number];
 
@@ -210,9 +239,9 @@ export const arenaListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   status: z.enum(ARENA_STATUS_FILTERS).default("all"),
-  place: z.enum(ARENA_PLACE_FILTERS).default("all"),
-  entry: z.enum(ARENA_ENTRY_FILTERS).default("all"),
-  difficulty: z.enum(ARENA_DIFFICULTY_VALUES).optional(),
+  place: csvOf(ARENA_PLACE_FILTERS),
+  entry: csvOf(ARENA_ENTRY_FILTERS),
+  difficulty: csvOf(ARENA_DIFFICULTY_VALUES),
   /** Only arenas offering prize money. */
   prized: z.coerce.boolean().default(false),
   sortBy: z.enum(ARENA_SORT_OPTIONS).default("closing"),
@@ -227,8 +256,9 @@ export const DEFAULT_LIST_PARAMS: ArenaListQuery = {
   page: 1,
   limit: 50,
   status: "all",
-  place: "all",
-  entry: "all",
+  place: [],
+  entry: [],
+  difficulty: [],
   prized: false,
   sortBy: "closing",
   tab: "all",

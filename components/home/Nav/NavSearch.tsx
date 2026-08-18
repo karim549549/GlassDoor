@@ -132,12 +132,24 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
         }
       />
 
+      {/* Dark, and deliberately not the page's cream.
+          A command palette is a layer above the document, not part of it, and
+          a surface that matches the page behind it reads as an inline panel
+          rather than something that took over. Every OS-level search does the
+          same. `--foreground` (#0E0E0D) with `--background` text is ~17:1, and
+          `--orange` is the tone already used on the dark masthead.
+
+          Widths step per breakpoint rather than sitting at one size: roughly
+          60% of the viewport is the comfortable band for a modal, and one
+          fixed max-width is either cramped on a 27" screen or overwhelming on
+          a laptop. Height is fixed so the results area does not resize under
+          the cursor between keystrokes. */}
       <DialogContent
         showCloseButton={false}
-        className="z-[100] flex h-[min(34rem,80vh)] w-full max-w-2xl flex-col overflow-hidden rounded-none border-2 border-foreground bg-background p-0 text-foreground shadow-[6px_6px_0px_0px_var(--foreground)]"
+        className="z-[100] flex h-[min(38rem,84vh)] w-full max-w-[calc(100%-2rem)] flex-col overflow-hidden rounded-none border-2 border-[#0E0E0D] bg-[#0E0E0D] p-0 text-background shadow-[8px_8px_0px_0px_rgba(14,14,13,0.35)] sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl"
       >
-        <div className="flex shrink-0 items-center gap-3 border-b-2 border-foreground bg-card px-4 py-3.5">
-          <Search aria-hidden className="h-4 w-4 shrink-0 text-foreground/50" />
+        <div className="flex shrink-0 items-center gap-3 border-b border-background/15 px-5 py-4">
+          <Search aria-hidden className="h-4 w-4 shrink-0 text-orange" />
           <input
             ref={inputRef}
             type="text"
@@ -148,9 +160,9 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
             aria-label="Search the site"
             aria-autocomplete="list"
             autoFocus
-            className="flex-1 border-none bg-transparent font-sans text-[0.95rem] text-foreground outline-none placeholder:text-foreground/35"
+            className="flex-1 border-none bg-transparent font-sans text-[1.05rem] text-background outline-none placeholder:text-background/35"
           />
-          <kbd className="hidden shrink-0 border border-foreground/20 px-1.5 py-0.5 font-mono text-[0.5rem] uppercase tracking-wider text-foreground/50 sm:inline">
+          <kbd className="hidden shrink-0 border border-background/25 px-1.5 py-0.5 font-mono text-[0.5rem] uppercase tracking-wider text-background/50 sm:inline">
             Esc
           </kbd>
         </div>
@@ -180,7 +192,7 @@ export function NavSearch({ isDarkTheme }: NavSearchProps) {
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-4 border-t border-foreground/15 bg-card px-4 py-2 font-mono text-[0.5rem] uppercase tracking-[0.14em] text-foreground/50">
+        <div className="flex shrink-0 items-center gap-4 border-t border-background/15 px-5 py-2.5 font-mono text-[0.5rem] uppercase tracking-[0.14em] text-background/45">
           <span>↑↓ move</span>
           <span>⏎ open</span>
           <span>esc close</span>

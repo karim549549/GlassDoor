@@ -7,19 +7,19 @@ interface NavSearchRecentProps {
 export function NavSearchRecent({ searches, onClear, onSelect }: NavSearchRecentProps) {
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between border-b border-foreground/10 pb-1.5">
-        <span className="font-bold text-foreground/60">Recent Searches</span>
+      <div className="flex items-center justify-between border-b border-background/12 pb-2">
+        <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.2em] text-background/55">Recent Searches</span>
         {searches.length > 0 && (
           <button
             onClick={onClear}
-            className="text-[0.55rem] text-orange hover:underline cursor-pointer border-none bg-transparent p-0"
+            className="border-none bg-transparent p-0 text-[0.55rem] text-orange hover:underline"
           >
             Clear history
           </button>
         )}
       </div>
       {searches.length === 0 ? (
-        <div className="text-[0.6rem] text-muted-foreground/60 italic lowercase normal-case py-1">
+        <div className="py-1 font-sans text-[0.8rem] normal-case italic text-background/45">
           No recent searches.
         </div>
       ) : (
@@ -28,7 +28,7 @@ export function NavSearchRecent({ searches, onClear, onSelect }: NavSearchRecent
             <button
               key={index}
               onClick={() => onSelect(term)}
-              className="px-2 py-1 bg-card border border-foreground text-foreground hover:bg-foreground hover:text-card transition-colors cursor-pointer text-[0.58rem]"
+              className="border border-background/25 px-2.5 py-1 text-[0.58rem] text-background/80 transition-colors hover:border-orange hover:text-orange"
             >
               {term}
             </button>

@@ -106,25 +106,26 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
     conditions.push({ implPhaseEnd: { gt: now } });
   }
 
-  // The four axes a reader actually decides on. `access` used to be here
-  // instead - a filter *for* arenas you cannot join - and domain and difficulty
-  // could not be filtered at all, despite being the fields that decide which
-  // ladder a result counts on and what it is worth.
-  if (place === "online") {
-    where.locationType = "ONLINE";
-  } else if (place === "in_person") {
+  /**
+   * Sets, not single values. An empty set is no restriction, and a full set is
+   * the same thing - which is why there is no "all" option any more: it was a
+   * third value meaning the absence of the other two.
+   *
+   * A set with every member still becomes an `in` clause rather than being
+   * skipped. Postgres answers it identically and the query then says what the
+   * reader picked.
+   */
+  if (place.length > 0) {
     // `LocationType` is ONLINE | IN_PERSON. There is no HYBRID, despite PRD 2
     // and several component props implying one.
-    where.locationType = "IN_PERSON";
+    where.locationType = { in: place.map((p) => (p === "online" ? "ONLINE" : "IN_PERSON")) };
   }
 
-  if (entry === "solo") {
-    where.isTeam = false;
-  } else if (entry === "team") {
-    where.isTeam = true;
+  if (entry.length === 1) {
+    where.isTeam = entry[0] === "team";
   }
 
-  if (difficulty) where.difficulty = difficulty;
+  if (difficulty.length > 0) where.difficulty = { in: difficulty };
   if (prized) where.hasPrizePool = true;
 
   if (search.trim()) {

@@ -246,7 +246,8 @@ export default function CreateArenaPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen bg-background text-foreground">
+    <main id="main-content" className="relative min-h-screen bg-background text-foreground">
+      <BackgroundGrid opacity={0.055} />
       {/* The masthead, kept but cut down. The version this replaces ran
           `pt-24 pb-12` and carried a live preview of the arena card in a second
           column, which together took roughly the top half of the viewport
@@ -265,7 +266,7 @@ export default function CreateArenaPage() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-6xl px-6 pb-16 pt-8 md:px-10">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-16 pt-8 md:px-10">
         {/* The rail sits on its own surface so the tabs read as a control
             strip rather than as a line of links floating on the page. */}
         <div className="border border-foreground/15 bg-card px-4 md:px-6">

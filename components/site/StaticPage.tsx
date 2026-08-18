@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { DocIndex, type DocSection } from "./DocIndex";
+import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 
 /**
  * Shell for the standing pages the footer links to - about, support, terms,
@@ -55,8 +56,9 @@ export function StaticPage({
   const sections = collectSections(children);
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-6xl px-6 md:px-10 py-20 md:py-28">
+    <main className="relative min-h-screen bg-background text-foreground">
+      <BackgroundGrid opacity={0.055} />
+      <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-10 py-20 md:py-28">
         <Link
           href="/"
           className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-muted-foreground hover:text-orange-ink transition-colors"

@@ -86,8 +86,9 @@ async function loadHeroCards(now: Date) {
   try {
     const base = {
       page: 1,
-      place: "all" as const,
-      entry: "all" as const,
+      place: [],
+      entry: [],
+      difficulty: [],
       prized: false,
       sortBy: "closing" as const,
       tab: "all" as const,
