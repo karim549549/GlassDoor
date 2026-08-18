@@ -41,8 +41,16 @@ export const arenaBaseSchema = z.object({
 
   // Format, Authority, Domain & Difficulty
   format: z.enum(["REP", "LIVE", "ARENA"]).default("ARENA"),
-  authority: z.enum(["OFFICIAL", "COMPANY", "COMMUNITY"]).default("COMMUNITY"),
-  intent: z.enum(["HIRING_ASSESSMENT", "BRAND_HACKATHON", "COMMUNITY_FUN"]).default("COMMUNITY_FUN"),
+  // `authority` and `intent` are deliberately NOT here.
+  //
+  // `authority` used to be accepted from the request body, so any logged-in
+  // caller could ask for "OFFICIAL" - the tier PRD 7.1 grants full XP and cash
+  // prizes and denies to COMMUNITY. It is derived server-side now, from who is
+  // asking: see lib/arena/authority.ts. A field that decides a privilege can
+  // never be an input to the request that wants the privilege.
+  //
+  // `intent` went with it: it is not in the PRD, and it duplicated the
+  // distinction `authority` already draws.
   domain: z
     .enum([
       "FULL_STACK_WEB",
@@ -140,7 +148,7 @@ export const arenaSchema = arenaBaseSchema
   // a zero-width idea window), so the check is "not before", not "strictly
   // after"; see PHASE_ORDER in lib/arena/formats.ts.
   .superRefine((data, ctx) => {
-    const result = validateArenaTimeline(data.format, {
+    const result = validateArenaTimeline({
       registrationStart: new Date(data.registrationStart),
       registrationEnd: new Date(data.registrationEnd),
       ideaPhaseStart: new Date(data.ideaPhaseStart),

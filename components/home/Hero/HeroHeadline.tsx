@@ -25,7 +25,7 @@ export function HeroHeadline() {
         className="font-display text-muted-foreground mt-2"
         style={{ fontStyle: "italic", fontSize: "clamp(0.75rem, 1.1vw, 1rem)", lineHeight: 1.35 }}
       >
-        Four-hour team coding challenges. Cairo and online.
+        Team coding challenges. Cairo and online.
       </div>
 
       <div className="font-mono text-[0.52rem] text-muted-foreground uppercase tracking-[0.2em] mt-4 border-t border-border/30 pt-3.5">

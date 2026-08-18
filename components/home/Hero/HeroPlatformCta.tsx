@@ -19,7 +19,7 @@ export function HeroPlatformCta() {
             credentials" - three pieces of internal machinery, in the corner of
             the first screen a visitor sees. All three still exist; none of them
             is a reason to spend a Saturday here. */}
-        <div>30 min to plan, 4 to build</div>
+        <div>Plan, build, then demo</div>
         <div>Teams of 2 to 4</div>
         <div className="text-foreground font-bold">A human tells you why</div>
       </div>

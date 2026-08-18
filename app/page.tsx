@@ -36,7 +36,7 @@ function buildJsonLd(siteUrl: string) {
     name: "Devs Arena",
     url: siteUrl,
     description:
-      "Devs Arena runs community coding challenges in Egypt: anyone can post a brief, teams get thirty minutes to plan and four hours to build, and working engineers judge the entries and explain their reasoning in writing. Free to enter, online or in person in Cairo.",
+      "Devs Arena runs community coding challenges in Egypt: anyone can post a brief and set the clock, teams plan and build against it, and the host's judges read the entries and explain their reasoning in writing. Free to enter, online or in person in Cairo.",
     areaServed: { "@type": "Country", name: "Egypt" },
     knowsAbout: [
       "Hackathons",

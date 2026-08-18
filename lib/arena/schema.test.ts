@@ -80,18 +80,50 @@ test("accepts a REP zero-width idea window", () => {
   assert.equal(result.success, true, JSON.stringify(result.error?.issues));
 });
 
-test("rejects a REP whose implementation window exceeds the format's bounds", () => {
-  // REP is a 90-minute format; a 3-week one is an ARENA wearing the wrong label.
+test("accepts a short arena and a long one alike - the host sets the clock", () => {
+  // This replaces a test asserting that a 3-week window was invalid for a
+  // 90-minute "REP" format. Those per-format duration bounds are gone: they
+  // were invented rather than specified, and the default format required 7 to
+  // 21 days - which made the create page's own default (30 minutes to plan,
+  // 4 hours to build) unsubmittable. This is a marketplace; duration is the
+  // creator's decision. See lib/arena/formats.ts.
   const at = iso("2026-09-05T10:00:00Z");
-  const result = arenaSchema.safeParse(
+
+  const short = arenaSchema.safeParse(
     validPayload({
-      format: "REP",
+      registrationStart: iso("2026-09-05T09:00:00Z"),
+      registrationEnd: at,
+      ideaPhaseStart: at,
+      ideaPhaseEnd: iso("2026-09-05T10:30:00Z"),
+      implPhaseStart: iso("2026-09-05T10:30:00Z"),
+      implPhaseEnd: iso("2026-09-05T14:30:00Z"),
+    })
+  );
+  assert.equal(short.success, true, JSON.stringify(short.error?.issues));
+
+  const long = arenaSchema.safeParse(
+    validPayload({
       registrationStart: iso("2026-09-05T09:00:00Z"),
       registrationEnd: at,
       ideaPhaseStart: at,
       ideaPhaseEnd: at,
       implPhaseStart: at,
       implPhaseEnd: iso("2026-09-26T10:00:00Z"),
+    })
+  );
+  assert.equal(long.success, true, JSON.stringify(long.error?.issues));
+});
+
+test("rejects an arena with no time to build in", () => {
+  const at = iso("2026-09-05T10:00:00Z");
+  const result = arenaSchema.safeParse(
+    validPayload({
+      registrationStart: iso("2026-09-05T09:00:00Z"),
+      registrationEnd: at,
+      ideaPhaseStart: at,
+      ideaPhaseEnd: at,
+      implPhaseStart: at,
+      implPhaseEnd: at,
     })
   );
   assert.equal(result.success, false);

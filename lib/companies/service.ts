@@ -104,6 +104,21 @@ export async function createCompany(data: CompanyCreateInput, ownerUserId: strin
   return { company };
 }
 
+/**
+ * The caller's seat at a company, or null if they have none.
+ *
+ * Shaped for `resolveArenaAuthority`, which decides whether an arena may be
+ * published under a company's name. It returns the seat rather than a boolean
+ * so the decision - which roles count, whether a pending invite counts - stays
+ * in one pure, tested place instead of being spread across queries.
+ */
+export async function getCompanyStanding(userId: string, companyId: string) {
+  return prisma.companyMember.findUnique({
+    where: { companyId_userId: { companyId, userId } },
+    select: { companyId: true, role: true, isAccepted: true, isApproved: true },
+  });
+}
+
 export async function listCompanySlugs(): Promise<{ slug: string; updatedAt: Date }[]> {
   return prisma.company.findMany({
     where: { isDeleted: false },

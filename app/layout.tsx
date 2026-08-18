@@ -36,7 +36,7 @@ const SITE_URL = getSiteUrl();
 
 const TITLE = "Devs Arena — Team Hackathons & Coding Challenges in Egypt";
 const DESCRIPTION =
-  "Pick a strange brief, grab a team, and build it in four hours — online or in person in Cairo. Free to enter, real prize money, and a human judge who tells you exactly what they thought of your code.";
+  "Pick a strange brief, grab a team, and build it against the clock — online or in person in Cairo. Free to enter, real prize money, and a human judge who tells you exactly what they thought of your code.";
 
 /**
  * `metadataBase` has to come first: without it every relative URL below - the
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     "coding challenge Egypt",
     "team coding competition",
     "online hackathon",
-    "four hour coding challenge",
+    "same day hackathon",
     "web dev challenge",
     "programming competition Egypt",
     "developer community Egypt",

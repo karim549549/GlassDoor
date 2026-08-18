@@ -5,7 +5,7 @@ import { StaticPage, Block } from "@/components/site/StaticPage";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Devs Arena runs team coding challenges in Egypt: a strange brief, thirty minutes to plan, four hours to build, and a working engineer who tells you what they thought.",
+    "Devs Arena runs team coding challenges in Egypt: a strange brief, a clock the host sets, and a working engineer who tells you what they thought.",
   alternates: { canonical: "/about" },
 };
 
@@ -24,7 +24,7 @@ export default function AboutPage() {
     <StaticPage
       eyebrow="About"
       title="Build something strange, fast"
-      standfirst="Devs Arena is a community coding challenge board. Somebody posts a brief with no business existing, a few teams get four hours to build it, and a working engineer says what they thought. Free to enter, in Cairo or online."
+      standfirst="Devs Arena is a community coding challenge board. Somebody posts a brief with no business existing, a few teams build it against a clock the host sets, and a working engineer says what they thought. Free to enter, in Cairo or online."
     >
       <Block heading="What it is">
         <p>
@@ -33,8 +33,9 @@ export default function AboutPage() {
           possible login flow. An app that only works before 9am.
         </p>
         <p>
-          Everybody opens it at the same moment. You get thirty minutes to plan
-          and four hours to build, alone or in a team of up to four, and when the
+          Everybody opens it at the same moment. You get a window to plan and a
+          window to build - the host decides how long each one is - alone or in a
+          small team, and when the
           clock dies you show what you have. That is the whole format.
         </p>
       </Block>

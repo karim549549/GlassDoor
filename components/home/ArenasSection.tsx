@@ -72,7 +72,7 @@ export const ArenasSection = forwardRef<HTMLDivElement, ArenasSectionProps>(
               Open challenges
             </h2>
             <p className="font-mono text-[0.58rem] text-muted-foreground uppercase tracking-widest leading-relaxed max-w-md">
-              Pick a brief. Bring a team or find one here. Four hours on the clock, online or in a room in Cairo.
+              Pick a brief. Bring a team or find one here. The host sets the clock. Online or in a room in Cairo.
             </p>
           </div>
 

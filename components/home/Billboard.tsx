@@ -6,7 +6,7 @@ export function Billboard() {
         <span className="opacity-30">·</span>
         <span>Anyone can post a brief and start one</span>
         <span className="opacity-30">·</span>
-        <span className="hidden sm:block">Four hours on the clock. Then you show it.</span>
+        <span className="hidden sm:block">The clock runs. Then you show it.</span>
       </div>
     </div>
   );

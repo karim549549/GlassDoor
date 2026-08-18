@@ -1,5 +1,6 @@
 import "server-only";
-import { Prisma, type ArenaFormat, type ArenaAuthority, type ArenaIntent, type RatingDomain, type DifficultyTier, type PrizeCurrency } from "@prisma/client";
+import { Prisma, type ArenaFormat, type ArenaAuthority, type RatingDomain, type DifficultyTier, type PrizeCurrency } from "@prisma/client";
+import { mayHavePrizePool, type ArenaAuthorityValue } from "./authority";
 import prisma from "@/lib/server/prisma";
 import { arenaStatusWhere } from "./status";
 import type { ArenaFormOutput, ArenaListQuery } from "./schema";
@@ -180,8 +181,23 @@ export async function getArenaDetail(
 
 export type CreateArenaResult = { id: string } | { error: string };
 
+/**
+ * `authority` and `companyId` arrive as arguments, never inside `data`.
+ *
+ * They used to be read straight off the validated request body, which made the
+ * whole authority matrix self-assignable - a caller could ask for OFFICIAL and
+ * receive the tier PRD 7.1 reserves for platform admins, complete with full XP
+ * and prize eligibility. The caller resolves them through
+ * `resolveArenaAuthority` and hands the result in. Keeping them out of the
+ * payload type is the part that matters: a future edit cannot reintroduce the
+ * hole by forwarding one more field from the body.
+ */
 export async function createArena(
-  data: ArenaFormOutput & { creatorId: string }
+  data: ArenaFormOutput & {
+    creatorId: string;
+    authority: ArenaAuthorityValue;
+    companyId: string | null;
+  }
 ): Promise<CreateArenaResult> {
   if (data.isPrivate && data.inviteCode) {
     const existing = await prisma.arena.findUnique({
@@ -217,13 +233,14 @@ export async function createArena(
     }
   }
 
+  const prizesAllowed = mayHavePrizePool(data.authority);
+
   const arena = await prisma.arena.create({
     data: {
       title: data.title,
       description: data.description,
       format: data.format as ArenaFormat,
       authority: data.authority as ArenaAuthority,
-      intent: data.intent as ArenaIntent,
       domain: data.domain as RatingDomain,
       difficulty: data.difficulty as DifficultyTier,
       publishedAt: new Date(),
@@ -232,15 +249,18 @@ export async function createArena(
       googleMapsUrl: data.locationType === "IN_PERSON" ? data.googleMapsUrl || null : null,
       isPrivate: data.isPrivate,
       inviteCode: data.isPrivate ? data.inviteCode || null : null,
-      hasPrizePool: data.hasPrizePool,
-      totalPrizePool: data.totalPrizePool || null,
+      // PRD 7.1 blocks cash prizes on COMMUNITY arenas in V1. The create form
+      // does not offer them, but this route accepted the fields regardless, so
+      // the block existed only in the document. Enforced at the write.
+      hasPrizePool: prizesAllowed && data.hasPrizePool,
+      totalPrizePool: prizesAllowed ? data.totalPrizePool || null : null,
       prizeCurrency: data.prizeCurrency as PrizeCurrency,
-      firstPlacePrize: data.firstPlacePrize || null,
-      secondPlacePrize: data.secondPlacePrize || null,
-      thirdPlacePrize: data.thirdPlacePrize || null,
-      prizeDisbursementTerms: data.prizeDisbursementTerms || null,
+      firstPlacePrize: prizesAllowed ? data.firstPlacePrize || null : null,
+      secondPlacePrize: prizesAllowed ? data.secondPlacePrize || null : null,
+      thirdPlacePrize: prizesAllowed ? data.thirdPlacePrize || null : null,
+      prizeDisbursementTerms: prizesAllowed ? data.prizeDisbursementTerms || null : null,
       requireHiringConsent: data.requireHiringConsent,
-      companyId: data.companyId || null,
+      companyId: data.companyId,
       registrationStart: new Date(data.registrationStart),
       registrationEnd: new Date(data.registrationEnd),
       ideaPhaseStart: new Date(data.ideaPhaseStart),

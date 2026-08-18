@@ -12,7 +12,7 @@ import { ImageResponse } from "next/og";
  * gain no one viewing a 1200x630 thumbnail would notice.
  */
 export const alt =
-  "Devs Arena - team coding challenges in Egypt: four hours, a strange brief, and a judge who explains themselves";
+  "Devs Arena - team coding challenges in Egypt: a strange brief, a clock, and a judge who explains themselves";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -71,7 +71,7 @@ export default function OpengraphImage() {
             Hackathons, but weirder.
           </div>
           <div style={{ display: "flex", fontSize: 31, lineHeight: 1.35, maxWidth: 900, opacity: 0.75 }}>
-            Four-hour team challenges around briefs that have no business
+            Team challenges around briefs that have no business
             existing. Cairo and online. Free to enter.
           </div>
         </div>

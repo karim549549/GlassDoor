@@ -66,7 +66,7 @@ Not a show — there isn't one (§1.3). Against pure-algorithm sites the differe
 The product's format follows **CodeTV's _Web Dev Challenge_** (`https://codetv.dev/series/web-dev-challenge`) — an independent show, referenced here as a format model only; there is no affiliation. Its shape:
 
 - A **brief** is given to the teams
-- **30 minutes to plan**, then **4 hours to build**
+- A window to **plan**, then a window to **build** (the show's own example is 30 minutes then 4 hours — an example, not a specification)
 - Small **teams**, not solo
 - The episode ends with teams **demoing what they made**
 - Briefs are deliberately playful — *"the most devious video player"*, *"a site with zero business value"*, *"build a game playable on at least 2 devices"*, *"indulge your worst developer impulses"*
@@ -83,7 +83,9 @@ The line to lead with is closer to: *you cannot join Web Dev Challenge — you c
 
 #### The phase windows already are the format
 
-`ideaPhaseStart/End` followed by `implPhaseStart/End` is not generic scheduling. It **is** "30 minutes to plan, then 4 hours to build", already modelled. Format presets should be expressed in those existing windows rather than as new fields.
+`ideaPhaseStart/End` followed by `implPhaseStart/End` is not generic scheduling — it is the plan window and the build window, already modelled. Format presets belong in those existing windows rather than in new fields.
+
+**The lengths are set by whoever creates the arena.** This is a marketplace, not a single fixed-length product. An earlier draft of this section read as though "30 minutes then 4 hours" were the specification; it is the reference show's example. That misreading reached nineteen user-facing strings — including the page title, meta description, OG image, JSON-LD and the homepage's largest sentence — all of which described a four-hour platform. Duration is **per-arena data**, and the board showing a real spread of clocks is better product than a uniform claim. `lib/arena/schedule-presets.ts` ships Classic (30/240), Sprint, Marathon and Custom.
 
 #### The tone gap — the most actionable finding in this document
 

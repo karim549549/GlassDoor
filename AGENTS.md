@@ -56,13 +56,30 @@ are currently visible only inside a proof packet, framed as evidence for
 recruiters — when they are also simply good reading, and the thing an
 auto-graded site (Codeforces, LeetCode) has no equivalent of.
 
-**The format follows CodeTV's _Web Dev Challenge_** — a brief, 30 minutes to
-plan, 4 hours to build, in teams, ending in a demo. Referenced as a format
-model only; no affiliation, and episodes are **not** modelled one-to-one onto
-arenas. Two consequences worth knowing before you touch anything:
+**The format follows CodeTV's _Web Dev Challenge_** — a brief, a window to plan,
+a window to build, in teams, ending in a demo. Referenced as a format model
+only; no affiliation, and episodes are **not** modelled one-to-one onto arenas.
 
-- `ideaPhaseStart/End` then `implPhaseStart/End` **is** "30 min to plan, 4 hours
-  to build". Express format presets in those existing windows, not new fields.
+**The durations are NOT part of the product definition.** "30 minutes to plan,
+4 hours to build" is the reference show's own example and nothing more. **This
+is a marketplace: whoever creates an arena sets its clock and its
+constraints.**
+
+An earlier draft of this file stated those two numbers as though they were the
+spec, and the error propagated into nineteen user-facing strings — the page
+title, the meta description, the OG image, the JSON-LD, the SEO keywords, the
+`<h1>` subline and the largest sentence on the homepage — all describing a
+single fixed-length product instead of a board of arenas with different clocks.
+Never write a duration as a platform-wide claim. Duration is **per-arena data**,
+and showing the real spread on the board is better product than pretending it is
+uniform.
+
+Two consequences worth knowing before you touch anything:
+
+- `ideaPhaseStart/End` then `implPhaseStart/End` are the plan and build windows.
+  Express format presets in those existing windows, not new fields:
+  `lib/arena/schedule-presets.ts` ships Classic (the show's 30/240), Sprint and
+  Marathon, plus Custom — and a creator may set anything.
 - **That show is something you watch, with an invited cast. This is the same
   format anyone can create and enter,** online or offline at a real venue. The
   offline mode is why the Egypt venue and geocoding architecture exists — it is

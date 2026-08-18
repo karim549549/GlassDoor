@@ -27,7 +27,7 @@ export function AuthBrandPanel() {
           <h2 className="mt-12 font-display text-[2.4rem] font-medium italic leading-tight">
             Pick a brief.<br />
             Grab a team.<br />
-            Four hours on the clock.
+            Beat the clock.
           </h2>
         </div>
 

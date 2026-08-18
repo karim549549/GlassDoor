@@ -2,8 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { arenaSchema, arenaListQuerySchema } from "@/lib/arena/schema";
 import { listArenas, createArena } from "@/lib/arena/service";
 import { requireUser, getOptionalUser } from "@/lib/server/auth/require-user";
+import { getUserRoles } from "@/lib/server/auth/auth-service";
+import { getCompanyStanding } from "@/lib/companies/service";
+import { resolveArenaAuthority } from "@/lib/arena/authority";
 import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, rateLimitResponse } from "@/lib/server/rate-limit";
+import { logger } from "@/lib/server/logger";
 
 export async function POST(request: NextRequest) {
   return withApiErrorHandling(
@@ -33,7 +37,40 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const result = await createArena({ ...parsed.data, creatorId: user.id });
+      // Authority is decided here, from who is asking - never taken from the
+      // body. It used to be a validated field on the payload, which meant any
+      // logged-in caller could POST `authority: "OFFICIAL"` and receive the
+      // tier PRD 7.1 reserves for platform admins, with full XP and cash-prize
+      // eligibility attached. `companyId` had the same shape: nothing checked
+      // that the caller belonged to the company they were publishing under.
+      //
+      // The requested company id is still read from the body - a host has to
+      // be able to say which of their companies this is for - but it only
+      // survives if the membership behind it does.
+      const requestedCompanyId =
+        typeof body?.companyId === "string" ? body.companyId : null;
+
+      const [roles, standing] = await Promise.all([
+        getUserRoles(user.id),
+        requestedCompanyId ? getCompanyStanding(user.id, requestedCompanyId) : Promise.resolve(null),
+      ]);
+
+      const decision = resolveArenaAuthority({ roles, requestedCompanyId, standing });
+      if (!decision.ok) {
+        logger.warn("Arena authority refused", {
+          userId: user.id,
+          requestedCompanyId,
+          reason: decision.reason,
+        });
+        return NextResponse.json({ error: decision.reason }, { status: 403 });
+      }
+
+      const result = await createArena({
+        ...parsed.data,
+        creatorId: user.id,
+        authority: decision.authority,
+        companyId: decision.companyId,
+      });
       if ("error" in result) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }

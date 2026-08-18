@@ -37,7 +37,7 @@ gsap.registerPlugin(ScrollTrigger);
  * auto-graded site cannot offer.
  */
 const STATEMENT_PARTS = [
-  { text: "Thirty minutes to plan. Four hours to build. Then ", highlight: false },
+  { text: "The brief drops. The clock starts. Then ", highlight: false },
   { text: "a real engineer reads your code", highlight: true },
   { text: " and tells you exactly what they thought of it.", highlight: false },
 ];

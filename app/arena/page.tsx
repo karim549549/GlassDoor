@@ -8,7 +8,7 @@ import type { SerializedArenaListItem } from "@/lib/arena/types";
 export const metadata: Metadata = {
   title: "Open Challenges",
   description:
-    "Every arena you can enter right now: four-hour team coding challenges, online and in Cairo. Free to enter, solo or in teams of two to four.",
+    "Every arena you can enter right now: team coding challenges, online and in Cairo. Free to enter, solo or in teams of two to four.",
   alternates: { canonical: "/arena" },
   openGraph: {
     title: "Open Challenges | Devs Arena",
