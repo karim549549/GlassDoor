@@ -33,10 +33,18 @@ interface BoardFacetsProps {
   onStatus: (status: ArenaStatusFilter) => void;
 }
 
+/**
+ * Two, not three.
+ *
+ * A "Finished" card sat here reading 81, which was both the largest number on
+ * the page and the least actionable - the public board lists what you can still
+ * take part in, and finished arenas are what the "Mine" tab and an arena's own
+ * page are for. A statistic whose only message is "most of this is over" is not
+ * a good first impression of a board.
+ */
 const STATS: { key: ArenaStatusFilter; label: string; hint: string }[] = [
   { key: "open", label: "Open now", hint: "you can enter these" },
   { key: "live", label: "Running", hint: "being built right now" },
-  { key: "finished", label: "Finished", hint: "read what they made" },
 ];
 
 export function BoardFacets({
@@ -51,9 +59,9 @@ export function BoardFacets({
     <div className="flex flex-col gap-6">
       {/* Three numbers, each also a filter. A stat you cannot act on is a
           decoration; these set the rail. */}
-      <div className="grid gap-px border border-foreground/15 bg-foreground/15 sm:grid-cols-3">
+      <div className="grid gap-px border border-foreground/15 bg-foreground/15 sm:grid-cols-2">
         {STATS.map((stat) => {
-          const count = facets[stat.key as "open" | "live" | "finished"];
+          const count = facets[stat.key as "open" | "live"];
           const active = activeStatus === stat.key;
 
           return (

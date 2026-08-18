@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
 import { logger } from "@/lib/client/logger";
-import { ArenaRow } from "@/components/arena/list/ArenaRow";
+import { ArenaRow, ArenaRowSkeleton } from "@/components/arena/list/ArenaRow";
 import { ArenaFilterBar, type ArenaFilterState } from "@/components/arena/list/ArenaFilterBar";
 import { ArenasFooterPagination } from "@/components/arena/list/ArenasPagination";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
@@ -197,6 +197,15 @@ export function ArenasListClient({
                 Try again
               </button>
             </div>
+          ) : isLoading && arenas.length === 0 ? (
+            // Only on a genuinely empty load. When rows are already on screen
+            // they stay and dim, because replacing real content with grey bars
+            // is a downgrade, not a loading state.
+            <ul>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <ArenaRowSkeleton key={i} />
+              ))}
+            </ul>
           ) : arenas.length === 0 ? (
             <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
               <p className="font-display text-lg italic text-foreground">

@@ -71,119 +71,123 @@ async function main() {
     console.log(`Upserted job type: ${upsertedJT.name}`);
   }
 
-  // Idempotent: re-runnable to pick up new roles, skills and job types without
-  // stacking another hundred arenas on top of the ones already there.
-  const existingArenas = await prisma.arena.count();
-  if (existingArenas > 0) {
-    console.log(`Skipping mock arenas: ${existingArenas} already exist.`);
-    console.log("Seeding finished successfully.");
-    return;
-  }
+  // Twelve arenas, not a hundred and two.
+  //
+  // The old block generated 102 from a grid of cities x topics x suffixes -
+  // "Tanta Kubernetes Mesh Sprint #8" - which filled the board with noise while
+  // covering barely any of the states the UI actually has. 81 of them were
+  // finished, every one was FULL_STACK_WEB, none had a prize, and none was
+  // in-person, so most of the interface had nothing to render against.
+  //
+  // These twelve are chosen so that every visual state appears at least once:
+  // each status, solo and team, online and in-person, private and public,
+  // prized and free, and all four difficulties. Small enough to read the whole
+  // board while working on it.
+  console.log("Reseeding arenas...");
+  await prisma.arena.deleteMany({});
 
-  console.log("Seeding 102 mock arenas...");
-
-  // Find creator
-  let creator = await prisma.user.findFirst();
+  let creator = await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
   if (!creator) {
-    // If no user exists, create a system host user to satisfy relation
-    const systemId = "11111111-1111-1111-1111-111111111111";
     creator = await prisma.user.upsert({
-      where: { id: systemId },
+      where: { id: "11111111-1111-1111-1111-111111111111" },
       update: {},
       create: {
-        id: systemId,
+        id: "11111111-1111-1111-1111-111111111111",
         email: "system-host@devsarena.eg",
         fullName: "System Host",
-        emailVerified: true
-      }
+        handle: "devsarena_host",
+        emailVerified: true,
+      },
     });
   }
 
-  const cities = ["Cairo", "Giza", "Alexandria", "Suez", "Mansoura", "Luxor", "Aswan", "Tanta", "Asyut", "Red Sea"];
-  const topics = ["React", "Next.js", "Node.js", "Python", "Go API", "Rust Sync", "DevOps scaling", "Database Sync", "Kubernetes Mesh", "Web3 Cairo"];
-  const suffixes = ["Speedrun", "Sprint", "Duel", "Hackathon", "Championship", "League", "Clash", "Showdown", "Marathon", "Expo"];
+  const now = new Date();
+  const at = (days: number, hours = 0) =>
+    new Date(now.getTime() + days * 86_400_000 + hours * 3_600_000);
 
-  const statuses = ["REGISTRATION_OPEN", "IDEA_PHASE", "IMPLEMENTATION_PHASE", "COMPLETED"];
+  type Phase = "scheduled" | "open" | "planning" | "building" | "finished";
 
-  for (let i = 0; i < 102; i++) {
-    const city = cities[i % cities.length];
-    const topic = topics[Math.floor(Math.random() * topics.length)];
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-    const title = `${city} ${topic} ${suffix} #${i + 1}`;
-    const description = `This is a high-stakes developers challenge in ${city} focusing on advanced engineering setups in ${topic}. Gather your squads and push code solutions under rigorous CPU benchmark loads.`;
-    
-    // Status assignment
-    const status = statuses[i % statuses.length];
-    
-    // Calculate timelines relative to now
-    const now = new Date();
-    const regStart = new Date();
-    const regEnd = new Date();
-    const ideaStart = new Date();
-    const ideaEnd = new Date();
-    const implStart = new Date();
-    const implEnd = new Date();
-
-    if (status === "REGISTRATION_OPEN") {
-      regStart.setDate(now.getDate() - 3);
-      regEnd.setDate(now.getDate() + 7);
-      ideaStart.setDate(now.getDate() + 7);
-      ideaEnd.setDate(now.getDate() + 14);
-      implStart.setDate(now.getDate() + 14);
-      implEnd.setDate(now.getDate() + 21);
-    } else if (status === "IDEA_PHASE") {
-      regStart.setDate(now.getDate() - 10);
-      regEnd.setDate(now.getDate() - 3);
-      ideaStart.setDate(now.getDate() - 3);
-      ideaEnd.setDate(now.getDate() + 4);
-      implStart.setDate(now.getDate() + 4);
-      implEnd.setDate(now.getDate() + 11);
-    } else if (status === "IMPLEMENTATION_PHASE") {
-      regStart.setDate(now.getDate() - 15);
-      regEnd.setDate(now.getDate() - 8);
-      ideaStart.setDate(now.getDate() - 8);
-      ideaEnd.setDate(now.getDate() - 2);
-      implStart.setDate(now.getDate() - 2);
-      implEnd.setDate(now.getDate() + 5);
-    } else {
-      // COMPLETED
-      regStart.setDate(now.getDate() - 30);
-      regEnd.setDate(now.getDate() - 23);
-      ideaStart.setDate(now.getDate() - 23);
-      ideaEnd.setDate(now.getDate() - 16);
-      implStart.setDate(now.getDate() - 16);
-      implEnd.setDate(now.getDate() - 9);
+  /** The six windows for a given phase, shaped like a real Saturday. */
+  const windows = (phase: Phase) => {
+    switch (phase) {
+      case "scheduled":
+        return { reg: [at(3), at(10)], idea: [at(10), at(10, 0.5)], impl: [at(10, 0.5), at(10, 4.5)] };
+      case "open":
+        return { reg: [at(-2), at(5)], idea: [at(5), at(5, 0.5)], impl: [at(5, 0.5), at(5, 4.5)] };
+      case "planning":
+        return { reg: [at(-7), at(0, -0.25)], idea: [at(0, -0.25), at(0, 0.25)], impl: [at(0, 0.25), at(0, 4.25)] };
+      case "building":
+        return { reg: [at(-7), at(0, -2)], idea: [at(0, -2), at(0, -1.5)], impl: [at(0, -1.5), at(0, 2.5)] };
+      case "finished":
+        return { reg: [at(-21), at(-14)], idea: [at(-14), at(-14, 0.5)], impl: [at(-14, 0.5), at(-14, 4.5)] };
     }
+  };
 
-    const isPrivate = i % 5 === 0;
-    const isTeam = i % 2 === 0;
+  interface Spec {
+    title: string;
+    description: string;
+    phase: Phase;
+    difficulty: "NOVICE" | "INTERMEDIATE" | "ADVANCED" | "GRANDMASTER";
+    isTeam: boolean;
+    inPerson?: string;
+    isPrivate?: boolean;
+    prize?: number;
+  }
 
+  // The briefs are written in the voice PRD 1.3 asks for: playful, specific,
+  // a little absurd. A seed is the first thing anyone reads, and generated
+  // titles like "Giza Node.js Duel #47" teach the wrong tone to every host who
+  // sees them before writing their own.
+  const specs: Spec[] = [
+    { title: "The most devious video player", description: "It has to play video. Beyond that, make watching something a genuinely hostile experience. Bonus points for anything that makes a person apologise to their own laptop.", phase: "open", difficulty: "INTERMEDIATE", isTeam: true },
+    { title: "A site with absolutely zero business value", description: "Ship something polished, responsive and accessible that no one could ever monetise. Investors must weep.", phase: "open", difficulty: "NOVICE", isTeam: false },
+    { title: "Build something that makes two strangers talk", description: "Any medium. The only requirement is that at the end of it, two people who did not know each other have said something to each other.", phase: "open", difficulty: "INTERMEDIATE", isTeam: true, inPerson: "Greek Campus, Downtown Cairo" },
+    { title: "The worst possible date picker", description: "Every date picker is already bad. Go further. It must still return a valid date.", phase: "open", difficulty: "NOVICE", isTeam: false, prize: 3000 },
+    { title: "Make a game playable on two devices at once", description: "One game, two screens, both doing something. Phone and laptop, two laptops, a phone and a smart fridge - your problem.", phase: "planning", difficulty: "ADVANCED", isTeam: true, prize: 10000 },
+    { title: "A dashboard for something that needs no dashboard", description: "Charts, filters, a live-updating KPI row. For something with no metrics whatsoever.", phase: "building", difficulty: "INTERMEDIATE", isTeam: true },
+    { title: "Ship a CLI you would actually use tomorrow", description: "Four hours, one terminal, no UI. It has to be genuinely useful to you personally by the end.", phase: "building", difficulty: "ADVANCED", isTeam: false },
+    { title: "Rebuild something famous, but wrong", description: "Pick a well-known interface. Rebuild it faithfully, except for one decision that ruins it. That decision is the entry.", phase: "scheduled", difficulty: "INTERMEDIATE", isTeam: true },
+    { title: "Consensus, in one sitting", description: "Three nodes, one agreed value, arbitrary message loss. No libraries that do the hard part for you.", phase: "scheduled", difficulty: "GRANDMASTER", isTeam: true, prize: 25000 },
+    { title: "Alexandria: build for someone on 3G", description: "In the room, on a throttled connection. If it does not work at 400kbps it does not count.", phase: "scheduled", difficulty: "ADVANCED", isTeam: true, inPerson: "Smouha, Alexandria" },
+    { title: "Internal tools night", description: "Bring the boring internal thing you have been putting off. We build it together and demo at the end.", phase: "open", difficulty: "NOVICE", isTeam: true, isPrivate: true },
+    { title: "The zero-JavaScript challenge", description: "A genuinely interactive page. No JavaScript ships to the browser. Yes, really.", phase: "finished", difficulty: "ADVANCED", isTeam: false },
+  ];
+
+  for (const [i, spec] of specs.entries()) {
+    const w = windows(spec.phase);
     await prisma.arena.create({
       data: {
-        title,
-        description,
+        title: spec.title,
+        description: spec.description,
         creatorId: creator.id,
-        publishedAt: new Date(),
-        isPrivate,
-        inviteCode: isPrivate ? `INVITE-CODE-${i + 1000}` : null,
-        registrationStart: regStart,
-        registrationEnd: regEnd,
-        ideaPhaseStart: ideaStart,
-        ideaPhaseEnd: ideaEnd,
-        implPhaseStart: implStart,
-        implPhaseEnd: implEnd,
-        isTeam,
-        minTeamSize: isTeam ? 2 : 1,
-        maxTeamSize: isTeam ? 4 : 1,
-        maxParticipants: isTeam ? 30 : 100,
+        publishedAt: at(-30),
+        difficulty: spec.difficulty,
+        isPrivate: Boolean(spec.isPrivate),
+        inviteCode: spec.isPrivate ? `INTERNAL-TOOLS-${i + 100}` : null,
+        locationType: spec.inPerson ? "IN_PERSON" : "ONLINE",
+        locationName: spec.inPerson ?? null,
+        hasPrizePool: Boolean(spec.prize),
+        totalPrizePool: spec.prize ?? null,
+        firstPlacePrize: spec.prize ?? null,
+        registrationStart: w.reg[0],
+        registrationEnd: w.reg[1],
+        ideaPhaseStart: w.idea[0],
+        ideaPhaseEnd: w.idea[1],
+        implPhaseStart: w.impl[0],
+        implPhaseEnd: w.impl[1],
+        isTeam: spec.isTeam,
+        minTeamSize: spec.isTeam ? 2 : 1,
+        maxTeamSize: spec.isTeam ? 4 : 1,
+        maxParticipants: spec.isTeam ? 32 : 60,
         requireGithubUrl: true,
-        requireFigmaUrl: i % 3 === 0,
-        requireVideoUrl: i % 2 === 0,
+        requireVideoUrl: true,
         requireWriteup: true,
-        rulesText: "Ensure valid commits, write documentation, respect time constraints, and obey submission deliverable types.",
-      }
+        rulesText: "Original work only. Any stack. Be nice in the chat.",
+      },
     });
   }
+
+  console.log(`Seeded ${specs.length} arenas.`);
 
   console.log("Seeding finished successfully.");
 }

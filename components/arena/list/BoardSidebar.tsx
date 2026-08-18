@@ -31,7 +31,6 @@ export interface SpotlightItem {
 export interface BoardSidebarData {
   closingSoon: SpotlightItem[];
   runningNow: SpotlightItem[];
-  justFinished: SpotlightItem[];
 }
 
 function Panel({
@@ -135,15 +134,6 @@ export function BoardSidebar({ data, now }: { data: BoardSidebarData; now: Date 
       </Panel>
 
       <HostPrompt compact />
-
-      <Panel title="Just finished">
-        <SpotlightList
-          items={data.justFinished}
-          now={now}
-          verb={null}
-          emptyText="Nothing has finished yet"
-        />
-      </Panel>
     </aside>
   );
 }

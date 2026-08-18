@@ -93,6 +93,17 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
       throw new Error("listArenas: tab='my' requires a userId.");
     }
     conditions.push(myArenasWhere(userId));
+  } else if (status === "all") {
+    /**
+     * The public board lists what you can still take part in.
+     *
+     * Without this, "all" on the public tab means 81 finished arenas and four
+     * live ones - a board that is 95% history, where the four rows anyone came
+     * for are below the fold. History is still reachable: it is what the "Mine"
+     * tab shows in full, and a finished arena keeps its own page and its own
+     * URL. It is simply not what a board is for.
+     */
+    conditions.push({ implPhaseEnd: { gt: now } });
   }
 
   // The four axes a reader actually decides on. `access` used to be here

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { memo } from "react";
 import { buildArenaSlug } from "@/lib/arena-slug";
 import { deriveArenaStatus, type ArenaStatus } from "@/lib/arena/status";
@@ -110,24 +111,18 @@ function teamShape(arena: SerializedArenaListItem): string {
   return `teams of ${arena.minTeamSize}–${arena.maxTeamSize}`;
 }
 
-/**
- * Who wrote the brief.
- *
- * Text, not a link: the whole row is already an anchor, and an anchor inside an
- * anchor is invalid HTML that browsers resolve by dropping one of them. And a
- * name rather than an avatar - at this scale an avatar is a 20px decoration and
- * an image request per row, where "by @karim" is the actual signal, which is
- * whether you recognise who is running it.
- *
- * The handle is preferred now that /u/<handle> exists and is the canonical
- * profile address. `creator` has been in the list select since the slimming
- * and was never rendered until now.
- */
-function host(arena: SerializedArenaListItem): string | null {
-  const handle = arena.creator?.handle;
-  if (handle) return `by @${handle}`;
-  const name = arena.creator?.fullName;
-  return name ? `by ${name}` : null;
+/** The creator's display name, and where their profile lives. */
+function hostOf(arena: SerializedArenaListItem) {
+  const c = arena.creator;
+  if (!c) return null;
+  const name = c.handle ? `@${c.handle}` : c.fullName;
+  if (!name) return null;
+  return {
+    name,
+    href: c.handle ? `/u/${c.handle}` : `/user/${c.id}`,
+    avatarUrl: c.avatarUrl,
+    initial: (c.fullName ?? c.handle ?? "?").trim().charAt(0).toUpperCase(),
+  };
 }
 
 /**
@@ -190,6 +185,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
   const entered = arena._count.entries;
   const prize = prizeLabel(arena);
   const tier = authorityBadge(arena.authority);
+  const host = hostOf(arena);
 
   /**
    * The domain and the prize carry the accent; everything else is ink.
@@ -205,17 +201,17 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
   const facts = [
     arena.difficulty.charAt(0) + arena.difficulty.slice(1).toLowerCase(),
     teamShape(arena),
-    arena.locationType === "ONLINE" ? "online" : arena.locationName || "in person",
+    arena.locationType === "ONLINE" ? "__online__" : arena.locationName || "in person",
     entered === 1 ? "1 entered" : `${entered} entered`,
-    host(arena),
-  ].filter(Boolean) as string[];
+  ];
 
   return (
-    <li className="border-b border-foreground/12 last:border-b-0">
-      <Link
-        href={`/arena/${buildArenaSlug(arena.title, arena.id)}`}
-        className="group grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-5 gap-y-1 px-4 py-3 transition-colors hover:bg-foreground/[0.04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-orange md:grid-cols-[6rem_minmax(0,1fr)_auto] md:px-5"
-      >
+    // `group/row` and a stretched pseudo-element on the title link, rather than
+    // wrapping the row in one anchor. The creator is a link of its own now, and
+    // an anchor inside an anchor is invalid HTML that browsers repair by
+    // dropping one of them - usually the inner one, which would be the creator.
+    <li className="group/row relative grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-5 gap-y-1 border-b border-foreground/12 px-4 py-3 transition-colors last:border-b-0 hover:bg-foreground/[0.04] has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-orange md:grid-cols-[6rem_minmax(0,1fr)_auto] md:px-5">
+      <>
         <span
           className={`flex items-center gap-1.5 font-mono text-[0.62rem] font-bold uppercase tracking-[0.14em] ${STATUS_TONE[status]}`}
         >
@@ -234,9 +230,12 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
 
         <span className="min-w-0">
           <span className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-            <span className="font-display text-[1.12rem] leading-snug text-foreground transition-colors group-hover:text-orange-ink">
+            <Link
+              href={`/arena/${buildArenaSlug(arena.title, arena.id)}`}
+              className="font-display text-[1.12rem] leading-snug text-foreground transition-colors after:absolute after:inset-0 after:content-[''] group-hover/row:text-orange-ink focus-visible:outline-none"
+            >
               {arena.title}
-            </span>
+            </Link>
             {tier && (
               <span
                 className={`border px-1.5 py-px font-mono text-[0.48rem] font-bold uppercase tracking-[0.14em] ${tier.className}`}
@@ -260,7 +259,40 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
               </span>
             )}
           </span>
-          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground/75">
+          <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground/75">
+            {/* First, not last: who is running it is the thing a reader
+                recognises before anything else on this line. `relative z-10`
+                lifts it above the title's stretched link so it stays its own
+                click target. */}
+            {host && (
+              <>
+                <Link
+                  href={host.href}
+                  className="relative z-10 flex items-center gap-1.5 font-bold text-foreground transition-colors hover:text-orange-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+                >
+                  {host.avatarUrl ? (
+                    <Image
+                      src={host.avatarUrl}
+                      alt=""
+                      width={18}
+                      height={18}
+                      className="h-[18px] w-[18px] shrink-0 border border-foreground/20 object-cover"
+                    />
+                  ) : (
+                    <span
+                      aria-hidden
+                      className="flex h-[18px] w-[18px] shrink-0 items-center justify-center border border-foreground/25 bg-secondary text-[0.5rem] font-bold text-foreground/70"
+                    >
+                      {host.initial}
+                    </span>
+                  )}
+                  {host.name}
+                </Link>
+                <span aria-hidden className="text-foreground/30">
+                  ·
+                </span>
+              </>
+            )}
             {facts.map((fact, i) => (
               <span key={fact} className="flex items-center gap-2">
                 {i > 0 && (
@@ -268,7 +300,17 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
                     ·
                   </span>
                 )}
-                {fact}
+                {fact === "__online__" ? (
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      aria-hidden
+                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"
+                    />
+                    online
+                  </span>
+                ) : (
+                  fact
+                )}
               </span>
             ))}
             {prize && (
@@ -288,7 +330,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
         <span className="col-start-2 font-mono text-[0.62rem] font-bold tabular-nums uppercase tracking-[0.1em] text-foreground md:col-start-3 md:text-right">
           {deadline(arena, status, now)}
         </span>
-      </Link>
+      </>
     </li>
   );
 }
@@ -300,3 +342,34 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
 export const ArenaRow = memo(ArenaRowInner);
 
 export default ArenaRow;
+
+/**
+ * The row's own outline, so a load does not resize the page.
+ *
+ * The list previously just dimmed itself to 60% while fetching, which does
+ * nothing on a first load when there is nothing to dim - and any generic
+ * skeleton would have been the wrong height, so the content would jump when it
+ * arrived. This mirrors the real grid exactly: same columns, same padding,
+ * same three text runs at the same sizes, so the swap is only a change of
+ * colour.
+ */
+export function ArenaRowSkeleton() {
+  return (
+    <li
+      aria-hidden
+      className="grid animate-pulse grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-5 gap-y-1 border-b border-foreground/12 px-4 py-3 last:border-b-0 md:grid-cols-[6rem_minmax(0,1fr)_auto] md:px-5"
+    >
+      <span className="flex items-center gap-1.5">
+        <span className="h-1.5 w-1.5 shrink-0 bg-foreground/15" />
+        <span className="h-[0.62rem] w-12 bg-foreground/15" />
+      </span>
+
+      <span className="min-w-0">
+        <span className="block h-[1.12rem] w-2/3 bg-foreground/15" />
+        <span className="mt-2 block h-[0.58rem] w-5/6 bg-foreground/10" />
+      </span>
+
+      <span className="col-start-2 h-[0.62rem] w-24 bg-foreground/15 md:col-start-3 md:justify-self-end" />
+    </li>
+  );
+}

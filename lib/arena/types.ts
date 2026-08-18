@@ -49,7 +49,7 @@ export const ARENA_LIST_SELECT = {
   implPhaseEnd: true,
   creatorId: true,
   companyId: true,
-  creator: { select: { handle: true, fullName: true } },
+  creator: { select: { id: true, handle: true, fullName: true, avatarUrl: true } },
   _count: { select: { entries: true, teams: true } },
 } satisfies Prisma.ArenaSelect;
 

@@ -3,7 +3,6 @@
 import { useId } from "react";
 import { Search, X } from "lucide-react";
 import {
-  ARENA_STATUS_FILTERS,
   ARENA_PLACE_FILTERS,
   ARENA_ENTRY_FILTERS,
   ARENA_SORT_OPTIONS,
@@ -29,13 +28,6 @@ import { ARENA_DIFFICULTIES } from "@/lib/arena/taxonomy";
  * the axis every visitor sorts on first: what can I enter, what is running,
  * what did I miss.
  */
-
-const STATUS_LABEL: Record<ArenaStatusFilter, string> = {
-  all: "All",
-  open: "Open",
-  live: "Running",
-  finished: "Finished",
-};
 
 const PLACE_LABEL: Record<ArenaPlaceFilter, string> = {
   all: "Anywhere",
@@ -105,7 +97,8 @@ export function ArenaFilterBar({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Scope + status: the primary rail */}
+      {/* Scope only. Status lives in the stat cards above - it was here as
+          well, which was the same control rendered twice. */}
       <div className="flex flex-wrap items-center gap-x-1 gap-y-2 border-b border-foreground/15">
         {myCount !== null && (
           <>
@@ -124,25 +117,9 @@ export function ArenaFilterBar({
                 {scope === "all" ? "Every arena" : `Mine (${myCount})`}
               </button>
             ))}
-            <span aria-hidden className="mx-2 h-4 w-px bg-foreground/20" />
           </>
         )}
 
-        {ARENA_STATUS_FILTERS.map((status) => (
-          <button
-            key={status}
-            type="button"
-            onClick={() => onChange({ status })}
-            aria-pressed={value.status === status}
-            className={`border-b-2 px-3 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.14em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ${
-              value.status === status
-                ? "border-orange font-bold text-orange-ink"
-                : "border-transparent text-foreground/60 hover:text-foreground"
-            }`}
-          >
-            {STATUS_LABEL[status]}
-          </button>
-        ))}
       </div>
 
       {/* Search + the four axes + sort */}

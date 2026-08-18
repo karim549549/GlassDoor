@@ -62,7 +62,6 @@ export default async function ArenasPage() {
       spotlight={{
         closingSoon: serializeSpotlight(spotlight.closingSoon),
         runningNow: serializeSpotlight(spotlight.runningNow),
-        justFinished: serializeSpotlight(spotlight.justFinished),
       }}
     />
   );
