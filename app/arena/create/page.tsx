@@ -1,29 +1,46 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { arenaSchema, arenaBaseSchema, type ArenaFormInput, type ArenaFormOutput } from "@/lib/arena/schema";
-import { Button } from "@/components/ui/Button";
-import { ArrowRight } from "lucide-react";
-import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
+import {
+  arenaSchema,
+  arenaBaseSchema,
+  type ArenaFormInput,
+  type ArenaFormOutput,
+} from "@/lib/arena/schema";
 import { useToast } from "@/components/providers/ToastProvider";
-import { ArenaHeader } from "@/components/arena/ArenaHeader";
-import { ArenaContainer } from "@/components/arena/ArenaContainer";
-import { ArenaCardBody } from "@/components/arena/ArenaCard";
-import { GeneralSection } from "@/components/arena/create/GeneralSection";
-import { AccessSection } from "@/components/arena/create/AccessSection";
-import { LocationSection } from "@/components/arena/create/LocationSection";
-import { TeamSection } from "@/components/arena/create/TeamSection";
-import { TimelineSection } from "@/components/arena/create/TimelineSection";
-import { RulesSection } from "@/components/arena/create/RulesSection";
-import { ProgressHud } from "@/components/arena/create/ProgressHud";
-import { TagSelectionSection } from "@/components/arena/create/TagSelectionSection";
-import gsap from "gsap";
+import { logger } from "@/lib/client/logger";
+import { CreateStepper, type CreateStep } from "@/components/arena/create/CreateStepper";
+import { StepPanel } from "@/components/arena/create/fields";
+import { BriefStep } from "@/components/arena/create/steps/BriefStep";
+import { KindStep } from "@/components/arena/create/steps/KindStep";
+import { WhenStep } from "@/components/arena/create/steps/WhenStep";
+import { WhereStep } from "@/components/arena/create/steps/WhereStep";
+import { WhoStep } from "@/components/arena/create/steps/WhoStep";
+import { HandInStep } from "@/components/arena/create/steps/HandInStep";
 
-const generalSectionSchema = arenaBaseSchema.pick({ title: true, description: true });
-const timelineSectionSchema = arenaBaseSchema.pick({
+/**
+ * Write a brief.
+ *
+ * The page this replaces opened with a near-black masthead - `pt-24 pb-12` of
+ * `bg-foreground` carrying a shrunken preview of the arena card - which took
+ * roughly the top half of the viewport before a single field. Beside the form
+ * sat a "[PROGRESS REGISTER HUD]" listing the same sections again with
+ * strikethrough. Between them, two panels showing state and none taking input.
+ *
+ * Both are gone. The preview previewed a card design that no longer exists
+ * (arenas lost their cover image), and progress now lives in the step rail,
+ * where it is also the navigation.
+ *
+ * What is left is six steps of one concern each on cream, in the same type and
+ * hairlines as the homepage and the doc pages. Free navigation rather than a
+ * wizard: a host who wants to set the clock first should be able to.
+ */
+
+const briefSchema = arenaBaseSchema.pick({ title: true, description: true });
+const timelineSchema = arenaBaseSchema.pick({
   registrationStart: true,
   registrationEnd: true,
   ideaPhaseStart: true,
@@ -31,31 +48,14 @@ const timelineSectionSchema = arenaBaseSchema.pick({
   implPhaseStart: true,
   implPhaseEnd: true,
 });
-const rulesSectionSchema = arenaBaseSchema.pick({ rulesText: true });
+
+type StepId = "brief" | "kind" | "when" | "where" | "who" | "handin";
 
 export default function CreateArenaPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    gsap.fromTo(
-      ".masthead-title",
-      { opacity: 0, y: 55 },
-      { opacity: 1, y: 0, duration: 1.1, ease: "power4.out", delay: 0.15 }
-    );
-    gsap.fromTo(
-      ".masthead-subtitle",
-      { opacity: 0, y: 15 },
-      { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.4 }
-    );
-    gsap.fromTo(
-      ".masthead-desc",
-      { opacity: 0, y: 15 },
-      { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.55 }
-    );
-  }, []);
-
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeStep, setActiveStep] = useState<StepId>("brief");
 
   const {
     register,
@@ -67,6 +67,8 @@ export default function CreateArenaPage() {
   } = useForm<ArenaFormInput, unknown, ArenaFormOutput>({
     resolver: zodResolver(arenaSchema),
     defaultValues: {
+      domain: "FULL_STACK_WEB",
+      difficulty: "INTERMEDIATE",
       locationType: "ONLINE",
       isPrivate: false,
       isTeam: false,
@@ -75,50 +77,77 @@ export default function CreateArenaPage() {
       allowLeaderAccessControl: true,
       requireGithubUrl: true,
       requireFigmaUrl: false,
-      requireVideoUrl: false,
+      requireVideoUrl: true,
       requireWriteup: true,
       tags: [],
     },
   });
 
-  const watchIsPrivate = useWatch({ control, name: "isPrivate" }) ?? false;
-  const watchIsTeam = useWatch({ control, name: "isTeam" }) ?? false;
-  const watchLocationType = useWatch({ control, name: "locationType" }) || "ONLINE";
-  const watchGoogleMapsUrl = useWatch({ control, name: "googleMapsUrl" });
-  const watchLocationName = useWatch({ control, name: "locationName" });
+  const title = useWatch({ control, name: "title" });
+  const description = useWatch({ control, name: "description" });
+  const isPrivate = useWatch({ control, name: "isPrivate" }) ?? false;
+  const isTeam = useWatch({ control, name: "isTeam" }) ?? false;
+  const inviteCode = useWatch({ control, name: "inviteCode" });
+  const locationType = useWatch({ control, name: "locationType" }) ?? "ONLINE";
+  const locationName = useWatch({ control, name: "locationName" });
+  // minTeamSize/maxTeamSize are `z.coerce.number()`, so the registered number
+  // input hands back a string. Coerce the way the schema does, or the
+  // comparison below is lexicographic and "10" < "2".
+  const minTeam = Number(useWatch({ control, name: "minTeamSize" }));
+  const maxTeam = Number(useWatch({ control, name: "maxTeamSize" }));
+  const regStart = useWatch({ control, name: "registrationStart" });
+  const regEnd = useWatch({ control, name: "registrationEnd" });
+  const ideaStart = useWatch({ control, name: "ideaPhaseStart" });
+  const ideaEnd = useWatch({ control, name: "ideaPhaseEnd" });
+  const implStart = useWatch({ control, name: "implPhaseStart" });
+  const implEnd = useWatch({ control, name: "implPhaseEnd" });
 
-  const watchTitle = useWatch({ control, name: "title" });
-  const watchDescription = useWatch({ control, name: "description" });
-  const watchInviteCode = useWatch({ control, name: "inviteCode" });
-  // minTeamSize/maxTeamSize are `z.coerce.number()`, so their form-input type is
-  // `unknown` and the raw registered <input type="number"> hands back a string.
-  // Coerce here the same way the schema does, so the comparisons below are
-  // numeric rather than lexicographic.
-  const watchMinTeam = Number(useWatch({ control, name: "minTeamSize" }));
-  const watchMaxTeam = Number(useWatch({ control, name: "maxTeamSize" }));
-  const watchRegStart = useWatch({ control, name: "registrationStart" });
-  const watchRegEnd = useWatch({ control, name: "registrationEnd" });
-  const watchIdeaStart = useWatch({ control, name: "ideaPhaseStart" });
-  const watchIdeaEnd = useWatch({ control, name: "ideaPhaseEnd" });
-  const watchImplStart = useWatch({ control, name: "implPhaseStart" });
-  const watchImplEnd = useWatch({ control, name: "implPhaseEnd" });
-  const watchRulesText = useWatch({ control, name: "rulesText" });
+  const steps: CreateStep[] = useMemo(
+    () => [
+      {
+        id: "brief",
+        label: "The brief",
+        complete: briefSchema.safeParse({ title, description }).success,
+      },
+      // Domain and difficulty always hold a value, so this step cannot be
+      // incomplete - it is marked done once the reader has been past it, which
+      // is what the default marks anyway.
+      { id: "kind", label: "What kind", complete: true },
+      {
+        id: "when",
+        label: "When",
+        complete: timelineSchema.safeParse({
+          registrationStart: regStart,
+          registrationEnd: regEnd,
+          ideaPhaseStart: ideaStart,
+          ideaPhaseEnd: ideaEnd,
+          implPhaseStart: implStart,
+          implPhaseEnd: implEnd,
+        }).success,
+      },
+      {
+        id: "where",
+        label: "Where",
+        complete: locationType === "ONLINE" || Boolean(locationName),
+      },
+      {
+        id: "who",
+        label: "Who",
+        complete:
+          (!isTeam || (minTeam >= 1 && maxTeam >= minTeam)) &&
+          (!isPrivate || Boolean(inviteCode)),
+      },
+      { id: "handin", label: "Hand in", complete: true },
+    ],
+    [
+      title, description, regStart, regEnd, ideaStart, ideaEnd, implStart, implEnd,
+      locationType, locationName, isTeam, minTeam, maxTeam, isPrivate, inviteCode,
+    ]
+  );
 
-  const isGeneralValid = generalSectionSchema.safeParse({
-    title: watchTitle,
-    description: watchDescription,
-  }).success;
-  const isAccessValid = !watchIsPrivate || !!watchInviteCode;
-  const isTeamValid = !watchIsTeam || (watchMinTeam >= 1 && watchMaxTeam >= watchMinTeam);
-  const isTimelineValid = timelineSectionSchema.safeParse({
-    registrationStart: watchRegStart,
-    registrationEnd: watchRegEnd,
-    ideaPhaseStart: watchIdeaStart,
-    ideaPhaseEnd: watchIdeaEnd,
-    implPhaseStart: watchImplStart,
-    implPhaseEnd: watchImplEnd,
-  }).success;
-  const isRulesValid = rulesSectionSchema.safeParse({ rulesText: watchRulesText }).success;
+  const activeIndex = steps.findIndex((s) => s.id === activeStep);
+  const isLastStep = activeIndex === steps.length - 1;
+  const readyCount = steps.filter((s) => s.complete).length;
 
   const onSubmit = async (data: ArenaFormOutput) => {
     setIsSubmitting(true);
@@ -135,127 +164,157 @@ export default function CreateArenaPage() {
 
       const res = await fetch("/api/arena", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const result = await res.json();
       if (!res.ok || result.error) {
-        toast(result.error || "Failed to host arena.", "error");
-      } else {
-        toast("Arena hosted successfully!", "success");
-        router.push("/arena");
+        toast(result.error || "Could not post the brief.", "error");
+        return;
       }
+
+      toast("Brief posted.", "success");
+      router.push("/arena");
     } catch (err) {
-      console.error(err);
-      toast("Network error. Failed to save arena.", "error");
+      logger.error("Arena creation failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      toast("Network error. The brief was not posted.", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  /**
+   * Invalid fields can sit on a step that is not open, where the reader will
+   * never find the message. Jump to the first step carrying an error instead of
+   * failing silently on the submit button.
+   */
+  const onInvalid = () => {
+    const firstIncomplete = steps.find((s) => !s.complete);
+    if (firstIncomplete) setActiveStep(firstIncomplete.id as StepId);
+    toast("Some steps still need an answer.", "error");
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0">
-      <BackgroundGrid opacity={0.08} />
-
-      <ArenaHeader
-        subtitle="[HOSTING PORTAL SYSTEM DIRECTORY]"
-        title="Setup Arena"
-        description="Cairo Issue 002 · Configure registration windows, phases, team limits, and submission rules for Egyptian developer cohorts."
-        animationHooks={{
-          subtitle: "masthead-subtitle opacity-0",
-          title: "masthead-title opacity-0",
-          description: "masthead-desc opacity-0",
-        }}
-      >
-        <div className="border-2 border-dashed border-background/25 bg-background/5 p-4 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(241,239,233,0.06)]">
-          <span className="font-mono text-[0.45rem] text-background/50 uppercase tracking-[0.25em] font-bold block mb-2">
-            [LIVE CARD PREVIEW]
+    <main id="main-content" className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto w-full max-w-4xl px-6 pb-16 pt-10 md:px-10 md:pt-14">
+        <header className="flex flex-col gap-2">
+          <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange-ink">
+            [ New brief ]
           </span>
+          <h1 className="font-display text-[clamp(1.3rem,2.6vw,1.85rem)] italic leading-tight">
+            Write something you would want to build on a Saturday
+          </h1>
+        </header>
 
-          <div className="group block bg-card text-foreground border-2 border-foreground p-4 relative shadow-[2px_2px_0px_0px_var(--foreground)] pointer-events-none">
-            <ArenaCardBody
-              arena={{
-                title: watchTitle || "UNTITLED ARENA",
-                description: watchDescription || "No overview description provided yet. Enter details on the left to sync.",
-                status: "REGISTRATION_OPEN",
-                isPrivate: watchIsPrivate,
-                isTeam: watchIsTeam,
-                minTeamSize: watchMinTeam || 1,
-                maxTeamSize: watchMaxTeam || 1,
-              }}
-              footerDate={watchRegStart}
-            />
-          </div>
+        <div className="mt-8">
+          <CreateStepper
+            steps={steps}
+            activeId={activeStep}
+            onSelect={(id) => setActiveStep(id as StepId)}
+          />
         </div>
-      </ArenaHeader>
 
-      <ArenaContainer className="py-12 md:py-16 relative z-10">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-            <div className="lg:col-span-8 space-y-8">
-              <GeneralSection register={register} errors={errors} />
-
-              <TagSelectionSection setValue={setValue} watch={watch} />
-
-              <AccessSection register={register} errors={errors} watchIsPrivate={watchIsPrivate} />
-
-              <LocationSection
-                register={register}
-                errors={errors}
-                setValue={setValue}
-                watchLocationType={watchLocationType}
-                watchGoogleMapsUrl={watchGoogleMapsUrl}
-                watchLocationName={watchLocationName}
-              />
-
-              <TeamSection register={register} errors={errors} watchIsTeam={watchIsTeam} />
-
-              <TimelineSection register={register} errors={errors} />
-
-              <RulesSection register={register} errors={errors} />
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate>
+          {/* Every step stays mounted. Unmounting the inactive ones would drop
+              their registered inputs from react-hook-form, so a value typed on
+              step one would be gone by the time step six submits. */}
+          <div className="py-8 md:py-10">
+            <div hidden={activeStep !== "brief"}>
+              <StepPanel
+                index={1}
+                title="The brief"
+                lead="The challenge itself, and what teams are allowed to assume. Both are public - the brief is the reason anyone clicks."
+              >
+                <BriefStep register={register} errors={errors} />
+              </StepPanel>
             </div>
-
-            <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
-
-              <ProgressHud
-                isGeneralValid={isGeneralValid}
-                isAccessValid={isAccessValid}
-                isTeamValid={isTeamValid}
-                isTimelineValid={isTimelineValid}
-                isRulesValid={isRulesValid}
-              />
-
-              <div className="border-2 border-foreground bg-card p-5 shadow-[4px_4px_0px_0px_var(--foreground)] relative overflow-hidden flex flex-col gap-3">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  isLoading={isSubmitting}
-                  className="w-full py-3 bg-orange text-white hover:bg-transparent hover:text-foreground hover:border-foreground font-mono text-[0.62rem] font-bold tracking-[0.2em] uppercase border border-orange shadow-[2px_2px_0px_0px_var(--foreground)] hover:shadow-none active:translate-y-0.5 transition-all duration-150"
-                >
-                  Create Arena <ArrowRight className="h-3.5 w-3.5 ml-1 inline-block align-middle" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
-                  disabled={isSubmitting}
-                  className="w-full py-2.5 font-mono text-[0.58rem] font-bold tracking-wider uppercase border-2 border-foreground bg-card text-foreground hover:bg-foreground hover:text-card shadow-[2px_2px_0px_0px_var(--foreground)] hover:shadow-none active:translate-y-0.5 transition-all duration-150"
-                >
-                  Cancel
-                </Button>
-              </div>
-
+            <div hidden={activeStep !== "kind"}>
+              <StepPanel
+                index={2}
+                title="What kind"
+                lead="Domain decides which ladder a result counts on. Difficulty decides what it is worth."
+              >
+                <KindStep watch={watch} setValue={setValue} />
+              </StepPanel>
             </div>
-
+            <div hidden={activeStep !== "when"}>
+              <StepPanel
+                index={3}
+                title="When"
+                lead="Pick a start and a shape; the six phase windows follow from them."
+              >
+                <WhenStep register={register} errors={errors} watch={watch} setValue={setValue} />
+              </StepPanel>
+            </div>
+            <div hidden={activeStep !== "where"}>
+              <StepPanel index={4} title="Where" lead="Online, or everyone in one room.">
+                <WhereStep register={register} errors={errors} watch={watch} setValue={setValue} />
+              </StepPanel>
+            </div>
+            <div hidden={activeStep !== "who"}>
+              <StepPanel index={5} title="Who" lead="Team shape, and who is allowed in.">
+                <WhoStep register={register} errors={errors} watch={watch} setValue={setValue} />
+              </StepPanel>
+            </div>
+            <div hidden={activeStep !== "handin"}>
+              <StepPanel index={6} title="Hand in" lead="What a team has to produce by the time submissions lock.">
+                <HandInStep register={register} errors={errors} watch={watch} setValue={setValue} />
+              </StepPanel>
+            </div>
           </div>
 
+          {/* Sticky inside the form, not fixed to the window.
+              Fixed-to-the-window pinned it above everything for the whole page,
+              which meant the site footer could never be reached - it sat under
+              a bar that never went away. Sticky bottom-0 on a child of the form
+              rides the viewport while the form is taller than it and then comes
+              to rest at the form's end, so scrolling past releases it.
+
+              Static below `md`: a bar pinned to the bottom of a phone fights
+              the browser's own chrome, and the steps are short enough there
+              that the actions arrive on their own. */}
+          <div className="static bottom-0 z-30 border border-foreground/15 bg-background/95 backdrop-blur md:sticky">
+            <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+              <span className="font-mono text-[0.55rem] uppercase tracking-wider tabular-nums text-muted-foreground">
+                {readyCount} of {steps.length} ready
+              </span>
+
+              <div className="flex items-center gap-3">
+                {activeIndex > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveStep(steps[activeIndex - 1].id as StepId)}
+                    className="border-b border-transparent px-1 py-2 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+                  >
+                    &larr; Back
+                  </button>
+                )}
+
+                {!isLastStep ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveStep(steps[activeIndex + 1].id as StepId)}
+                    className="border-2 border-foreground bg-transparent px-5 py-2.5 font-mono text-[0.6rem] font-bold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-foreground hover:text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+                  >
+                    {steps[activeIndex + 1].label} &rarr;
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="border-2 border-orange bg-orange px-6 py-2.5 font-mono text-[0.6rem] font-bold uppercase tracking-[0.16em] text-[#0E0E0D] shadow-[3px_3px_0_0_var(--foreground)] transition-all hover:shadow-none active:translate-y-0.5 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+                  >
+                    {isSubmitting ? "Posting…" : "Post the brief"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </form>
-      </ArenaContainer>
-    </div>
+      </div>
+    </main>
   );
 }
