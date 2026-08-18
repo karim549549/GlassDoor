@@ -1,6 +1,7 @@
 import { buildArenaSlug } from "@/lib/arena-slug";
 import { deriveArenaStatus } from "@/lib/arena/status";
 import type { ArenaListItem } from "@/lib/arena/types";
+import { domainLabel } from "@/lib/arena/taxonomy";
 
 export interface ArenaCardData {
   id: string;
@@ -148,13 +149,15 @@ export function toArenaCardData(arena: ArenaListItem, now: Date): ArenaCardData 
   // last resort only - three cards all labelled with the platform name tell a
   // reader nothing about what is being built.
   const trackLabel =
-    primaryTag?.name ??
-    (arena.domain ? arena.domain.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : null) ??
-    (arena.isTeam ? "Team Arena" : "Solo Arena");
+    primaryTag?.name ?? domainLabel(arena.domain) ?? (arena.isTeam ? "Team Arena" : "Solo Arena");
 
   return {
     id: arena.id,
-    tag: primaryTag?.category ?? (arena.isTeam ? "Team Arena" : "Solo Arena"),
+    // Was `primaryTag.category`. The list select no longer carries a tag's
+    // `category` or `color` - both were presentation stored in the database,
+    // and a list query had no business shipping either. The domain is the
+    // better label anyway: it is on every arena, where a tag is on almost none.
+    tag: domainLabel(arena.domain) ?? (arena.isTeam ? "Team Arena" : "Solo Arena"),
     title: arena.title,
     description: arena.description ?? "",
     tech: arena.tags.slice(0, 3).map((t) => t.tag.name.toUpperCase()),

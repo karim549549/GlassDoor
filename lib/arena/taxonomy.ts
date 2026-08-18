@@ -22,6 +22,22 @@ export const ARENA_DOMAINS = [
 
 export type ArenaDomainValue = (typeof ARENA_DOMAINS)[number]["value"];
 
+const DOMAIN_LABELS = new Map<string, string>(
+  ARENA_DOMAINS.map((d) => [d.value, d.label])
+);
+
+/**
+ * "FULL_STACK_WEB" -> "Full-stack web".
+ *
+ * Returns null for an unrecognised value rather than a mangled
+ * `replace(/_/g, " ")` of it - callers already have a fallback worth showing,
+ * and a half-formatted enum name is worse than theirs.
+ */
+export function domainLabel(domain: string | null | undefined): string | null {
+  if (!domain) return null;
+  return DOMAIN_LABELS.get(domain) ?? null;
+}
+
 /**
  * Difficulty carries the XP multiplier in PRD 8.1, so it is not decoration -
  * picking it wrong under-rewards everyone who enters. The detail line is the

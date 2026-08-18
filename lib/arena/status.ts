@@ -112,13 +112,28 @@ export function arenaStatusWhere(
         registrationStart: { lte: now },
         registrationEnd: { gt: now },
       });
-    case "active":
+    // Everything between registration closing and submissions locking: the
+    // planning window and the build window both. A reader does not care which
+    // of the two an arena is in - they care that it is running and they cannot
+    // join it.
+    case "live":
       return asArenaWhere({
         ...PUBLISHED_AND_LIVE,
         registrationEnd: { lte: now },
         implPhaseEnd: { gt: now },
       });
-    case "completed":
-      return asArenaWhere({ resultsPublishedAt: { not: null } });
+    // Past its build window.
+    //
+    // Deliberately NOT `resultsPublishedAt: { not: null }`, which is what this
+    // used to be. Nothing in the codebase can create a judge assignment, so no
+    // arena has ever had results published - and under the old rule "finished"
+    // matched nothing while every ended arena fell through every filter and
+    // appeared only under "all". Judging is optional (PRD 7.1a): an arena that
+    // has run is finished whether or not anyone scored it.
+    case "finished":
+      return asArenaWhere({
+        ...PUBLISHED_AND_LIVE,
+        implPhaseEnd: { lte: now },
+      });
   }
 }

@@ -1,18 +1,32 @@
 import { Prisma } from "@prisma/client";
 
 /**
- * Explicit field allow-list for list/browse queries. Deliberately excludes
- * `inviteCode` (the secret that gates private-arena access) and the
- * `createdAt`/`updatedAt` timestamps, since this shape is returned to
- * unauthenticated callers via GET /api/arena.
+ * Explicit field allow-list for list/browse queries.
+ *
+ * Deliberately excludes `inviteCode` (the secret that gates private-arena
+ * access) and the `createdAt`/`updatedAt` timestamps, since this shape is
+ * returned to unauthenticated callers via GET /api/arena.
+ *
+ * SLIMMED, and it mattered. This used to pull `rulesText` - a `@db.Text`
+ * column no list has ever rendered - plus every `ArenaEntry` row and every
+ * `ArenaTeam` with all of its members, for each of up to fifty arenas on a
+ * page. Listing the board therefore fetched every participant of every arena
+ * on it to render a number. AGENTS.md: select only the fields the response
+ * actually uses; watch for a list query followed by a per-row query.
+ *
+ * The counts come from `_count` now, which Postgres answers with an aggregate
+ * instead of shipping the rows. Whether *you* are in an arena is a separate,
+ * viewer-scoped question - see `arenaListSelect` below, which adds a filtered
+ * one-row probe only when there is a viewer to ask about.
+ *
+ * `format` and `intent` are gone with them: both are dead columns awaiting a
+ * migration, and neither was ever rendered.
  */
 export const ARENA_LIST_SELECT = {
   id: true,
   title: true,
   description: true,
-  format: true,
   authority: true,
-  intent: true,
   domain: true,
   difficulty: true,
   publishedAt: true,
@@ -20,7 +34,6 @@ export const ARENA_LIST_SELECT = {
   resultsPublishedAt: true,
   locationType: true,
   locationName: true,
-  googleMapsUrl: true,
   isPrivate: true,
   isTeam: true,
   minTeamSize: true,
@@ -29,57 +42,51 @@ export const ARENA_LIST_SELECT = {
   hasPrizePool: true,
   totalPrizePool: true,
   prizeCurrency: true,
-  firstPlacePrize: true,
-  secondPlacePrize: true,
-  thirdPlacePrize: true,
   registrationStart: true,
   registrationEnd: true,
   ideaPhaseStart: true,
   ideaPhaseEnd: true,
   implPhaseStart: true,
   implPhaseEnd: true,
-  requireGithubUrl: true,
-  requireFigmaUrl: true,
-  requireVideoUrl: true,
-  requireWriteup: true,
-  rulesText: true,
   creatorId: true,
   companyId: true,
-  entries: {
-    select: {
-      id: true,
-      userId: true,
-      teamId: true,
-      withdrawnAt: true,
-    },
-  },
-  teams: {
-    select: {
-      id: true,
-      name: true,
-      members: {
-        select: {
-          userId: true,
-        },
-      },
-    },
-  },
-  tags: {
-    select: {
-      tag: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          color: true,
-          category: true,
-        },
-      },
-    },
-  },
+  creator: { select: { handle: true, fullName: true } },
+  _count: { select: { entries: true, teams: true } },
+  tags: { select: { tag: { select: { id: true, name: true, slug: true } } } },
 } satisfies Prisma.ArenaSelect;
 
-export type ArenaListItem = Prisma.ArenaGetPayload<{ select: typeof ARENA_LIST_SELECT }>;
+/**
+ * The list select, plus a probe for whether this viewer is already in.
+ *
+ * `take: 1` and `select: { id }`: the row's contents are irrelevant, only
+ * whether one exists. Returning the full entry would put another caller's
+ * `userId` in a payload served to anyone.
+ *
+ * A function rather than a second constant because the filter depends on who
+ * is asking, and a static select cannot express that.
+ */
+export function arenaListSelect(viewerId: string | null) {
+  if (!viewerId) return ARENA_LIST_SELECT;
+  return {
+    ...ARENA_LIST_SELECT,
+    entries: {
+      where: { userId: viewerId, withdrawnAt: null },
+      select: { id: true },
+      take: 1,
+    },
+  } satisfies Prisma.ArenaSelect;
+}
+
+
+export type ArenaListItem = Prisma.ArenaGetPayload<{ select: typeof ARENA_LIST_SELECT }> & {
+  /**
+   * One row at most, and only when the query ran on behalf of a signed-in
+   * viewer - see `arenaListSelect`. Its presence is the whole signal: a
+   * non-empty array means "you are in this one". Optional because the
+   * logged-out query does not ask.
+   */
+  entries?: { id: string }[];
+};
 
 export const REQUIRED_SERIALIZED_DATE_FIELDS = [
   "registrationStart",

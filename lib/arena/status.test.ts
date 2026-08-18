@@ -173,8 +173,8 @@ test('arenaStatusWhere("open") requires a live arena inside registration', () =>
   });
 });
 
-test('arenaStatusWhere("active") requires registration closed and impl running', () => {
-  assert.deepEqual(arenaStatusWhere("active", NOW), {
+test('arenaStatusWhere("live") requires registration closed and impl running', () => {
+  assert.deepEqual(arenaStatusWhere("live", NOW), {
     publishedAt: { not: null },
     canceledAt: null,
     registrationEnd: { lte: NOW },
@@ -182,8 +182,15 @@ test('arenaStatusWhere("active") requires registration closed and impl running',
   });
 });
 
-test('arenaStatusWhere("completed") only checks published results', () => {
-  assert.deepEqual(arenaStatusWhere("completed", NOW), {
-    resultsPublishedAt: { not: null },
+test('arenaStatusWhere("finished") matches anything past its build window', () => {
+  // Deliberately not `resultsPublishedAt: { not: null }`, which is what this
+  // asserted before. Nothing can create a judge assignment, so no arena has
+  // ever had results published - under the old rule "finished" matched nothing
+  // while every ended arena appeared only under "all". Judging is optional
+  // (PRD 7.1a); an arena that has run is finished whether or not it was scored.
+  assert.deepEqual(arenaStatusWhere("finished", NOW), {
+    publishedAt: { not: null },
+    canceledAt: null,
+    implPhaseEnd: { lte: NOW },
   });
 });

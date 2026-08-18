@@ -1,264 +1,232 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
 import { logger } from "@/lib/client/logger";
-import { CairoBillboard } from "@/components/arena/CairoBillboard";
-import { ArenaHeader } from "@/components/arena/ArenaHeader";
-import { ArenaContainer } from "@/components/arena/ArenaContainer";
-import { ArenasFilterSidebar } from "@/components/arena/list/ArenasFilterSidebar";
-import { ArenasRegistry } from "@/components/arena/list/ArenasRegistry";
+import { ArenaRow } from "@/components/arena/list/ArenaRow";
+import { ArenaFilterBar, type ArenaFilterState } from "@/components/arena/list/ArenaFilterBar";
+import { ArenasFooterPagination } from "@/components/arena/list/ArenasPagination";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
-import { deriveArenaStatus } from "@/lib/arena/status";
-import type { ArenaStatusFilter, ArenaAccessFilter, ArenaSortOption } from "@/lib/arena/schema";
+
+/**
+ * The board.
+ *
+ * Rows rather than cards, a status rail rather than a sidebar `<select>`, and
+ * filters on the axes a reader actually decides by. See ArenaRow and
+ * ArenaFilterBar for what each replaced and why.
+ *
+ * One clock for the whole list. Every row needs "closes in 2d 4h", and a row
+ * reading `Date.now()` for itself would render one value in the server's HTML
+ * and another on the browser's first paint - fifty simultaneous hydration
+ * mismatches. `now` is state here, seeded from the server's timestamp so the
+ * first client render matches byte for byte, then advanced once a minute.
+ */
+
+const DEFAULTS: ArenaFilterState = {
+  status: "all",
+  place: "all",
+  entry: "all",
+  domain: "",
+  difficulty: "",
+  prized: false,
+  sortBy: "closing",
+  search: "",
+  tab: "all",
+};
 
 interface ArenasListClientProps {
   initialArenas: SerializedArenaListItem[];
   initialTotalPages: number;
   initialTotalCount: number;
   initialMyCount: number | null;
+  /** The server's clock at render time, so the first paint agrees with the HTML. */
+  nowIso: string;
 }
 
 export function ArenasListClient({
   initialArenas,
   initialTotalPages,
   initialTotalCount,
-  initialMyCount
+  initialMyCount,
+  nowIso,
 }: ArenasListClientProps) {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<"all" | "my">("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter & Sort States
-  const [statusFilter, setStatusFilter] = useState<ArenaStatusFilter>("all");
-  const [accessFilter, setAccessFilter] = useState<ArenaAccessFilter>("all");
-  const [sortBy, setSortBy] = useState<ArenaSortOption>("newest");
-  const [selectedTag, setSelectedTag] = useState<string>("");
+  const [filters, setFilters] = useState<ArenaFilterState>(DEFAULTS);
+  const [page, setPage] = useState(1);
 
-  // Dynamic state loaded via HTTP calls
-  const [arenas, setArenas] = useState<SerializedArenaListItem[]>(initialArenas);
+  const [arenas, setArenas] = useState(initialArenas);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
   const [myCount, setMyCount] = useState<number | null>(initialMyCount);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  // Bumped by the retry button. The filter values are unchanged on a retry, so
-  // without a dedicated dep the effect would not re-run.
   const [retryNonce, setRetryNonce] = useState(0);
+
+  // Minute resolution is enough: no countdown on this page is finer than "1m",
+  // so a faster tick would re-render fifty rows to change nothing.
+  const [now, setNow] = useState(() => new Date(nowIso));
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   // app/arena/page.tsx already server-rendered page 1 with exactly these
   // defaults, so the first run of the effect below would re-request identical
-  // data - two full list queries on every visit. Skip it and let the effect
-  // take over from the first real filter change onward.
+  // data - two full list queries on every visit.
   const isInitialRender = useRef(true);
 
-  // Only the free-text search needs debouncing; the other filters are
-  // discrete/select-driven and can trigger a fetch immediately.
-  const debouncedSearch = useDebouncedValue(searchQuery, 250);
+  // Only free text needs debouncing; the rest are discrete controls that can
+  // fetch immediately.
+  const debouncedSearch = useDebouncedValue(filters.search, 250);
 
-  // Sync API state updates when search queries or filters alter
+  const patch = useCallback((next: Partial<ArenaFilterState>) => {
+    setFilters((prev) => ({ ...prev, ...next }));
+    // Any filter change invalidates the page number: page 4 of the old result
+    // is very often past the end of the new one, which reads as "no arenas".
+    setPage(1);
+  }, []);
+
+  const reset = useCallback(() => {
+    setFilters((prev) => ({ ...DEFAULTS, tab: prev.tab }));
+    setPage(1);
+  }, []);
+
+  const query = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("status", filters.status);
+    params.set("place", filters.place);
+    params.set("entry", filters.entry);
+    params.set("sortBy", filters.sortBy);
+    params.set("tab", filters.tab);
+    if (filters.domain) params.set("domain", filters.domain);
+    if (filters.difficulty) params.set("difficulty", filters.difficulty);
+    if (filters.prized) params.set("prized", "true");
+    if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
+    return params.toString();
+  }, [page, filters, debouncedSearch]);
+
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
       return;
     }
 
-    // Aborts the in-flight request rather than just ignoring its result, so a
-    // fast sequence of filter changes does not leave stale requests running.
     const controller = new AbortController();
+    setIsLoading(true);
+    setLoadError(null);
 
     (async () => {
-      setIsLoading(true);
-      setLoadError(null);
       try {
-        const queryParams = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: "50",
-          status: statusFilter,
-          access: accessFilter,
-          search: debouncedSearch,
-          sortBy: sortBy,
-          tab: activeTab,
-          ...(selectedTag ? { tag: selectedTag } : {}),
-        });
-
-        const res = await fetch(`/api/arena?${queryParams}`, { signal: controller.signal });
-        if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
-        }
+        const res = await fetch(`/api/arena?${query}`, { signal: controller.signal });
+        if (!res.ok) throw new Error(`Board request failed: ${res.status}`);
         const data = await res.json();
-        setArenas(data.arenas);
-        setTotalPages(data.totalPages);
-        setTotalCount(data.total);
-        setMyCount(data.myCount ?? null);
+
+        setArenas(data.arenas ?? []);
+        setTotalPages(data.totalPages ?? 1);
+        setTotalCount(data.total ?? 0);
+        if (data.myCount !== undefined) setMyCount(data.myCount);
       } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        logger.error("Arena list fetch failed", {
+        if (controller.signal.aborted) return;
+        logger.error("Failed to load arenas", {
           error: err instanceof Error ? err.message : String(err),
         });
-        // Surface it - the previous version logged and left stale results on
-        // screen, so a failed filter looked like a filter that matched nothing.
-        setLoadError("Could not load arenas. Check your connection and try again.");
+        setLoadError("Could not load the board.");
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
       }
     })();
 
-    return () => {
-      controller.abort();
-    };
-  }, [currentPage, statusFilter, accessFilter, debouncedSearch, sortBy, activeTab, selectedTag, retryNonce]);
-
-  // Ranks the arenas currently on screen. Previously built from initialArenas,
-  // so it kept describing page 1 after the user filtered or paginated away.
-  const billboardArenas = useMemo(() => {
-    const now = new Date();
-    return arenas
-      .map((a, idx) => {
-        const derived = deriveArenaStatus(
-          {
-            registrationStart: new Date(a.registrationStart),
-            registrationEnd: new Date(a.registrationEnd),
-            ideaPhaseStart: new Date(a.ideaPhaseStart),
-            ideaPhaseEnd: new Date(a.ideaPhaseEnd),
-            implPhaseStart: new Date(a.implPhaseStart),
-            implPhaseEnd: new Date(a.implPhaseEnd),
-            publishedAt: a.publishedAt ? new Date(a.publishedAt) : null,
-            canceledAt: a.canceledAt ? new Date(a.canceledAt) : null,
-            resultsPublishedAt: a.resultsPublishedAt ? new Date(a.resultsPublishedAt) : null,
-          },
-          now
-        );
-        const participantCount = a.isTeam
-          ? a.teams.length * 3 + idx * 4 + 12
-          : a.entries?.filter((e) => !e.withdrawnAt).length || idx * 4 + 12;
-
-        return {
-          id: a.id,
-          title: a.title,
-          isPrivate: a.isPrivate,
-          status: derived,
-          participantCount,
-        };
-      })
-      .sort((a, b) => b.participantCount - a.participantCount);
-  }, [arenas]);
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    setCurrentPage(1);
-  };
-
-  const handleTabChange = (tab: "all" | "my") => {
-    setActiveTab(tab);
-    setCurrentPage(1);
-  };
-
-  const handleStatusChange = (status: ArenaStatusFilter) => {
-    setStatusFilter(status);
-    setCurrentPage(1);
-  };
-
-  const handleAccessChange = (access: ArenaAccessFilter) => {
-    setAccessFilter(access);
-    setCurrentPage(1);
-  };
-
-  const handleSortChange = (sort: ArenaSortOption) => {
-    setSortBy(sort);
-    setCurrentPage(1);
-  };
-
-  const handleTagChange = (tagSlug: string) => {
-    setSelectedTag(tagSlug);
-    setCurrentPage(1);
-  };
+    return () => controller.abort();
+  }, [query, retryNonce]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pt-0">
-      {/* 1. Reusable Dark Masthead Header */}
-      <ArenaHeader
-        breadcrumbs="Home > History > Arena"
-        title="Devs Arena"
-        description="Cairo Directory Issue 002 · Egypt's active challenges, engineering cohorts, and database replication sprints."
-      />
+    <main id="main-content" className="min-h-screen bg-background text-foreground">
+      <div className="relative w-full overflow-hidden border-b-2 border-orange bg-foreground text-background">
+        <BackgroundGrid opacity={0.06} patternSize={28} />
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 md:px-10 md:py-10">
+          <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange">
+            [ The board ]
+          </span>
+          <h1 className="mt-2 font-display text-[clamp(1.4rem,3vw,2.1rem)] italic leading-tight text-background">
+            Every arena you can enter, and every one you missed
+          </h1>
+        </div>
+      </div>
 
-      {/* 2. Main Page Content (Sand background with blueprint lines) */}
-      <div className="relative z-10 py-12 md:py-16">
-        {/* Editorial Background Blueprint Grid */}
-        <BackgroundGrid opacity={0.085} />
+      <div className="mx-auto w-full max-w-6xl px-6 py-8 md:px-10">
+        <ArenaFilterBar
+          value={filters}
+          onChange={patch}
+          onReset={reset}
+          myCount={user ? myCount : null}
+          total={totalCount}
+        />
 
-        <ArenaContainer className="relative z-10 px-4 space-y-8">
-          {/* Two Column Layout: Billboard Left (Width 3/12), Registry Right (Width 9/12) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-            {/* Left Column: Filters, Search, and Billboard (Width 3/12 on large screens) */}
-            <div className="lg:col-span-3 lg:sticky lg:top-24 space-y-6 z-10">
-              <ArenasFilterSidebar
-                searchQuery={searchQuery}
-                onSearchChange={handleSearchChange}
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                allCount={totalCount}
-                myCount={myCount ?? 0}
-                statusFilter={statusFilter}
-                onStatusChange={handleStatusChange}
-                accessFilter={accessFilter}
-                onAccessChange={handleAccessChange}
-                sortBy={sortBy}
-                onSortChange={handleSortChange}
-                selectedTag={selectedTag}
-                onTagChange={handleTagChange}
-              />
-
-              {/* CairoBillboard Rankings */}
-              <CairoBillboard arenas={billboardArenas} />
+        <div className="mt-6 border border-foreground/15 bg-card">
+          {loadError ? (
+            <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-accent">
+                {loadError}
+              </p>
+              <button
+                type="button"
+                onClick={() => setRetryNonce((n) => n + 1)}
+                className="border-2 border-foreground px-4 py-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.14em] transition-colors hover:bg-foreground hover:text-background"
+              >
+                Try again
+              </button>
             </div>
-
-            {/* Right Column: Registry Listing Grid (Width 9/12 on large screens) */}
-            <div className="lg:col-span-9 space-y-4">
-              {loadError && (
-                <div
-                  role="alert"
-                  className="border-2 border-destructive bg-card p-4 flex items-center justify-between gap-4"
-                >
-                  <p className="font-mono text-[0.6rem] uppercase tracking-wider text-destructive font-bold">
-                    [Error] {loadError}
+          ) : arenas.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
+              <p className="font-display text-lg italic text-foreground">
+                {isLoading ? "Looking…" : "Nothing here"}
+              </p>
+              {!isLoading && (
+                <>
+                  <p className="max-w-sm font-sans text-sm text-muted-foreground">
+                    No arena matches that. Widen the filters, or write the brief
+                    you were looking for.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setRetryNonce((n) => n + 1)}
-                    className="px-4 py-2 border-2 border-foreground bg-foreground text-background font-mono text-[0.55rem] font-bold tracking-wider uppercase hover:bg-orange transition-colors shrink-0"
+                  <Link
+                    href="/arena/create"
+                    className="mt-1 border-2 border-orange bg-orange px-4 py-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.14em] text-[#0E0E0D] shadow-[3px_3px_0_0_var(--foreground)] transition-all hover:shadow-none active:translate-y-0.5"
                   >
-                    [Retry]
-                  </button>
-                </div>
+                    Write a brief
+                  </Link>
+                </>
               )}
+            </div>
+          ) : (
+            <ul className={isLoading ? "opacity-60 transition-opacity" : "transition-opacity"}>
+              {arenas.map((arena) => (
+                <ArenaRow
+                  key={arena.id}
+                  arena={arena}
+                  now={now}
+                  viewerId={user?.id ?? null}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
 
-              <ArenasRegistry
-              arenas={arenas}
-              totalCount={totalCount}
-              currentPage={currentPage}
+        {totalPages > 1 && (
+          <div className="mt-6">
+            <ArenasFooterPagination
+              currentPage={page}
               totalPages={totalPages}
               isLoading={isLoading}
-              onPageChange={handlePageChange}
-                activeTab={activeTab}
-                isUserLoggedIn={!!user?.id}
-              />
-            </div>
-
+              onPageChange={setPage}
+            />
           </div>
-        </ArenaContainer>
+        )}
       </div>
-    </div>
+    </main>
   );
 }
 

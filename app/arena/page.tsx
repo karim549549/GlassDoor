@@ -21,10 +21,12 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ArenasPage() {
+  const now = new Date();
   const viewer = await getOptionalUser();
   const { arenas, total, totalPages, myCount } = await listArenas({
     ...DEFAULT_LIST_PARAMS,
     userId: viewer?.id ?? null,
+    now,
   });
 
   const formattedArenas: SerializedArenaListItem[] = arenas.map((a) => ({
@@ -46,6 +48,7 @@ export default async function ArenasPage() {
       initialTotalPages={totalPages}
       initialTotalCount={total}
       initialMyCount={myCount}
+      nowIso={now.toISOString()}
     />
   );
 }

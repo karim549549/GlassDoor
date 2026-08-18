@@ -3,9 +3,10 @@ import { Prisma, type ArenaFormat, type ArenaAuthority, type RatingDomain, type 
 import { mayHavePrizePool, type ArenaAuthorityValue } from "./authority";
 import prisma from "@/lib/server/prisma";
 import { arenaStatusWhere } from "./status";
-import type { ArenaFormOutput, ArenaListQuery } from "./schema";
+import type { ArenaFormOutput, ArenaListQuery, ArenaSortOption } from "./schema";
 import {
   ARENA_LIST_SELECT,
+  arenaListSelect,
   ARENA_DETAIL_INCLUDE,
   type ArenaListItem,
   type ArenaDetail,
@@ -44,7 +45,10 @@ function myArenasWhere(userId: string): Prisma.ArenaWhereInput {
 }
 
 export async function listArenas(params: ListArenasParams): Promise<ListArenasResult> {
-  const { page, limit, status, access, search, sortBy, tab, userId, tag, now = new Date() } = params;
+  const {
+    page, limit, status, place, entry, domain, difficulty, prized,
+    search, sortBy, tab, userId, tag, now = new Date(),
+  } = params;
   const skip = (page - 1) * limit;
 
   const statusFilter = arenaStatusWhere(status, now);
@@ -67,11 +71,27 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
     }
   }
 
-  if (access === "public") {
-    where.isPrivate = false;
-  } else if (access === "private") {
-    where.isPrivate = true;
+  // The four axes a reader actually decides on. `access` used to be here
+  // instead - a filter *for* arenas you cannot join - and domain and difficulty
+  // could not be filtered at all, despite being the fields that decide which
+  // ladder a result counts on and what it is worth.
+  if (place === "online") {
+    where.locationType = "ONLINE";
+  } else if (place === "in_person") {
+    // `LocationType` is ONLINE | IN_PERSON. There is no HYBRID, despite PRD 2
+    // and several component props implying one.
+    where.locationType = "IN_PERSON";
   }
+
+  if (entry === "solo") {
+    where.isTeam = false;
+  } else if (entry === "team") {
+    where.isTeam = true;
+  }
+
+  if (domain) where.domain = domain;
+  if (difficulty) where.difficulty = difficulty;
+  if (prized) where.hasPrizePool = true;
 
   if (tag && tag.trim()) {
     where.tags = {
@@ -101,14 +121,20 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
     }
   }
 
-  let orderBy: Prisma.ArenaOrderByWithRelationInput = { createdAt: "desc" };
-  if (sortBy === "oldest") {
-    orderBy = { registrationStart: "asc" };
-  } else if (sortBy === "title") {
-    orderBy = { title: "asc" };
-  } else if (sortBy === "teams") {
-    orderBy = { teams: { _count: "desc" } };
-  }
+  // Default is "closing", not "newest". The board's job is "what can I enter",
+  // and sorting by creation date put arenas that closed weeks ago at the top of
+  // it. Ascending registrationEnd puts the one shutting next first.
+  //
+  // Exhaustive over ArenaSortOption via the record, so adding an option without
+  // an ordering is a type error rather than a silent fall-through to newest.
+  const ORDER_BY: Record<ArenaSortOption, Prisma.ArenaOrderByWithRelationInput> = {
+    closing: { registrationEnd: "asc" },
+    newest: { createdAt: "desc" },
+    prize: { totalPrizePool: { sort: "desc", nulls: "last" } },
+    entrants: { entries: { _count: "desc" } },
+    title: { title: "asc" },
+  };
+  const orderBy = ORDER_BY[sortBy];
 
   const [arenas, total, myCount] = await Promise.all([
     prisma.arena.findMany({
@@ -116,7 +142,7 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
       orderBy,
       skip,
       take: limit,
-      select: ARENA_LIST_SELECT,
+      select: arenaListSelect(userId ?? null),
     }),
     prisma.arena.count({ where }),
     userId

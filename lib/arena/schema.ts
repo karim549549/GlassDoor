@@ -12,6 +12,34 @@ export const DESCRIPTION_MAX = 1200;
 export const RULES_MAX = 2000;
 
 /**
+ * The enum values, once.
+ *
+ * They were spelled out inline inside `arenaBaseSchema` and would have had to
+ * be spelled out again in the list-query schema and a third time in whatever
+ * rendered the filter - which is exactly the drift the domain-schema
+ * convention exists to prevent. `lib/arena/taxonomy.ts` holds how they read;
+ * this holds what is valid.
+ */
+export const ARENA_DOMAIN_VALUES = [
+  "FULL_STACK_WEB",
+  "BACKEND_DISTRIBUTED",
+  "FRONTEND_MOBILE",
+  "AI_MACHINE_LEARNING",
+  "DATA_ENGINEERING",
+  "CYBERSECURITY_ETHICAL_HACKING",
+  "SYSTEMS_DEV_OPS",
+  "EMBEDDED_IOT",
+  "BLOCKCHAIN_WEB3",
+] as const;
+
+export const ARENA_DIFFICULTY_VALUES = [
+  "NOVICE",
+  "INTERMEDIATE",
+  "ADVANCED",
+  "GRANDMASTER",
+] as const;
+
+/**
  * Base field-level rules, exported separately from `arenaSchema` so callers
  * (e.g. the create form's per-section progress indicator) can validate a
  * subset of fields via `.pick()` without needing the cross-field `.refine()`
@@ -51,20 +79,8 @@ export const arenaBaseSchema = z.object({
   //
   // `intent` went with it: it is not in the PRD, and it duplicated the
   // distinction `authority` already draws.
-  domain: z
-    .enum([
-      "FULL_STACK_WEB",
-      "BACKEND_DISTRIBUTED",
-      "FRONTEND_MOBILE",
-      "AI_MACHINE_LEARNING",
-      "DATA_ENGINEERING",
-      "CYBERSECURITY_ETHICAL_HACKING",
-      "SYSTEMS_DEV_OPS",
-      "EMBEDDED_IOT",
-      "BLOCKCHAIN_WEB3",
-    ])
-    .default("FULL_STACK_WEB"),
-  difficulty: z.enum(["NOVICE", "INTERMEDIATE", "ADVANCED", "GRANDMASTER"]).default("INTERMEDIATE"),
+  domain: z.enum(ARENA_DOMAIN_VALUES).default("FULL_STACK_WEB"),
+  difficulty: z.enum(ARENA_DIFFICULTY_VALUES).default("INTERMEDIATE"),
 
   // Location
   locationType: z.enum(["ONLINE", "IN_PERSON"]).default("ONLINE"),
@@ -171,13 +187,36 @@ export const arenaSchema = arenaBaseSchema
 export type ArenaFormInput = z.input<typeof arenaSchema>;
 export type ArenaFormOutput = z.output<typeof arenaSchema>;
 
-export const ARENA_STATUS_FILTERS = ["all", "open", "active", "completed"] as const;
-export const ARENA_ACCESS_FILTERS = ["all", "public", "private"] as const;
-export const ARENA_SORT_OPTIONS = ["newest", "oldest", "title", "teams"] as const;
+/**
+ * The board's axes.
+ *
+ * These replace a set that did not match what a reader wants to know. Status
+ * was `active`/`completed`; you could filter by `access` (why filter *for*
+ * arenas you cannot join?); and there was no way to filter by domain,
+ * difficulty, online-versus-Cairo or prize - the four things that actually
+ * decide whether someone enters, and two of which only became real data once
+ * the create form started asking for them.
+ *
+ * `judging` is deliberately absent. Nothing in the codebase can create a judge
+ * assignment yet, so every arena past its build window would sit in it
+ * permanently - a tab that is always wrong is worse than a missing one. It
+ * returns when judging does.
+ */
+export const ARENA_STATUS_FILTERS = ["all", "open", "live", "finished"] as const;
+export const ARENA_PLACE_FILTERS = ["all", "online", "in_person"] as const;
+export const ARENA_ENTRY_FILTERS = ["all", "solo", "team"] as const;
+
+/**
+ * `closing` is the default, and that matters. The board used to lead with
+ * `newest`, so the top of a page whose whole job is "what can I enter" could
+ * be arenas that closed weeks ago.
+ */
+export const ARENA_SORT_OPTIONS = ["closing", "newest", "prize", "entrants", "title"] as const;
 export const ARENA_TAB_SCOPES = ["all", "my"] as const;
 
 export type ArenaStatusFilter = (typeof ARENA_STATUS_FILTERS)[number];
-export type ArenaAccessFilter = (typeof ARENA_ACCESS_FILTERS)[number];
+export type ArenaPlaceFilter = (typeof ARENA_PLACE_FILTERS)[number];
+export type ArenaEntryFilter = (typeof ARENA_ENTRY_FILTERS)[number];
 export type ArenaSortOption = (typeof ARENA_SORT_OPTIONS)[number];
 export type ArenaTabScope = (typeof ARENA_TAB_SCOPES)[number];
 
@@ -186,8 +225,13 @@ export const arenaListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   status: z.enum(ARENA_STATUS_FILTERS).default("all"),
-  access: z.enum(ARENA_ACCESS_FILTERS).default("all"),
-  sortBy: z.enum(ARENA_SORT_OPTIONS).default("newest"),
+  place: z.enum(ARENA_PLACE_FILTERS).default("all"),
+  entry: z.enum(ARENA_ENTRY_FILTERS).default("all"),
+  domain: z.enum(ARENA_DOMAIN_VALUES).optional(),
+  difficulty: z.enum(ARENA_DIFFICULTY_VALUES).optional(),
+  /** Only arenas offering prize money. */
+  prized: z.coerce.boolean().default(false),
+  sortBy: z.enum(ARENA_SORT_OPTIONS).default("closing"),
   tab: z.enum(ARENA_TAB_SCOPES).default("all"),
   search: z.string().trim().default(""),
   tag: z.string().optional(),
@@ -200,8 +244,10 @@ export const DEFAULT_LIST_PARAMS: ArenaListQuery = {
   page: 1,
   limit: 50,
   status: "all",
-  access: "all",
-  sortBy: "newest",
+  place: "all",
+  entry: "all",
+  prized: false,
+  sortBy: "closing",
   tab: "all",
   search: "",
 };
