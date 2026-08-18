@@ -40,7 +40,7 @@ export function NavSearchResults({
 }: NavSearchResultsProps) {
   if (failed) {
     return (
-      <p className="px-5 py-10 text-center font-mono text-[0.6rem] uppercase tracking-[0.14em] text-orange">
+      <p className="px-5 py-10 text-center font-mono text-[0.6rem] uppercase tracking-[0.14em] text-accent">
         Search is not answering. Try again.
       </p>
     );
@@ -51,10 +51,10 @@ export function NavSearchResults({
       <ul aria-hidden className="animate-pulse">
         {Array.from({ length: 4 }).map((_, i) => (
           <li key={i} className="flex items-center gap-3 px-5 py-3">
-            <span className="h-7 w-7 shrink-0 bg-background/10" />
+            <span className="h-7 w-7 shrink-0 bg-foreground/12" />
             <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <span className="block h-[1rem] w-2/5 bg-background/12" />
-              <span className="block h-[0.6rem] w-1/4 bg-background/8" />
+              <span className="block h-[1rem] w-2/5 bg-foreground/14" />
+              <span className="block h-[0.6rem] w-1/4 bg-foreground/10" />
             </span>
           </li>
         ))}
@@ -64,8 +64,8 @@ export function NavSearchResults({
 
   if (groups.length === 0) {
     return (
-      <p className="px-5 py-10 text-center font-sans text-sm text-background/60">
-        Nothing matches <span className="font-medium text-background">{query}</span>.
+      <p className="px-5 py-10 text-center font-sans text-sm text-foreground/65">
+        Nothing matches <span className="font-medium text-foreground">{query}</span>.
       </p>
     );
   }
@@ -82,7 +82,7 @@ export function NavSearchResults({
     <div className="flex flex-col">
       {groups.map((group, groupIndex) => (
         <section key={group.key}>
-          <h3 className="sticky top-0 z-10 border-b border-background/12 bg-[#0E0E0D] px-5 py-2.5 font-mono text-[0.52rem] font-bold uppercase tracking-[0.2em] text-orange">
+          <h3 className="sticky top-0 z-10 border-y border-foreground/15 bg-secondary px-5 py-2 font-mono text-[0.52rem] font-bold uppercase tracking-[0.2em] text-orange-ink">
             {group.label}
           </h3>
           <ul>
@@ -99,7 +99,7 @@ export function NavSearchResults({
                     aria-selected={active}
                     role="option"
                     className={`flex w-full items-center gap-3.5 px-5 py-3.5 text-left transition-colors ${
-                      active ? "bg-orange/20" : "hover:bg-background/[0.06]"
+                      active ? "bg-orange text-[#0E0E0D]" : "hover:bg-foreground/[0.05]"
                     }`}
                   >
                     {hit.imageUrl ? (
@@ -108,23 +108,23 @@ export function NavSearchResults({
                         alt=""
                         width={24}
                         height={24}
-                        className="h-7 w-7 shrink-0 border border-background/20 object-cover"
+                        className="h-7 w-7 shrink-0 border border-foreground/20 object-cover"
                       />
                     ) : (
                       <span
                         aria-hidden
-                        className="flex h-7 w-7 shrink-0 items-center justify-center border border-background/25 font-mono text-[0.58rem] font-bold text-background/60"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center border border-foreground/25 bg-secondary font-mono text-[0.58rem] font-bold text-foreground/70"
                       >
                         {hit.title.replace(/^@/, "").charAt(0).toUpperCase()}
                       </span>
                     )}
 
                     <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate font-display text-[1.05rem] leading-snug text-background">
+                      <span className="truncate font-display text-[1.05rem] leading-snug">
                         {hit.title}
                       </span>
                       {hit.subtitle && (
-                        <span className="truncate font-mono text-[0.55rem] uppercase tracking-[0.1em] text-background/55">
+                        <span className={`truncate font-mono text-[0.55rem] uppercase tracking-[0.1em] ${active ? "text-[#0E0E0D]/70" : "text-foreground/60"}`}>
                           {hit.subtitle}
                         </span>
                       )}
@@ -133,7 +133,7 @@ export function NavSearchResults({
                     {active && (
                       <CornerDownLeft
                         aria-hidden
-                        className="h-3.5 w-3.5 shrink-0 text-orange"
+                        className="h-3.5 w-3.5 shrink-0 text-[#0E0E0D]"
                       />
                     )}
                   </button>

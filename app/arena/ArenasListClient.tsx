@@ -152,15 +152,51 @@ export function ArenasListClient({
       {/* The same blueprint grid the homepage sits on. It reads as one site
           rather than a marketing page and a set of unrelated tools. */}
       <BackgroundGrid opacity={0.055} />
+      {/* The masthead, sized to hold a cover image.
+
+          No image ships with it. Pulling a stock photo off the web and
+          committing it would put an asset in this repo whose licence nobody
+          can point to, and a licence problem in a public repo is not a thing
+          to discover later - so the slot is built and left empty rather than
+          filled with something borrowed.
+
+          Dropping one in is one line: put a .webp at
+          `public/board-cover.webp` and uncomment the <Image> below. The
+          mask is already here - a near-opaque ink wash over the image, with
+          the grid on top - so any photograph resolves to texture behind the
+          type instead of competing with it, and the headline keeps its
+          contrast whatever the picture turns out to be. */}
       <div className="relative w-full overflow-hidden border-b-2 border-orange bg-foreground text-background">
-        <BackgroundGrid opacity={0.06} patternSize={28} />
-        <ArenaContainer className="relative z-10 py-8 md:py-10">
-          <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em] text-orange">
+        {/*
+        <Image
+          src="/board-cover.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-30 mix-blend-luminosity"
+        />
+        */}
+
+        {/* The wash the image would sit under, which also stands on its own:
+            a diagonal lift from the ink so the band is not one flat colour. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[linear-gradient(115deg,rgba(224,94,24,0.16),transparent_45%,rgba(224,94,24,0.07))]"
+        />
+        <BackgroundGrid opacity={0.07} patternSize={28} />
+
+        <ArenaContainer className="relative z-10 py-14 md:py-20">
+          <span className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.3em] text-orange">
             [ The board ]
           </span>
-          <h1 className="mt-2 font-display text-[clamp(1.4rem,3vw,2.1rem)] italic leading-tight text-background">
+          <h1 className="mt-4 max-w-3xl font-display text-[clamp(1.9rem,5vw,3.4rem)] italic leading-[1.05] text-background">
             Every arena you can enter, and every one you missed
           </h1>
+          <p className="mt-4 max-w-xl font-sans text-sm leading-relaxed text-background/70">
+            Somebody posts a brief with no business existing. A few teams build
+            it against a clock. Free to enter, online or in a room in Cairo.
+          </p>
         </ArenaContainer>
       </div>
 
