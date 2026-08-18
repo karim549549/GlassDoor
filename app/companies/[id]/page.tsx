@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${company.name} — Tech Company Profile | Devs Arena`,
     description: `Explore tech stack, active coding arenas, and engineering hiring challenges at ${company.name} on Devs Arena.`,
+    alternates: { canonical: `/companies/${id}` },
   };
 }
 

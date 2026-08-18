@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import React from "react";
 import Link from "next/link";
+
+// Placeholder content. Indexing an empty page costs crawl budget and puts a
+// dead result in front of a reader, so this stays noindex until standings
+// actually render here.
+export const metadata: Metadata = {
+  title: "Standings",
+  robots: { index: false, follow: true },
+  alternates: { canonical: "/billboard" },
+};
 
 export default function BillboardPage() {
   return (

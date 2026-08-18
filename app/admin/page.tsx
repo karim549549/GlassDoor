@@ -6,6 +6,13 @@ import { ArenaHeader } from "@/components/arena/ArenaHeader";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { Shield, Users, Trophy, Award, Building2, AlertTriangle } from "lucide-react";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: { index: false, follow: false },
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {

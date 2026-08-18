@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Terms",
   description:
     "The rules for competing, judging, and hosting on Devs Arena - including what happens to your work and how results are decided.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

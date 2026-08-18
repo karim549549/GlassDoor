@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `Proof Packet #${slug} — ${holderName} | Devs Arena`,
     description: `Verified competition credential for ${holderName} in ${packet.snapshot.arena.title}. SHA-256: ${packet.contentHash.substring(0, 16)}...`,
+    alternates: { canonical: `/proof/${slug}` },
   };
 }
 

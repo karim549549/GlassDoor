@@ -7,6 +7,7 @@ import { ProofLookupClient } from "@/components/proof/ProofLookupClient";
 export const metadata: Metadata = {
   title: "Proof Packet Verification Portal",
   description: "Verify tamper-evident developer competition credentials, rubric scorecards, and cryptographic proof packets.",
+  alternates: { canonical: "/proof" },
 };
 
 export default function ProofIndexPage() {

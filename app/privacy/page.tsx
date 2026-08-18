@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Privacy",
   description:
     "What Devs Arena collects, what it publishes, and what stays private - described from how the platform actually behaves.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

@@ -52,7 +52,11 @@ export const metadata: Metadata = {
   },
   description: DESCRIPTION,
   applicationName: "Devs Arena",
-  alternates: { canonical: "/" },
+  // No `alternates` here on purpose. Metadata is INHERITED: a canonical set
+  // on the root layout is adopted by every page that does not override it, so
+  // `/arena`, `/billboard`, `/support`, `/terms` and `/privacy` all declared
+  // themselves duplicates of the homepage and asked Google to drop them.
+  // Each route now sets its own; the homepage's lives in app/page.tsx.
   // Google has ignored this tag since 2009. It is here because several AI
   // crawlers and non-Google engines still read it, and it costs one line - not
   // because it moves search rank. The keyword work that matters is in the

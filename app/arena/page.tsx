@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import ArenasListClient from "./ArenasListClient";
 import { listArenas } from "@/lib/arena/service";
 import { DEFAULT_LIST_PARAMS } from "@/lib/arena/schema";
 import { getOptionalUser } from "@/lib/server/auth/require-user";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
+
+export const metadata: Metadata = {
+  title: "Open Challenges",
+  description:
+    "Every arena you can enter right now: four-hour team coding challenges, online and in Cairo. Free to enter, solo or in teams of two to four.",
+  alternates: { canonical: "/arena" },
+  openGraph: {
+    title: "Open Challenges | Devs Arena",
+    description:
+      "Every arena you can enter right now. Free to enter, solo or in teams of two to four.",
+    url: "/arena",
+  },
+};
 
 export const dynamic = "force-dynamic";
 

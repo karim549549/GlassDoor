@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Billboard } from "@/components/home/Billboard";
 import { HeroAndArenas } from "@/components/home/HeroAndArenas";
 import { AuthModalMount } from "@/components/auth/AuthModalMount";
@@ -7,6 +8,12 @@ import { getGlobalStandings } from "@/lib/arena/leaderboard-service";
 import { toArenaCardData } from "@/components/home/Hero/arena-cards-data";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
+
+// Title and description are inherited from the root layout, which is written
+// for this page. Only the canonical belongs here - see the note in that file.
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 /**
  * Organization + WebSite, the two entities a homepage is expected to declare.
