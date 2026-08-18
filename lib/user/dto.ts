@@ -42,12 +42,20 @@ export const userProfileDtoSchema = z.object({
       z.object({
         id: z.string(),
         joinedAt: z.date(),
+        /**
+         * `format` used to be required here. The column was dropped, the
+         * service select stopped asking for it, and this schema kept demanding
+         * it - so the first person to enter an arena would have made every
+         * request that renders their profile throw at parse time:
+         * `/api/user/[id]`, `/u/[handle]` and `/user/[id]` alike. It never
+         * fired only because no `ArenaEntry` row existed to run the inner
+         * schema against.
+         */
         arena: z.object({
           id: z.string(),
           title: z.string(),
           domain: z.string(),
           difficulty: z.string(),
-          format: z.string(),
         }),
         submission: z
           .object({

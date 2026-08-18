@@ -23,7 +23,6 @@ export interface UserArenaEntry {
     title: string;
     domain: string;
     difficulty: string;
-    format: string;
   };
   submission: {
     id: string;

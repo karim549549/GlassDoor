@@ -13,10 +13,17 @@ interface ArenaHostCardProps {
     avatarUrl: string | null;
   };
   isPrivate: boolean;
+  /**
+   * Only ever supplied to the host. The page drops it for everyone else, and
+   * `isHost` below is the second lock on the same door: this card is rendered
+   * in a column every visitor sees, so a future caller that forgets the first
+   * gate should not be able to publish the code by accident.
+   */
   inviteCode?: string | null;
+  isHost: boolean;
 }
 
-export function ArenaHostCard({ creator, isPrivate, inviteCode }: ArenaHostCardProps) {
+export function ArenaHostCard({ creator, isPrivate, inviteCode, isHost }: ArenaHostCardProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = () => {
@@ -86,7 +93,7 @@ export function ArenaHostCard({ creator, isPrivate, inviteCode }: ArenaHostCardP
             : "Public Arena: Share this event link on Twitter, LinkedIn, or Discord."}
         </p>
 
-        {isPrivate && inviteCode && (
+        {isHost && isPrivate && inviteCode && (
           <div className="p-2.5 bg-amber-50 border border-amber-300 space-y-1">
             <span className="font-mono text-[0.5rem] text-amber-800 uppercase tracking-widest block font-bold">
               PRIVATE INVITE CODE:

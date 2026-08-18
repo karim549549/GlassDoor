@@ -191,13 +191,11 @@ export const ArenaPerformanceRecord = React.memo(function ArenaPerformanceRecord
                       {entry.arena.title}
                     </span>
                     <span className="font-mono text-[0.55rem] px-1.5 py-0.5 bg-secondary border border-foreground/10">
-                      {entry.arena.format}
+                      {entry.arena.difficulty}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-[0.58rem] text-muted-foreground">
                     <span>Domain: {entry.arena.domain.replace(/_/g, " ")}</span>
-                    <span>&bull;</span>
-                    <span>Difficulty: {entry.arena.difficulty}</span>
                     <span>&bull;</span>
                     <span>Joined: {new Date(entry.joinedAt).toLocaleDateString()}</span>
                   </div>

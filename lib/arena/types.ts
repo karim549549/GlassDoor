@@ -113,49 +113,96 @@ export type SerializedArenaListItem = Omit<ArenaListItem, (typeof SERIALIZED_DAT
   [K in (typeof NULLABLE_SERIALIZED_DATE_FIELDS)[number]]: string | null;
 };
 
-/** Full detail query shape, used by the arena detail page/API. */
-export const ARENA_DETAIL_INCLUDE = {
-  creator: {
-    select: { id: true, fullName: true, handle: true, avatarUrl: true },
-  },
-  company: {
-    select: { id: true, name: true, slug: true, logoUrl: true, isVerified: true },
-  },
-  sponsors: {
-    include: {
-      company: { select: { id: true, name: true, slug: true, logoUrl: true } },
-    },
-  },
+/**
+ * The detail query, as a `select` rather than an `include`.
+ *
+ * It was an `include`, which means every scalar column of `Arena` came back -
+ * `inviteCode` among them, the shared secret that is the entire access control
+ * on a private arena. It then pulled every `ArenaEntry` with its user, and
+ * every `ArenaTeam` with every member's `userId`, withdrawn entries included,
+ * in order to compute three booleans and one integer the page never used. All
+ * of it went verbatim to `GET /api/arena/[id]`, which is public.
+ *
+ * `arenaListSelect` forty lines above already solved this shape: a `_count`
+ * for totals, and a narrow probe for "is this viewer in it". The detail path
+ * never got the fix.
+ *
+ * `inviteCode` IS selected - a host has to be able to read it - but it leaves
+ * through `lib/arena/dto.ts`, which drops it for everyone else. Same rule
+ * `USER_PROFILE_SELECT` follows for `email`: fetch it where a legitimate
+ * reader needs it, and let the DTO decide who that is.
+ */
+export const ARENA_DETAIL_SELECT = {
+  id: true,
+  title: true,
+  description: true,
+  rulesText: true,
+  authority: true,
+  difficulty: true,
+  publishedAt: true,
+  canceledAt: true,
+  resultsPublishedAt: true,
+  locationType: true,
+  locationName: true,
+  googleMapsUrl: true,
+  isPrivate: true,
+  inviteCode: true,
+  isTeam: true,
+  minTeamSize: true,
+  maxTeamSize: true,
+  maxParticipants: true,
+  hasPrizePool: true,
+  totalPrizePool: true,
+  prizeCurrency: true,
+  firstPlacePrize: true,
+  secondPlacePrize: true,
+  thirdPlacePrize: true,
+  prizeDisbursementTerms: true,
+  requireGithubUrl: true,
+  requireFigmaUrl: true,
+  requireVideoUrl: true,
+  requireWriteup: true,
+  registrationStart: true,
+  registrationEnd: true,
+  ideaPhaseStart: true,
+  ideaPhaseEnd: true,
+  implPhaseStart: true,
+  implPhaseEnd: true,
+  creatorId: true,
+  creator: { select: { id: true, fullName: true, handle: true, avatarUrl: true } },
+  companyId: true,
+  company: { select: { id: true, name: true, slug: true, logoUrl: true, isVerified: true } },
+
+  /**
+   * Named participants, without their ids.
+   *
+   * Withdrawn entries are excluded in the query rather than filtered in the
+   * page: someone who quit is not a participant, and shipping their row so the
+   * client can hide it is how they become visible again after a refactor.
+   */
   entries: {
-    include: {
-      user: { select: { id: true, fullName: true, handle: true, avatarUrl: true } },
+    where: { withdrawnAt: null },
+    select: {
+      id: true,
+      joinedAt: true,
+      user: { select: { fullName: true, handle: true, avatarUrl: true } },
       team: {
-        include: {
+        select: {
+          id: true,
+          name: true,
           members: {
-            include: {
-              user: { select: { id: true, fullName: true, handle: true, avatarUrl: true } },
+            select: {
+              isLeader: true,
+              user: { select: { fullName: true, handle: true, avatarUrl: true } },
             },
           },
         },
       },
     },
+    orderBy: { joinedAt: "asc" },
   },
-  teams: {
-    include: {
-      members: {
-        include: {
-          user: { select: { id: true, fullName: true, handle: true, avatarUrl: true } },
-        },
-      },
-    },
-  },
-  _count: {
-    select: {
-      entries: true,
-      teams: true,
-      invitations: true,
-    },
-  },
-} satisfies Prisma.ArenaInclude;
 
-export type ArenaDetail = Prisma.ArenaGetPayload<{ include: typeof ARENA_DETAIL_INCLUDE }>;
+  _count: { select: { entries: true, teams: true, invitations: true } },
+} satisfies Prisma.ArenaSelect;
+
+export type ArenaDetailRow = Prisma.ArenaGetPayload<{ select: typeof ARENA_DETAIL_SELECT }>;

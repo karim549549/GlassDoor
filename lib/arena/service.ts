@@ -7,12 +7,12 @@ import type { ArenaFormOutput, ArenaListQuery, ArenaSortOption } from "./schema"
 import {
   ARENA_LIST_SELECT,
   arenaListSelect,
-  ARENA_DETAIL_INCLUDE,
+  ARENA_DETAIL_SELECT,
   type ArenaListItem,
-  type ArenaDetail,
+  type ArenaDetailRow,
 } from "./types";
 
-export { ARENA_LIST_SELECT, ARENA_DETAIL_INCLUDE };
+export { ARENA_LIST_SELECT, ARENA_DETAIL_SELECT };
 
 export interface ListArenasParams extends ArenaListQuery {
   userId?: string | null;
@@ -30,6 +30,11 @@ export interface ArenaDetailMeta {
   isOwner: boolean;
   isRegistered: boolean;
   totalParticipants: number;
+  /**
+   * Always true when a row is returned at all - `getArenaDetail` refuses
+   * rather than reporting. Retained so a caller that still checks it keeps
+   * working; new code should not read it.
+   */
   canAccessPrivate: boolean;
 }
 
@@ -198,44 +203,68 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
   };
 }
 
+/**
+ * One arena, or null if this viewer may not see it.
+ *
+ * Returning null rather than a payload-plus-a-flag is the change that matters.
+ * The previous version computed `canAccessPrivate` and handed it back in
+ * `meta` alongside the full arena - and **nothing read it**. The detail page
+ * never referenced the field, and its prop type did not even declare it, so
+ * every private arena's brief, rules, deliverables and discussion rendered for
+ * any anonymous visitor. A gate that returns data and trusts the caller to
+ * check a boolean is not a gate.
+ *
+ * Two more filters that were missing entirely: an unpublished arena was
+ * readable by URL, and a soft-deleted one was the only thing excluded.
+ *
+ * Membership is a one-row probe rather than a scan of a materialised
+ * participant graph - the same shape `arenaListSelect` uses, and the reason the
+ * detail select no longer ships anyone's `userId`.
+ */
 export async function getArenaDetail(
   uuid: string,
   currentUserId: string | null
-): Promise<{ arena: ArenaDetail; meta: ArenaDetailMeta } | null> {
-  const arena = await prisma.arena.findFirst({
-    where: {
-      id: uuid,
-      isDeleted: false,
-    },
-    include: ARENA_DETAIL_INCLUDE,
-  });
+): Promise<{ arena: ArenaDetailRow; meta: ArenaDetailMeta } | null> {
+  const [arena, viewerEntry] = await Promise.all([
+    prisma.arena.findFirst({
+      where: { id: uuid, isDeleted: false, publishedAt: { not: null } },
+      select: ARENA_DETAIL_SELECT,
+    }),
+    currentUserId
+      ? prisma.arenaEntry.findFirst({
+          where: {
+            arenaId: uuid,
+            withdrawnAt: null,
+            OR: [
+              { userId: currentUserId },
+              { team: { members: { some: { userId: currentUserId } } } },
+            ],
+          },
+          select: { id: true },
+        })
+      : Promise.resolve(null),
+  ]);
 
   if (!arena) {
     return null;
   }
 
   const isOwner = currentUserId ? arena.creatorId === currentUserId : false;
-  const isDirectEntry = currentUserId
-    ? arena.entries.some((entry) => entry.userId === currentUserId && !entry.withdrawnAt)
-    : false;
-  const isTeamEntry = currentUserId
-    ? arena.teams.some((team) => team.members.some((member) => member.userId === currentUserId))
-    : false;
-  const isRegistered = isDirectEntry || isTeamEntry;
+  const isRegistered = viewerEntry !== null;
 
-  const totalParticipants = arena.isTeam
-    ? arena.teams.reduce((sum, team) => sum + team.members.length, 0)
-    : arena.entries.filter((entry) => !entry.withdrawnAt).length;
-
-  const canAccessPrivate = !arena.isPrivate || isOwner || isRegistered;
+  // The gate, enforced rather than reported. A caller that gets null cannot
+  // accidentally render what it was not allowed to fetch.
+  if (arena.isPrivate && !isOwner && !isRegistered) {
+    return null;
+  }
 
   return {
     arena,
     meta: {
       isOwner,
       isRegistered,
-      totalParticipants,
-      canAccessPrivate,
+      totalParticipants: arena._count.entries,
+      canAccessPrivate: true,
     },
   };
 }

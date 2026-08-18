@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ArenasListClient from "./ArenasListClient";
+import ArenasListClient from "../ArenasListClient";
 import { listArenas, getBoardFacets, getBoardSpotlight } from "@/lib/arena/service";
 import { DEFAULT_LIST_PARAMS } from "@/lib/arena/schema";
 import { getOptionalUser } from "@/lib/server/auth/require-user";

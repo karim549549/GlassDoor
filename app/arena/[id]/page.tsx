@@ -113,7 +113,14 @@ export default async function ArenaDetailPage({ params }: PageProps) {
           description: arena.description,
           status: derivedStatus,
           isPrivate: arena.isPrivate,
-          inviteCode: arena.inviteCode,
+          /**
+           * Host only. The code is the whole access control on a private
+           * arena - `participation-service.ts` compares against exactly this
+           * string - and it was serialised to every visitor, then rendered
+           * in plain text by `ArenaHostCard`. `undefined`, not null, so a
+           * component cannot render it from a payload that never carried it.
+           */
+          inviteCode: meta.isOwner ? arena.inviteCode : undefined,
           locationType: arena.locationType,
           locationName: arena.locationName,
           googleMapsUrl: arena.googleMapsUrl,

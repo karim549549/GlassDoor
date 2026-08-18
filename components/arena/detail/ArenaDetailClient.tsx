@@ -264,6 +264,7 @@ export function ArenaDetailClient({ arena, meta, isGuest }: ArenaDetailClientPro
                   }}
                   isPrivate={arena.isPrivate}
                   inviteCode={arena.inviteCode}
+                  isHost={isHost}
                 />
               </div>
             </div>
