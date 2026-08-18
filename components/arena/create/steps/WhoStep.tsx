@@ -47,7 +47,7 @@ export function WhoStep({
       />
 
       {isTeam && (
-        <div className="grid gap-6 border-l-2 border-orange/40 pl-5 sm:grid-cols-2">
+        <div className="field-in grid gap-6 border-l-2 border-orange/40 pl-5 sm:grid-cols-2">
           <Field label="Smallest team" htmlFor="min-team" error={errors.minTeamSize?.message}>
             <LineInput
               id="min-team"
@@ -102,7 +102,7 @@ export function WhoStep({
       />
 
       {isPrivate && (
-        <div className="border-l-2 border-orange/40 pl-5">
+        <div className="field-in border-l-2 border-orange/40 pl-5">
           <Field
             label="Invite code"
             hint="Share it with the people you want"

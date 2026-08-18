@@ -71,6 +71,7 @@ export function ClockRibbon({
             style={{ width: `${segment.percent}%` }}
             className={[
               "flex min-w-0 items-center justify-center overflow-hidden",
+              "transition-[width] duration-300 ease-out motion-reduce:transition-none",
               i > 0 ? "border-l border-foreground/20" : "",
               // Only the build phase is filled. It is the one the reader is
               // actually deciding the length of; a three-colour bar would

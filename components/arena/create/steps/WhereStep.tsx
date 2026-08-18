@@ -51,7 +51,7 @@ export function WhereStep({
       />
 
       {inPerson && (
-        <div className="flex flex-col gap-6 border-l-2 border-orange/40 pl-5">
+        <div className="field-in flex flex-col gap-6 border-l-2 border-orange/40 pl-5">
           <Field
             label="Venue"
             hint="What you would tell someone on the phone"

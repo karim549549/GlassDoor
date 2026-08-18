@@ -112,7 +112,7 @@ export function WhenStep({
       />
 
       {isCustom && (
-        <div className="grid gap-6 border-l-2 border-orange/40 pl-5 sm:grid-cols-2">
+        <div className="field-in grid gap-6 border-l-2 border-orange/40 pl-5 sm:grid-cols-2">
           <Field label="Planning starts" htmlFor="idea-start" error={errors.ideaPhaseStart?.message}>
             <LineInput id="idea-start" type="datetime-local" {...register("ideaPhaseStart")} />
           </Field>

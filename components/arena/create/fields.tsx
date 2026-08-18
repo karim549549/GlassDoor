@@ -10,11 +10,12 @@ import React, { useId } from "react";
  * treatment, the hairline, and the focus behaviour, and splitting them across
  * five files would mean editing five files to change one rule.
  *
- * The idea: no boxes. The previous page put every field inside a
- * `border-2 + shadow-[4px_4px]` card, which gave "minimum team size" the same
- * visual weight as the brief itself. Here a field is a label, a hairline, and
- * the value - and emphasis comes from type size, so the brief can be enormous
- * and the team cap can be small without either needing a container.
+ * The idea: one bordered panel per step, filled inputs inside it, and no box
+ * around any individual field. The previous page gave each of seven sections
+ * its own `border-2 + shadow-[4px_4px]` card, so "minimum team size" was framed
+ * as heavily as the brief. Emphasis here comes from type size instead, which is
+ * how the brief can be enormous and the team cap small without either needing
+ * a container of its own.
  */
 
 /* ------------------------------------------------------------------ label */
@@ -51,7 +52,7 @@ export function FieldLabel({ htmlFor, children, hint, error, as = "label" }: Fie
 
 /* ------------------------------------------------------------------- field */
 
-/** Label + hairline-underlined control, the default shape for everything. */
+/** Label above a control, the default shape for everything on this page. */
 export function Field({
   label,
   hint,
@@ -275,7 +276,10 @@ export function SegmentedChoice<T extends string>({
                   // dark ink, never white - #E05E18 with white text is 3.16:1.
                   selected
                     ? "bg-orange text-[#0E0E0D]"
-                    : "bg-card text-foreground hover:bg-foreground/5",
+                    // Cream against the card panel. This was bg-card, which
+                    // is the panel's own colour - so an unselected option had
+                    // no surface and the group read as one flat block.
+                    : "bg-background text-foreground hover:bg-foreground/8",
                   "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[-2px] peer-focus-visible:outline-foreground",
                 ].join(" ")}
               >

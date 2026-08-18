@@ -236,7 +236,7 @@ export default function CreateArenaPage() {
               their registered inputs from react-hook-form, so a value typed on
               step one would be gone by the time step six submits. */}
           <div className="py-8 md:py-10">
-            <div hidden={activeStep !== "brief"}>
+            <div hidden={activeStep !== "brief"} className="step-in">
               <StepPanel
                 index={1}
                 title="The brief"
@@ -245,7 +245,7 @@ export default function CreateArenaPage() {
                 <BriefStep register={register} errors={errors} watch={watch} />
               </StepPanel>
             </div>
-            <div hidden={activeStep !== "kind"}>
+            <div hidden={activeStep !== "kind"} className="step-in">
               <StepPanel
                 index={2}
                 title="What kind"
@@ -254,7 +254,7 @@ export default function CreateArenaPage() {
                 <KindStep watch={watch} setValue={setValue} />
               </StepPanel>
             </div>
-            <div hidden={activeStep !== "when"}>
+            <div hidden={activeStep !== "when"} className="step-in">
               <StepPanel
                 index={3}
                 title="When"
@@ -263,17 +263,17 @@ export default function CreateArenaPage() {
                 <WhenStep register={register} errors={errors} watch={watch} setValue={setValue} />
               </StepPanel>
             </div>
-            <div hidden={activeStep !== "where"}>
+            <div hidden={activeStep !== "where"} className="step-in">
               <StepPanel index={4} title="Where" lead="Online, or everyone in one room.">
                 <WhereStep register={register} errors={errors} watch={watch} setValue={setValue} />
               </StepPanel>
             </div>
-            <div hidden={activeStep !== "who"}>
+            <div hidden={activeStep !== "who"} className="step-in">
               <StepPanel index={5} title="Who" lead="Team shape, and who is allowed in.">
                 <WhoStep register={register} errors={errors} watch={watch} setValue={setValue} />
               </StepPanel>
             </div>
-            <div hidden={activeStep !== "handin"}>
+            <div hidden={activeStep !== "handin"} className="step-in">
               <StepPanel index={6} title="Hand in" lead="What a team has to produce by the time submissions lock.">
                 <HandInStep register={register} errors={errors} watch={watch} setValue={setValue} />
               </StepPanel>
@@ -311,7 +311,7 @@ export default function CreateArenaPage() {
                   <button
                     type="button"
                     onClick={() => setActiveStep(steps[activeIndex + 1].id as StepId)}
-                    className="border-2 border-foreground bg-transparent px-5 py-2.5 font-mono text-[0.6rem] font-bold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-foreground hover:text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+                    className="border-2 border-foreground bg-foreground px-5 py-2.5 font-mono text-[0.6rem] font-bold uppercase tracking-[0.16em] text-background shadow-[3px_3px_0_0_var(--foreground)] transition-all hover:bg-transparent hover:text-foreground hover:shadow-none active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
                   >
                     {steps[activeIndex + 1].label} &rarr;
                   </button>

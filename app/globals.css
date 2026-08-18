@@ -125,6 +125,39 @@ button:disabled,
   cursor: not-allowed;
 }
 
+/* Motion on the create form.
+   A CSS animation rather than a transition, because these elements arrive from
+   `display: none` - a transition has no previous rendered state to run from
+   and would simply not fire. And CSS rather than GSAP: this page is a tool
+   being used, not a page being read, so it should not carry a ticker or wait
+   for hydration to look finished. GSAP earns its cost on the scroll-scrubbed
+   homepage; here it would be a library to fade a panel.
+
+   260ms is deliberately short. The job is to say "this panel was replaced",
+   not to be noticed. */
+@keyframes step-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.step-in {
+  animation: step-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Conditional blocks - the custom phase windows, the venue fields, the invite
+   code. Faster and shorter: they appear beside content that is not moving, so
+   they only need to explain where they came from. */
+.field-in {
+  animation: step-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-in,
+  .field-in {
+    animation: none;
+  }
+}
+
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
