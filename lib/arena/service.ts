@@ -349,6 +349,85 @@ export async function createArena(
 }
 
 /**
+ * The editable fields of one arena, for the host who is about to change them.
+ *
+ * Its own read rather than a reuse of `ARENA_DETAIL_SELECT`, because the two
+ * want different things. The detail select is shaped by what a *reader* may
+ * see - it carries participants and counts, and deliberately omits fields the
+ * form owns like `requireHiringConsent`. Widening it so the edit screen could
+ * borrow it would put those on the public payload for everyone.
+ */
+const ARENA_EDIT_FORM_SELECT = {
+  id: true,
+  title: true,
+  description: true,
+  rulesText: true,
+  difficulty: true,
+  creatorId: true,
+  canceledAt: true,
+  resultsPublishedAt: true,
+  locationType: true,
+  locationName: true,
+  googleMapsUrl: true,
+  isPrivate: true,
+  inviteCode: true,
+  isTeam: true,
+  minTeamSize: true,
+  maxTeamSize: true,
+  maxParticipants: true,
+  allowLeaderAccessControl: true,
+  hasPrizePool: true,
+  totalPrizePool: true,
+  prizeCurrency: true,
+  firstPlacePrize: true,
+  secondPlacePrize: true,
+  thirdPlacePrize: true,
+  prizeDisbursementTerms: true,
+  requireHiringConsent: true,
+  companyId: true,
+  requireGithubUrl: true,
+  requireFigmaUrl: true,
+  requireVideoUrl: true,
+  requireWriteup: true,
+  registrationStart: true,
+  registrationEnd: true,
+  ideaPhaseStart: true,
+  ideaPhaseEnd: true,
+  implPhaseStart: true,
+  implPhaseEnd: true,
+} satisfies Prisma.ArenaSelect;
+
+export type ArenaEditFormRow = Prisma.ArenaGetPayload<{
+  select: typeof ARENA_EDIT_FORM_SELECT;
+}>;
+
+/**
+ * Null for anyone who is not the host, and for an arena that can no longer be
+ * edited - the same refusal-not-report shape as `getArenaDetail`, so the page
+ * above can only render a form it was allowed to fetch.
+ */
+export async function getArenaForEdit(
+  arenaId: string,
+  userId: string,
+  now: Date = new Date()
+): Promise<ArenaEditFormRow | null> {
+  const arena = await prisma.arena.findFirst({
+    where: { id: arenaId, isDeleted: false, creatorId: userId },
+    select: ARENA_EDIT_FORM_SELECT,
+  });
+
+  if (!arena) return null;
+
+  // Mirrors what `updateArena` would refuse anyway. Showing the form first and
+  // rejecting the save afterwards makes someone retype a brief to be told it
+  // was never editable.
+  if (arena.canceledAt || arena.resultsPublishedAt || now >= arena.implPhaseEnd) {
+    return null;
+  }
+
+  return arena;
+}
+/**
  * Every field a host may change, and the schedule as it stands.
  *
  * Editing is a full-object PUT wearing PATCH's name: the edit screen is the
