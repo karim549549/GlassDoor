@@ -5,6 +5,7 @@ import { verifyOtpSchema } from "@/lib/auth/otp";
 import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
 import { logger } from "@/lib/server/logger";
+import { isDevOtpCode, devSignIn } from "@/lib/server/auth/dev-otp";
 
 /**
  * Exchange an emailed code for a session.
@@ -40,6 +41,37 @@ export async function POST(request: NextRequest) {
         windowMs: 900_000,
       });
       if (!byIp.ok) return rateLimitResponse(byIp.retryAfterSeconds);
+
+      // Local-only shortcut past the inbox. isDevOtpCode() is false in any
+      // production build, so this branch is unreachable there - see dev-otp.ts
+      // for the three independent fences. It still runs behind the rate limits
+      // above so the dev path cannot mask a limiter bug in the real one.
+      if (isDevOtpCode(code)) {
+        const bypass = await devSignIn(email);
+        if (!bypass.ok) {
+          logger.warn("Dev OTP sign-in failed", { reason: bypass.reason });
+          return NextResponse.json(
+            { error: `Dev sign-in failed: ${bypass.reason}` },
+            { status: 400 }
+          );
+        }
+
+        try {
+          await markEmailVerified({
+            id: bypass.user.id,
+            email: bypass.user.email ?? email,
+            fullName: bypass.user.fullName,
+          });
+        } catch (syncError) {
+          logger.error("Profile sync failed after dev OTP sign-in", {
+            userId: bypass.user.id,
+            error: syncError instanceof Error ? syncError.message : String(syncError),
+          });
+          return NextResponse.json({ error: "PROFILE_SYNC_FAILED" }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true, purpose, user: bypass.user });
+      }
 
       const supabase = await createClient();
       const { data, error } = await supabase.auth.verifyOtp({

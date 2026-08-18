@@ -142,6 +142,15 @@ export function VerifyCodeForm({
 
       <AuthErrorBanner message={error} />
 
+      {/* Names the escape hatch without shipping its value: NODE_ENV is
+          inlined at build time, so this block is dead code stripped from any
+          production bundle, and the code itself never leaves the server. */}
+      {process.env.NODE_ENV !== "production" && (
+        <p className="mb-5 border border-dashed border-foreground/25 bg-secondary p-2.5 font-mono text-[0.55rem] uppercase tracking-wider text-muted-foreground">
+          Dev: DEV_OTP_CODE from .env works here without waiting for mail
+        </p>
+      )}
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
