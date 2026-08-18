@@ -102,7 +102,12 @@ test("the invite code reaches the host and nobody else", () => {
   assert.equal(toArenaDetailDto(row(), "REGISTRATION_OPEN", host).inviteCode, INVITE_CODE);
 });
 
-test("no participant carries a user id, for any viewer", () => {
+test("no participant carries a user id field, for any viewer", () => {
+  // "Field", precisely: an `avatarUrl` points at `avatars/<userId>.jpg`, so an
+  // id can still be read out of a participant who has uploaded one. See the
+  // note at the top of dto.ts - that is a storage-naming decision, not
+  // something this transform can undo. The fixtures here carry no avatars, so
+  // this test checks the part the DTO is actually responsible for.
   const host = resolveViewer({ userId: HOST_ID, creatorId: HOST_ID, isRegistered: false });
   const dto = toArenaDetailDto(row(), "REGISTRATION_OPEN", host);
 

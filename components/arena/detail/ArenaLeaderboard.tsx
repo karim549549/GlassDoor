@@ -23,15 +23,18 @@ interface LeaderboardResponse {
 
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border-2 border-foreground bg-card shadow-[6px_6px_0px_0px_var(--foreground)]">
-      <div className="flex items-center gap-2 border-b-2 border-foreground px-5 py-3">
-        <Trophy className="h-4 w-4 text-orange" />
-        <h3 className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-foreground">
-          Final Standings
-        </h3>
+    // Hairline on bg-card, matching every other panel on this page. It used
+    // to carry a 6px offset shadow and a 2px rule, from the design language
+    // the detail page used before the board and the create form were rebuilt.
+    <section className="border border-foreground/15 bg-card">
+      <div className="flex items-center gap-2 border-b border-foreground/12 px-4 py-2.5">
+        <Trophy className="h-3.5 w-3.5 text-orange-ink" />
+        <h2 className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.18em] text-foreground/70">
+          Final standings
+        </h2>
       </div>
       {children}
-    </div>
+    </section>
   );
 }
 

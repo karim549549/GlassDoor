@@ -22,7 +22,15 @@ import type { ArenaStatus } from "./status";
  * Both are handled here rather than at each call site, because a rule enforced
  * per-caller is a rule that the next caller forgets. `toArenaDetailDto` takes
  * the viewer's relationship and emits a payload that is safe to serialise to
- * them - `inviteCode` for the host, nobody's user id for anyone.
+ * them - `inviteCode` for the host, no user id field for anyone.
+ *
+ * One honest caveat on that second one: avatars are stored in public storage
+ * as `avatars/<userId>.jpg`, so `avatarUrl` still spells out the id of anyone
+ * who has uploaded one. That is not a hole this file can close - it is a
+ * storage-naming decision - and it is not a credential either, since
+ * `/user/[id]` is a public route the board already links to. It does mean the
+ * rule here is "no id field", not "no id anywhere", and anything that ever
+ * makes a user id sensitive has to fix the filename first.
  */
 
 const participantSchema = z.object({
