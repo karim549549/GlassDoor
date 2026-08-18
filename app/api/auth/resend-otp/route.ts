@@ -4,6 +4,7 @@ import { resendOtpSchema } from "@/lib/auth/otp";
 import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
 import { logger } from "@/lib/server/logger";
+import { publicAuthError } from "@/lib/server/auth/supabase-error";
 
 /**
  * Send a fresh code for an in-progress signup or password reset.
@@ -56,7 +57,20 @@ export async function POST(request: NextRequest) {
           : await supabase.auth.resetPasswordForEmail(email);
 
       if (error) {
-        logger.warn("Resend rejected by Supabase", { purpose, reason: error.message });
+        logger.warn("Resend rejected by Supabase", {
+          purpose,
+          reason: error.message,
+          code: error.code,
+          status: error.status,
+        });
+
+        // "Wait an hour" is the single most useful thing this endpoint can
+        // say, and it is not an enumeration leak - the send cap is
+        // project-wide, not per address.
+        const surfaced = publicAuthError(error);
+        if (surfaced) {
+          return NextResponse.json({ error: surfaced.message }, { status: surfaced.status });
+        }
       }
 
       return NextResponse.json(UNIFORM_RESPONSE);

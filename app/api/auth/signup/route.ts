@@ -5,6 +5,7 @@ import { signupSchema } from "@/lib/auth/schema";
 import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
 import { logger } from "@/lib/server/logger";
+import { publicAuthError } from "@/lib/server/auth/supabase-error";
 
 /**
  * Deliberately uniform: every outcome below - new account, address already
@@ -52,10 +53,23 @@ export async function POST(request: NextRequest) {
       });
 
       if (error) {
-        // Surfacing error.message here would re-open the oracle the Prisma
-        // pre-check used to be: with email confirmations disabled, signUp
-        // answers an existing address with "User already registered".
-        logger.warn("Signup rejected by Supabase", { reason: error.message });
+        logger.warn("Signup rejected by Supabase", {
+          reason: error.message,
+          code: error.code,
+          status: error.status,
+        });
+
+        // Surfacing error.message wholesale would re-open the oracle the
+        // Prisma pre-check used to be: signUp answers an existing address with
+        // "User already registered". publicAuthError only lets through
+        // failures that carry no account-existence information - a rejected
+        // address, the mail send cap - and returns null for everything else,
+        // which falls through to the uniform body below.
+        const surfaced = publicAuthError(error);
+        if (surfaced) {
+          return NextResponse.json({ error: surfaced.message }, { status: surfaced.status });
+        }
+
         return NextResponse.json(UNIFORM_RESPONSE);
       }
 

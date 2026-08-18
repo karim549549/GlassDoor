@@ -3,6 +3,7 @@ import { createClient } from "@/lib/server/supabase/server";
 import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
 import { logger } from "@/lib/server/logger";
+import { publicAuthError } from "@/lib/server/auth/supabase-error";
 
 export async function POST(request: NextRequest) {
   return withApiErrorHandling(
@@ -38,7 +39,16 @@ export async function POST(request: NextRequest) {
       // account existence. Nothing here is actionable by the caller: either a
       // mail arrives or it does not.
       if (error) {
-        logger.warn("Password reset rejected by Supabase", { reason: error.message });
+        logger.warn("Password reset rejected by Supabase", {
+          reason: error.message,
+          code: error.code,
+          status: error.status,
+        });
+
+        const surfaced = publicAuthError(error);
+        if (surfaced) {
+          return NextResponse.json({ error: surfaced.message }, { status: surfaced.status });
+        }
       }
 
       return NextResponse.json({

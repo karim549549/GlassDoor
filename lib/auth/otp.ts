@@ -20,7 +20,15 @@ export const OTP_LENGTH = 6;
 export const OTP_PURPOSES = ["signup", "recovery"] as const;
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];
 
-const CODE_PATTERN = new RegExp(`^\d{${OTP_LENGTH}}$`);
+// A character class rather than \d, and that is not a style choice.
+// This was written as a template literal containing \d, where \d is not a
+// recognised escape - so it collapsed to ^d{6}$, a pattern matching six
+// literal letter Ds. It shipped. No code could ever validate: every
+// verification failed inside this schema and returned 400 without ever
+// reaching Supabase, which is why the auth logs showed zero /verify calls
+// while the client showed a wrong-code error. [0-9] has nothing to escape,
+// so the same mistake cannot recur here.
+const CODE_PATTERN = new RegExp(`^[0-9]{${OTP_LENGTH}}$`);
 
 export const otpCodeSchema = z
   .string()
