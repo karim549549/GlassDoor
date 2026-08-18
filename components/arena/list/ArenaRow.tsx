@@ -111,6 +111,51 @@ function teamShape(arena: SerializedArenaListItem): string {
   return `teams of ${arena.minTeamSize}–${arena.maxTeamSize}`;
 }
 
+/**
+ * Who wrote the brief.
+ *
+ * Text, not a link: the whole row is already an anchor, and an anchor inside an
+ * anchor is invalid HTML that browsers resolve by dropping one of them. And a
+ * name rather than an avatar - at this scale an avatar is a 20px decoration and
+ * an image request per row, where "by @karim" is the actual signal, which is
+ * whether you recognise who is running it.
+ *
+ * The handle is preferred now that /u/<handle> exists and is the canonical
+ * profile address. `creator` has been in the list select since the slimming
+ * and was never rendered until now.
+ */
+function host(arena: SerializedArenaListItem): string | null {
+  const handle = arena.creator?.handle;
+  if (handle) return `by @${handle}`;
+  const name = arena.creator?.fullName;
+  return name ? `by ${name}` : null;
+}
+
+/**
+ * PRD 7.1's tier badge - but only for the two tiers that mean something.
+ *
+ * COMMUNITY is every arena on the board (106 of 106 right now), and labelling
+ * the universal case is noise: it takes width from the brief to tell a reader
+ * something they already know. OFFICIAL and COMPANY are the exceptions, and
+ * they carry real consequences - full XP and prize eligibility, where COMMUNITY
+ * gets neither - so those are worth the space.
+ */
+function authorityBadge(authority: string): { label: string; className: string } | null {
+  if (authority === "OFFICIAL") {
+    return {
+      label: "Official",
+      className: "border-orange bg-orange text-[#0E0E0D]",
+    };
+  }
+  if (authority === "COMPANY") {
+    return {
+      label: "Company",
+      className: "border-foreground bg-foreground text-background",
+    };
+  }
+  return null;
+}
+
 function prizeLabel(arena: SerializedArenaListItem): string | null {
   if (!arena.hasPrizePool || arena.totalPrizePool == null) return null;
   const amount = Number(arena.totalPrizePool);
@@ -145,6 +190,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
   const isIn = (arena.entries?.length ?? 0) > 0;
   const entered = arena._count.entries;
   const prize = prizeLabel(arena);
+  const tier = authorityBadge(arena.authority);
 
   /**
    * The domain and the prize carry the accent; everything else is ink.
@@ -163,7 +209,8 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
     teamShape(arena),
     arena.locationType === "ONLINE" ? "online" : arena.locationName || "in person",
     entered === 1 ? "1 entered" : `${entered} entered`,
-  ];
+    host(arena),
+  ].filter(Boolean) as string[];
   const domain = domainLabel(arena.domain);
 
   return (
@@ -193,8 +240,15 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
             <span className="font-display text-[1.12rem] leading-snug text-foreground transition-colors group-hover:text-orange-ink">
               {arena.title}
             </span>
+            {tier && (
+              <span
+                className={`border px-1.5 py-px font-mono text-[0.48rem] font-bold uppercase tracking-[0.14em] ${tier.className}`}
+              >
+                {tier.label}
+              </span>
+            )}
             {isHost && (
-              <span className="border border-foreground/30 px-1.5 py-px font-mono text-[0.48rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              <span className="border border-foreground/40 px-1.5 py-px font-mono text-[0.48rem] font-bold uppercase tracking-[0.14em] text-foreground/70">
                 Yours
               </span>
             )}
@@ -204,7 +258,7 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
               </span>
             )}
             {arena.isPrivate && (
-              <span className="border border-foreground/30 px-1.5 py-px font-mono text-[0.48rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              <span className="border border-foreground/40 px-1.5 py-px font-mono text-[0.48rem] font-bold uppercase tracking-[0.14em] text-foreground/70">
                 Invite only
               </span>
             )}

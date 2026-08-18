@@ -53,22 +53,46 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
 
   const statusFilter = arenaStatusWhere(status, now);
 
+  /**
+   * Conditions are collected and ANDed rather than merged onto one object.
+   *
+   * Several of them carry their own `OR` - the "my arenas" clause, the search
+   * clause, the private-visibility clause below - and the previous code merged
+   * them by hand, deleting `where.OR` and reassigning it. That worked for two
+   * and silently dropped the third: whichever OR was written last won, so
+   * enabling search on the "my" tab searched the whole board. An array cannot
+   * have that bug.
+   */
+  const conditions: Prisma.ArenaWhereInput[] = [];
+
   const where: Prisma.ArenaWhereInput = {
     isDeleted: false,
     ...statusFilter,
   };
 
+  /**
+   * Private arenas do not appear on a public board.
+   *
+   * They were listed to everyone: 21 of the 106 arenas in the database are
+   * private, all of them published, all of them on the board - each with an
+   * "Invite only" badge announcing itself. app/sitemap.ts already refuses to
+   * emit them, on the grounds that "a private arena is reachable only through
+   * its invite code, so listing one here would publish that existence to every
+   * crawler". That reasoning applies at least as strongly to the page a crawler
+   * actually reads, which this one is: /arena is server-rendered and indexed.
+   *
+   * A signed-in reader still sees the private arenas they host or have entered,
+   * which is what makes the "Mine" tab work.
+   */
+  conditions.push(
+    userId ? { OR: [{ isPrivate: false }, myArenasWhere(userId)] } : { isPrivate: false }
+  );
+
   if (tab === "my") {
     if (!userId) {
       throw new Error("listArenas: tab='my' requires a userId.");
     }
-    const myCondition = myArenasWhere(userId);
-    if (where.OR) {
-      where.AND = [{ OR: where.OR }, myCondition];
-      delete where.OR;
-    } else {
-      Object.assign(where, myCondition);
-    }
+    conditions.push(myArenasWhere(userId));
   }
 
   // The four axes a reader actually decides on. `access` used to be here
@@ -107,19 +131,16 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
   }
 
   if (search.trim()) {
-    const searchConditions: Prisma.ArenaWhereInput[] = [
-      { title: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
-      { rulesText: { contains: search, mode: "insensitive" } },
-    ];
-
-    if (where.OR) {
-      where.AND = [{ OR: where.OR }, { OR: searchConditions }];
-      delete where.OR;
-    } else {
-      where.OR = searchConditions;
-    }
+    conditions.push({
+      OR: [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { rulesText: { contains: search, mode: "insensitive" } },
+      ],
+    });
   }
+
+  where.AND = conditions;
 
   // Default is "closing", not "newest". The board's job is "what can I enter",
   // and sorting by creation date put arenas that closed weeks ago at the top of
