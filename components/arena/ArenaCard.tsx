@@ -21,7 +21,6 @@ export interface ArenaCardProps {
 export interface ArenaCardBodyData {
   title: string;
   description: string;
-  coverImageUrl?: string | null;
   status: string;
   isPrivate: boolean;
   isTeam: boolean;
@@ -59,29 +58,14 @@ export function ArenaCardBody({ arena, timeLeft, footerDate }: ArenaCardBodyProp
   return (
     <div className="flex flex-col gap-3">
 
-      {/* Cover Image Block (Enforced 4:1 crop ratio for layout parity) */}
-      <div className="w-full aspect-[4/1] relative border border-foreground/10 bg-foreground/5 overflow-hidden shrink-0 flex items-center justify-center">
-        {arena.coverImageUrl ? (
-          <Image
-            src={arena.coverImageUrl}
-            alt={arena.title}
-            fill
-            sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center p-2 text-center select-none text-foreground/20">
-            <Trophy className="h-6 w-6 stroke-[1.25]" />
-            <span className="font-mono text-[0.38rem] tracking-[0.2em] uppercase mt-1">NO COVER</span>
-          </div>
-        )}
-
-        {/* Cover Overlay status tag */}
-        <div className="absolute top-1.5 left-1.5 flex flex-wrap gap-1">
-          <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-white px-1 py-0.5 border border-foreground">
-            {arena.isPrivate ? "INVITE ONLY" : "PUBLIC"}
-          </span>
-        </div>
+      {/* Arenas have no cover image. The 4:1 strip that used to open this
+          card was a placeholder for most of them - a trophy glyph and the
+          words "NO COVER" - so it cost a third of the card's height to say
+          nothing. The visibility tag it carried moves up here. */}
+      <div className="flex flex-wrap gap-1">
+        <span className="font-mono text-[0.38rem] font-bold uppercase tracking-wider bg-orange text-[#0E0E0D] px-1 py-0.5 border border-foreground">
+          {arena.isPrivate ? "INVITE ONLY" : "PUBLIC"}
+        </span>
       </div>
 
       {/* Card Main Info */}

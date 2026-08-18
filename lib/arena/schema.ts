@@ -10,7 +10,6 @@ import { validateArenaTimeline } from "@/lib/arena/formats";
 export const arenaBaseSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  coverImageUrl: z.string().url("Must be a valid URL").optional().nullable(),
   isPrivate: z.boolean().default(false),
   inviteCode: z.string().optional().nullable(),
 

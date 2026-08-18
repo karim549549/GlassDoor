@@ -10,7 +10,6 @@ export const ARENA_LIST_SELECT = {
   id: true,
   title: true,
   description: true,
-  coverImageUrl: true,
   format: true,
   authority: true,
   intent: true,

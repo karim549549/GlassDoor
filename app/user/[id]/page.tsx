@@ -1,6 +1,6 @@
 import { cache } from "react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getUserProfileById } from "@/lib/user/service";
 import { toUserProfileDto } from "@/lib/user/dto";
 import { getOptionalUser } from "@/lib/server/auth/require-user";
@@ -42,7 +42,13 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
     return { title: "Profile Not Found", robots: { index: false, follow: false } };
   }
 
-  const name = raw.fullName || (raw.handle ? `@${raw.handle}` : "Developer");
+  // Nothing here should be indexed under this URL when a handle exists -
+  // /u/<handle> is the canonical form and the page below redirects there.
+  if (raw.handle) {
+    return { title: raw.fullName ?? `@${raw.handle}`, robots: { index: false, follow: true } };
+  }
+
+  const name = raw.fullName || "Developer";
 
   return {
     title: name,
@@ -61,6 +67,14 @@ export default async function UserPage({ params }: UserPageProps) {
 
   if (!raw) {
     notFound();
+  }
+
+  // Kept as a permanent alias rather than removed. Every profile link written
+  // before handles existed points here - including any a reader already put on
+  // a CV - and a uuid URL that 404s is worse than one extra hop. Accounts
+  // without a handle still render here directly.
+  if (raw.handle) {
+    redirect(`/u/${raw.handle}`);
   }
 
   const { isOwner, ...profileData } = toUserProfileDto(raw);

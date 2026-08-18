@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +18,7 @@ import { SignupFormFields } from "./SignupFormFields";
 import { VerifyCodeForm } from "@/components/auth/VerifyCodeForm";
 import { authLandingPath } from "@/lib/auth/landing";
 import { currentRedirectTo } from "@/lib/client/redirect-target";
+import { suggestHandle } from "@/lib/user/handle";
 
 /**
  * The shared schema defaults `roleName`, so its input and output types differ:
@@ -55,6 +56,19 @@ export default function SignupForm() {
   });
 
   const selectedRole = useWatch({ control, name: "roleName" });
+
+  // Prefill the handle from the name, and stop the moment the reader touches
+  // the handle field. Without that guard, typing a surname after choosing a
+  // handle would overwrite the choice - the classic version of this feature
+  // getting in the way of the person using it.
+  const watchedFullName = useWatch({ control, name: "fullName" });
+  const handleTouched = useRef(false);
+
+  useEffect(() => {
+    if (handleTouched.current) return;
+    const suggested = suggestHandle(watchedFullName);
+    setValue("handle", suggested ?? "", { shouldValidate: false });
+  }, [watchedFullName, setValue]);
 
   useAuthFormAnimation({ containerRef, titleRef, formRef, footerRef });
 
@@ -143,7 +157,22 @@ export default function SignupForm() {
           onSelect={(role) => setValue("roleName", role)}
         />
 
-        <SignupFormFields register={register} errors={errors} disabled={isLoading} />
+        {/* onInput rather than onChange: react-hook-form's register already
+            owns onChange here, and the capture phase lets this observe the
+            edit without displacing it. */}
+        {/* space-y-5 is repeated here because these inputs are no longer
+            direct children of the form, and the form's own spacing only
+            applies one level down. */}
+        <div
+          className="space-y-5"
+          onInput={(e) => {
+            if ((e.target as HTMLInputElement).name === "handle") {
+              handleTouched.current = true;
+            }
+          }}
+        >
+          <SignupFormFields register={register} errors={errors} disabled={isLoading} />
+        </div>
 
         <div className="pt-2">
           <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>

@@ -44,15 +44,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: cleanDescription,
       type: "website",
       url: canonicalUrl,
-      images: arena.coverImageUrl
-        ? [{ url: arena.coverImageUrl, width: 1200, height: 630, alt: arena.title }]
-        : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: arena.title,
       description: cleanDescription,
-      images: arena.coverImageUrl ? [arena.coverImageUrl] : undefined,
     },
   };
 }
@@ -94,7 +90,6 @@ export default async function ArenaDetailPage({ params }: PageProps) {
     name: arena.title,
     description: toMetaText(arena.description, 300),
     url: canonicalUrl,
-    ...(arena.coverImageUrl ? { image: [arena.coverImageUrl] } : {}),
     startDate: arena.registrationStart.toISOString(),
     endDate: arena.implPhaseEnd.toISOString(),
     eventAttendanceMode: isOnline
@@ -116,7 +111,6 @@ export default async function ArenaDetailPage({ params }: PageProps) {
           id: arena.id,
           title: arena.title,
           description: arena.description,
-          coverImageUrl: arena.coverImageUrl,
           status: derivedStatus,
           isPrivate: arena.isPrivate,
           inviteCode: arena.inviteCode,

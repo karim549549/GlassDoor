@@ -170,14 +170,6 @@ async function main() {
     });
   }
 
-  // Find cover image from any existing arena
-  const existingArena = await prisma.arena.findFirst({
-    where: {
-      coverImageUrl: { not: null }
-    }
-  });
-  const defaultCover = existingArena?.coverImageUrl || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80";
-
   const cities = ["Cairo", "Giza", "Alexandria", "Suez", "Mansoura", "Luxor", "Aswan", "Tanta", "Asyut", "Red Sea"];
   const topics = ["React", "Next.js", "Node.js", "Python", "Go API", "Rust Sync", "DevOps scaling", "Database Sync", "Kubernetes Mesh", "Web3 Cairo"];
   const suffixes = ["Speedrun", "Sprint", "Duel", "Hackathon", "Championship", "League", "Clash", "Showdown", "Marathon", "Expo"];
@@ -247,7 +239,6 @@ async function main() {
       data: {
         title,
         description,
-        coverImageUrl: defaultCover,
         creatorId: creator.id,
         publishedAt: new Date(),
         isPrivate,

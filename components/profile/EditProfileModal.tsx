@@ -212,9 +212,11 @@ export function EditProfileModal({ isOpen, onClose, user, onSaveSuccess }: EditP
 
           <LinksSection register={register} errors={errors} />
 
-          {/* Hidden inputs registering the custom-controlled dropdown/multiselect
-              fields with react-hook-form, mirroring the coverImageUrl pattern in
-              app/contest/create/page.tsx so the zod resolver validates them. */}
+          {/* Hidden inputs registering the custom-controlled dropdown and
+              multiselect fields with react-hook-form, so the zod resolver sees
+              values that no visible <input> owns. (This used to cite the arena
+              cover uploader as the reference; arenas no longer have one, and
+              app/contest/ has not existed for longer than that.) */}
           <input type="hidden" {...register("education")} />
           <input type="hidden" {...register("location")} />
           <input type="hidden" {...register("jobTypes")} />

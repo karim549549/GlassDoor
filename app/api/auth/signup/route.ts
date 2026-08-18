@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/server/supabase/server";
 import { syncUser } from "@/lib/server/auth/auth-service";
+import { isHandleAvailable } from "@/lib/user/service";
 import { signupSchema } from "@/lib/auth/schema";
 import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
@@ -37,7 +38,20 @@ export async function POST(request: NextRequest) {
         const first = parsed.error.issues[0];
         return NextResponse.json({ error: first?.message ?? "Invalid request." }, { status: 400 });
       }
-      const { email, password, fullName, roleName } = parsed.data;
+      const { email, password, fullName, handle, roleName } = parsed.data;
+
+      // Checked before Supabase is touched, so a taken handle does not leave
+      // an orphaned auth user behind whose profile sync can never succeed.
+      // Not a guarantee - the unique index is - but it covers the common case
+      // with a message the reader can act on. A handle being taken says
+      // nothing about email addresses, so this is not the enumeration surface
+      // the uniform response below exists to close.
+      if (!(await isHandleAvailable(handle))) {
+        return NextResponse.json(
+          { error: "That handle is taken. Try another." },
+          { status: 409 }
+        );
+      }
 
       // With DEV_OTP_CODE set, skip Supabase's mail entirely. signUp() sends
       // a confirmation email, and the built-in service allows roughly two an
@@ -58,6 +72,7 @@ export async function POST(request: NextRequest) {
           id: created.user.id,
           email: created.user.email ?? email,
           fullName,
+          handle,
           roleName,
           emailVerified: true,
         });
@@ -112,6 +127,7 @@ export async function POST(request: NextRequest) {
           id: data.user.id,
           email: data.user.email || email,
           fullName,
+          handle,
           roleName,
           emailVerified: false,
         });

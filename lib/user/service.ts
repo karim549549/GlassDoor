@@ -72,6 +72,34 @@ export interface RawUserProfile extends UserProfileRow {
   isOwner: boolean;
 }
 
+/**
+ * Free for the taking?
+ *
+ * A pre-check, not the guarantee - the unique index is that, and the signup
+ * route still handles the constraint violation for the narrow race between
+ * this call and the insert. What this buys is the common case: a clear "that
+ * handle is taken" before a Supabase account has been created for it.
+ */
+export async function isHandleAvailable(handle: string): Promise<boolean> {
+  const existing = await prisma.user.findUnique({
+    where: { handle },
+    select: { id: true },
+  });
+  return existing === null;
+}
+
+export async function getUserProfileByHandle(
+  handle: string,
+  viewerId: string | null
+): Promise<RawUserProfile | null> {
+  const row = await prisma.user.findUnique({
+    where: { handle },
+    select: { id: true },
+  });
+  if (!row) return null;
+  return getUserProfileById(row.id, viewerId);
+}
+
 export async function getUserProfileById(
   id: string,
   viewerId: string | null

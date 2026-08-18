@@ -16,6 +16,7 @@ export async function syncUser(params: {
   id: string;
   email: string;
   fullName?: string;
+  handle?: string;
   roleName?: "ADMIN" | "USER" | "COMPANY";
   emailVerified?: boolean;
   /**
@@ -30,6 +31,7 @@ export async function syncUser(params: {
     id,
     email,
     fullName,
+    handle,
     roleName = "USER",
     emailVerified = false,
     allowStaleEmailReconciliation = false,
@@ -43,8 +45,12 @@ export async function syncUser(params: {
     prisma.$transaction([
       prisma.user.upsert({
         where: { id },
-        update: { email, fullName, emailVerified },
-        create: { id, email, fullName, emailVerified },
+        // `handle` is only ever written when one is supplied. Login and the
+        // OAuth callback both call this with no handle, and spreading an
+        // undefined into `update` would be a no-op anyway - but being explicit
+        // stops a future edit from blanking a handle on every sign-in.
+        update: { email, fullName, emailVerified, ...(handle ? { handle } : {}) },
+        create: { id, email, fullName, emailVerified, handle },
       }),
       prisma.userRole.upsert({
         where: {

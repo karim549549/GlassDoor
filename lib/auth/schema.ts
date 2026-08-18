@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { handleSchema } from "@/lib/user/handle";
 
 /**
  * Single source of truth for credential validation, imported by the login and
@@ -34,6 +35,11 @@ export const signupSchema = z.object({
   email: z.email("Please enter a valid email address"),
   password: passwordSchema,
   fullName: z.string().trim().min(2, "Full name must be at least 2 characters"),
+  // Collected at signup rather than left for a later profile edit. The column
+  // has existed since the schema was written and nothing ever set it, so every
+  // profile addressed itself by uuid; asking once here is what finally makes
+  // /u/<handle> possible. See lib/user/handle.ts for the rules.
+  handle: handleSchema,
   roleName: z.enum(SELF_ASSIGNABLE_ROLES).default("USER"),
 });
 

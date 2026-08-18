@@ -221,7 +221,6 @@ export async function createArena(
     data: {
       title: data.title,
       description: data.description,
-      coverImageUrl: data.coverImageUrl || null,
       format: data.format as ArenaFormat,
       authority: data.authority as ArenaAuthority,
       intent: data.intent as ArenaIntent,

@@ -22,7 +22,7 @@ import { ProgressHud } from "@/components/arena/create/ProgressHud";
 import { TagSelectionSection } from "@/components/arena/create/TagSelectionSection";
 import gsap from "gsap";
 
-const generalSectionSchema = arenaBaseSchema.pick({ title: true, description: true, coverImageUrl: true });
+const generalSectionSchema = arenaBaseSchema.pick({ title: true, description: true });
 const timelineSectionSchema = arenaBaseSchema.pick({
   registrationStart: true,
   registrationEnd: true,
@@ -89,7 +89,6 @@ export default function CreateArenaPage() {
 
   const watchTitle = useWatch({ control, name: "title" });
   const watchDescription = useWatch({ control, name: "description" });
-  const watchCoverImageUrl = useWatch({ control, name: "coverImageUrl" });
   const watchInviteCode = useWatch({ control, name: "inviteCode" });
   // minTeamSize/maxTeamSize are `z.coerce.number()`, so their form-input type is
   // `unknown` and the raw registered <input type="number"> hands back a string.
@@ -108,7 +107,6 @@ export default function CreateArenaPage() {
   const isGeneralValid = generalSectionSchema.safeParse({
     title: watchTitle,
     description: watchDescription,
-    coverImageUrl: watchCoverImageUrl,
   }).success;
   const isAccessValid = !watchIsPrivate || !!watchInviteCode;
   const isTeamValid = !watchIsTeam || (watchMinTeam >= 1 && watchMaxTeam >= watchMinTeam);
@@ -182,7 +180,6 @@ export default function CreateArenaPage() {
               arena={{
                 title: watchTitle || "UNTITLED ARENA",
                 description: watchDescription || "No overview description provided yet. Enter details on the left to sync.",
-                coverImageUrl: watchCoverImageUrl,
                 status: "REGISTRATION_OPEN",
                 isPrivate: watchIsPrivate,
                 isTeam: watchIsTeam,
@@ -201,12 +198,7 @@ export default function CreateArenaPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
             <div className="lg:col-span-8 space-y-8">
-              <GeneralSection
-                register={register}
-                errors={errors}
-                setValue={setValue}
-                watchCoverImageUrl={watchCoverImageUrl}
-              />
+              <GeneralSection register={register} errors={errors} />
 
               <TagSelectionSection setValue={setValue} watch={watch} />
 

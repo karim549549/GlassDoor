@@ -1,0 +1,17 @@
+-- Arenas do not have a cover image.
+--
+-- The column was optional and, for the great majority of rows, null - so every
+-- arena card opened with a 4:1 strip containing a trophy glyph and the words
+-- "NO COVER", spending a third of the card's height to say nothing, and the
+-- detail hero fell back to a blueprint grid that now stands on its own. The
+-- brief is the content here; a decorative banner uploaded by whoever created
+-- the arena was never going to compete with it.
+--
+-- Dropping rather than leaving it unused: an unread nullable column is a
+-- standing invitation for something to start writing to it again, and the
+-- upload route, the upload hook and the uploader component are all deleted in
+-- the same change.
+--
+-- Hand-written, as the repo's convention requires for DROP - generated DDL is
+-- only copied verbatim for CREATE. IF EXISTS so re-running is harmless.
+ALTER TABLE "arenas" DROP COLUMN IF EXISTS "coverImageUrl";

@@ -18,8 +18,6 @@ interface ArenaDetailClientProps {
     id: string;
     title: string;
     description: string;
-    coverImageUrl?: string | null;
-    additionalImages?: string[];
     status: string;
     isPrivate: boolean;
     inviteCode?: string | null;
@@ -164,8 +162,6 @@ export function ArenaDetailClient({ arena, meta, isGuest }: ArenaDetailClientPro
           id={arena.id}
           title={arena.title}
           description={arena.description}
-          coverImageUrl={arena.coverImageUrl}
-          additionalImages={arena.additionalImages || []}
           isPrivate={arena.isPrivate}
           isTeam={arena.isTeam}
           minTeamSize={arena.minTeamSize}
@@ -190,7 +186,6 @@ export function ArenaDetailClient({ arena, meta, isGuest }: ArenaDetailClientPro
           onResign={handleResign}
           onLoginRedirect={handleLoginRedirect}
           onRequestPrivateJoin={handleRequestPrivateJoin}
-          onEditCoverClick={() => triggerNotification("Edit Cover modal coming soon.")}
         />
 
         {/* Main Content Area */}

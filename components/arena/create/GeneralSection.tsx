@@ -1,19 +1,16 @@
 "use client";
 
 import { Trophy } from "lucide-react";
-import type { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form";
+import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import { Input } from "@/components/ui/Input";
 import type { ArenaFormInput } from "@/lib/arena/schema";
-import { CoverImageUploader } from "./CoverImageUploader";
 
 interface GeneralSectionProps {
   register: UseFormRegister<ArenaFormInput>;
   errors: FieldErrors<ArenaFormInput>;
-  setValue: UseFormSetValue<ArenaFormInput>;
-  watchCoverImageUrl?: string | null;
 }
 
-export function GeneralSection({ register, errors, setValue, watchCoverImageUrl }: GeneralSectionProps) {
+export function GeneralSection({ register, errors }: GeneralSectionProps) {
   return (
     <div className="border-2 border-foreground bg-white p-6 md:p-8 shadow-[4px_4px_0px_0px_var(--foreground)]">
       <h2 className="font-mono text-[0.7rem] uppercase tracking-wider border-b border-border pb-3 mb-6 flex items-center gap-2 font-bold text-foreground">
@@ -47,13 +44,6 @@ export function GeneralSection({ register, errors, setValue, watchCoverImageUrl 
             </span>
           )}
         </div>
-
-        <CoverImageUploader
-          register={register}
-          errors={errors}
-          setValue={setValue}
-          watchCoverImageUrl={watchCoverImageUrl}
-        />
       </div>
     </div>
   );

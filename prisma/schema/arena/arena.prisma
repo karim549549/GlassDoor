@@ -58,7 +58,6 @@ model Arena {
   id                       String            @id @default(uuid()) @db.Uuid
   title                    String
   description              String            @db.Text
-  coverImageUrl            String?           
   creatorId                String            @db.Uuid
   creator                  User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   

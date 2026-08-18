@@ -3,16 +3,13 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, ShieldCheck, Navigation, ExternalLink } from "lucide-react";
-import { ArenaCarousel } from "./ArenaCarousel";
+import { ShieldCheck, Navigation, ExternalLink } from "lucide-react";
 import { ArenaActionButtons } from "./ArenaActionButtons";
 
 interface ArenaDetailHeroProps {
   id: string;
   title: string;
   description: string;
-  coverImageUrl?: string | null;
-  additionalImages?: string[];
   isPrivate: boolean;
   isTeam: boolean;
   minTeamSize: number;
@@ -54,15 +51,12 @@ interface ArenaDetailHeroProps {
   onResign?: () => void;
   onLoginRedirect?: () => void;
   onRequestPrivateJoin?: (code?: string) => void;
-  onEditCoverClick?: () => void;
 }
 
 export function ArenaDetailHero({
   id,
   title,
   description,
-  coverImageUrl,
-  additionalImages = [],
   isPrivate,
   isTeam,
   minTeamSize,
@@ -89,7 +83,6 @@ export function ArenaDetailHero({
   onResign = () => {},
   onLoginRedirect = () => {},
   onRequestPrivateJoin = () => {},
-  onEditCoverClick,
 }: ArenaDetailHeroProps) {
   const isFull = maxParticipants !== null && totalParticipants >= maxParticipants;
   const isCompleted = status === "COMPLETED";
@@ -100,34 +93,14 @@ export function ArenaDetailHero({
 
   return (
     <div className="relative w-full bg-foreground text-background border-b-4 border-double border-background/25 pt-20 pb-12 px-6 md:px-12 overflow-hidden">
-      {/* BACKGROUND COVER IMAGE LAYER (Same design aesthetic as User Profile Header) */}
-      <div className="absolute inset-0 z-0">
-        {coverImageUrl ? (
-          <Image
-            src={coverImageUrl}
-            alt={`${title} Cover`}
-            fill
-            sizes="100vw"
-            priority
-            className="object-cover opacity-40 mix-blend-luminosity"
-          />
-        ) : (
-          <div className="w-full h-full bg-foreground bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:24px_24px]" />
-        )}
-        {/* Dark subtle gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/80 to-foreground/50 z-10" />
-      </div>
+      {/* The blueprint grid this used to fall back to when no cover was set.
+          It is now the only treatment, which is why the gradient overlay went
+          with the image - there is nothing left to darken for legibility. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 z-0 bg-foreground bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:24px_24px]"
+      />
 
-      {/* Edit Cover Banner Button (Host Only) */}
-      {isHost && (
-        <button
-          onClick={onEditCoverClick}
-          className="absolute top-20 right-6 z-30 p-2 bg-background text-foreground border border-foreground font-mono text-[0.55rem] uppercase tracking-wider font-bold hover:bg-foreground hover:text-background transition-colors flex items-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(14,14,13,0.3)] cursor-pointer"
-        >
-          <Camera className="w-3.5 h-3.5" />
-          <span>EDIT COVER</span>
-        </button>
-      )}
 
       {/* HERO MAIN CONTAINER */}
       <div className="max-w-7xl mx-auto relative z-20 space-y-6">
@@ -284,12 +257,8 @@ export function ArenaDetailHero({
             </div>
           </div>
 
-          {/* Right Column (5/12 = 42%): Additional Images Carousel + Contextual Action */}
+          {/* Right Column (5/12 = 42%): Contextual Action */}
           <div className="lg:col-span-5 space-y-4">
-            {/* Additional Screenshots Auto-Playing Carousel */}
-            {additionalImages.length > 0 && (
-              <ArenaCarousel images={additionalImages} title={title} />
-            )}
 
             <div className="w-full">
               {mode === "matchmaking" ? (
