@@ -9,6 +9,25 @@ features go in the PRD, this is only for work that is already owed.
 
 ---
 
+## Blocking: SUPABASE_SERVICE_ROLE_KEY is a placeholder locally
+
+`.env` holds an 11-character redaction placeholder where the service role key
+should be. Two things need it and both are broken until it is replaced:
+`lib/server/upload.ts` (avatar, cover and arena image uploads) and the
+DEV_OTP_CODE sign-in.
+
+Copy it from Supabase -> Project Settings -> API Keys -> `service_role`
+(or an `sb_secret_` key) into `.env`. It is a secret that bypasses row-level
+security - it belongs in `.env` and Vercel only, never in the repo.
+
+## Launch blocker: remove DEV_OTP_CODE before signups open
+
+While it is set - locally or on Vercel - anyone who knows the value can sign in
+as any address. It is deliberately usable on the pre-launch deployment, which
+is why the fence is no longer tied to NODE_ENV. The verification screen shows a
+visible test-mode banner whenever it is active, and every use is logged as a
+warning, but neither of those removes the variable.
+
 ## Blocking: Supabase email templates still send a link, not a code
 
 **Where:** Supabase dashboard -> Authentication -> Emails

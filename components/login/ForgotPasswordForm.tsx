@@ -38,6 +38,7 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [devBypass, setDevBypass] = useState(false);
   const [verified, setVerified] = useState(false);
   const emailId = useId();
 
@@ -64,6 +65,7 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
       if (!res.ok) {
         setError(body.error || "Failed to send a code.");
       } else {
+        setDevBypass(Boolean(body.devBypass));
         setSentTo(data.email);
       }
     } catch (err) {
@@ -85,6 +87,7 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
       <VerifyCodeForm
         email={sentTo}
         purpose="recovery"
+        devBypass={devBypass}
         title="Enter your code"
         onVerified={() => setVerified(true)}
         onBack={() => setSentTo(null)}

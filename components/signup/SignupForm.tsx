@@ -33,6 +33,7 @@ export default function SignupForm() {
   // The address awaiting a code. Null until signup succeeds, which is also
   // what switches this form over to the verification step.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [devBypass, setDevBypass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,6 +87,7 @@ export default function SignupForm() {
           name: data.fullName || data.email.split("@")[0],
         });
 
+        setDevBypass(Boolean(result.devBypass));
         setPendingEmail(data.email);
         setIsLoading(false);
       }
@@ -109,6 +111,7 @@ export default function SignupForm() {
       <VerifyCodeForm
         email={pendingEmail}
         purpose="signup"
+        devBypass={devBypass}
         onBack={() => setPendingEmail(null)}
         onVerified={(user) => {
           router.push(authLandingPath(user.id, currentRedirectTo()));

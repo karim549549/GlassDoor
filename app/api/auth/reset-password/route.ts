@@ -4,6 +4,7 @@ import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
 import { logger } from "@/lib/server/logger";
 import { publicAuthError } from "@/lib/server/auth/supabase-error";
+import { devOtpActive } from "@/lib/server/auth/dev-otp";
 
 export async function POST(request: NextRequest) {
   return withApiErrorHandling(
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: "If that address has an account, a code is on its way.",
+        devBypass: devOtpActive(),
       });
     },
     "An unexpected error occurred.",

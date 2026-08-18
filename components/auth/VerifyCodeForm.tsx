@@ -24,6 +24,13 @@ interface VerifyCodeFormProps {
   title?: string;
   /** Sentence under the heading. Defaults to the signup wording. */
   hint?: string;
+  /**
+   * True when DEV_OTP_CODE is set on the server. Reported by the route that
+   * sent the code rather than read from NODE_ENV here, because the bypass is
+   * deliberately usable on the pre-launch deployment - where NODE_ENV is
+   * "production" and a build-time check would render nothing.
+   */
+  devBypass?: boolean;
 }
 
 /**
@@ -43,6 +50,7 @@ export function VerifyCodeForm({
   backLabel = "Use a different email",
   title = "Check your email",
   hint,
+  devBypass = false,
 }: VerifyCodeFormProps) {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -142,12 +150,14 @@ export function VerifyCodeForm({
 
       <AuthErrorBanner message={error} />
 
-      {/* Names the escape hatch without shipping its value: NODE_ENV is
-          inlined at build time, so this block is dead code stripped from any
-          production bundle, and the code itself never leaves the server. */}
-      {process.env.NODE_ENV !== "production" && (
-        <p className="mb-5 border border-dashed border-foreground/25 bg-secondary p-2.5 font-mono text-[0.55rem] uppercase tracking-wider text-muted-foreground">
-          Dev: DEV_OTP_CODE from .env works here without waiting for mail
+      {/* Deliberately loud. While DEV_OTP_CODE is set, anyone who knows it
+          can sign in as any address, and the likeliest way that becomes a
+          real problem is nobody remembering it is on. The value itself never
+          leaves the server - only the fact that it is active. */}
+      {devBypass && (
+        <p className="mb-5 border-2 border-orange bg-orange/10 p-3 font-mono text-[0.58rem] uppercase leading-relaxed tracking-wider text-orange-ink">
+          Test mode: DEV_OTP_CODE is set on the server, so a known fixed code
+          signs in as any address here. Remove it before signups open.
         </p>
       )}
 

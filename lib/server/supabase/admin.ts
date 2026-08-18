@@ -26,6 +26,21 @@ export function createAdminClient(): SupabaseClient {
     );
   }
 
+  // A present-but-fake value used to pass this check and fail much later, deep
+  // inside a Supabase call, as an opaque "Invalid API key" - which is what a
+  // redaction placeholder left in .env actually produced, silently breaking
+  // every upload as well. A service role key is either a JWT or one of the
+  // newer sb_secret_ keys; neither is short.
+  const looksReal =
+    serviceRoleKey.length > 40 &&
+    (serviceRoleKey.startsWith("eyJ") || serviceRoleKey.startsWith("sb_secret_"));
+
+  if (!looksReal) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is set but does not look like a real key (expected a JWT starting 'eyJ' or an 'sb_secret_' key). Copy it from Supabase -> Project Settings -> API Keys."
+    );
+  }
+
   adminClient = createSupabaseClient(url, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,

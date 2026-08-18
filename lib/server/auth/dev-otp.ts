@@ -2,35 +2,26 @@ import "server-only";
 import { createAdminClient } from "@/lib/server/supabase/admin";
 import { createClient } from "@/lib/server/supabase/server";
 import { logger } from "@/lib/server/logger";
+import { isDevOtpActive, matchesDevOtpCode } from "@/lib/auth/dev-otp-policy";
 
 /**
- * A fixed code that skips the inbox during local development.
+ * A fixed code that skips the inbox.
  *
  * Supabase's built-in mail service allows roughly two messages an hour, so
  * testing a signup flow against it means waiting - and waiting again for every
- * resend. This trades that for a code you already know.
+ * resend. This trades that for a code that is already known.
  *
- * It is a backdoor, so it is fenced three ways and every fence is independent:
- *
- *   1. NODE_ENV !== "production". `next build` sets this, so a production
- *      bundle cannot take this path however the environment is configured.
- *   2. VERCEL_ENV !== "production". Belt and braces for the deployed case.
- *   3. DEV_OTP_CODE must be explicitly set. There is no default value, so
- *      forgetting to configure it fails closed rather than opening a guessable
- *      code like "111111" on whatever machine runs next.
- *
- * All three must hold. Losing any one of them closes the door.
+ * The fence lives in lib/auth/dev-otp-policy.ts, pure and unit-tested, because
+ * it is the whole security property here and it has already failed once in
+ * each direction. Read the note there before changing when this is active.
  */
-function devCode(): string | null {
-  if (process.env.NODE_ENV === "production") return null;
-  if (process.env.VERCEL_ENV === "production") return null;
-  const code = process.env.DEV_OTP_CODE;
-  return code && code.length > 0 ? code : null;
+export function isDevOtpCode(code: string): boolean {
+  return matchesDevOtpCode(process.env, code);
 }
 
-export function isDevOtpCode(code: string): boolean {
-  const configured = devCode();
-  return configured !== null && code === configured;
+/** Reported to the client so the verification screen can warn, visibly. */
+export function devOtpActive(): boolean {
+  return isDevOtpActive(process.env);
 }
 
 type DevSignInResult =
@@ -51,7 +42,16 @@ type DevSignInResult =
  * cannot complete a magic-link verification.
  */
 export async function devSignIn(email: string): Promise<DevSignInResult> {
-  const admin = createAdminClient();
+  // Confirming an address is an admin operation, so this path needs the
+  // service role key even though nothing else about it is privileged. Surface
+  // a missing or placeholder key as itself rather than letting it arrive as
+  // Supabase's opaque "Invalid API key" several calls later.
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch (err) {
+    return { ok: false, reason: err instanceof Error ? err.message : String(err) };
+  }
 
   const { data: link, error: linkError } = await admin.auth.admin.generateLink({
     type: "magiclink",

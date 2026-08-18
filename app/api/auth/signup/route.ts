@@ -6,6 +6,7 @@ import { withApiErrorHandling } from "@/lib/server/api-route";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
 import { logger } from "@/lib/server/logger";
 import { publicAuthError } from "@/lib/server/auth/supabase-error";
+import { devOtpActive } from "@/lib/server/auth/dev-otp";
 
 /**
  * Deliberately uniform: every outcome below - new account, address already
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: surfaced.message }, { status: surfaced.status });
         }
 
-        return NextResponse.json(UNIFORM_RESPONSE);
+        return NextResponse.json({ ...UNIFORM_RESPONSE, devBypass: devOtpActive() });
       }
 
       // An empty `identities` array is how Supabase reports "this address is
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      return NextResponse.json(UNIFORM_RESPONSE);
+      return NextResponse.json({ ...UNIFORM_RESPONSE, devBypass: devOtpActive() });
     },
     "An unexpected error occurred.",
     request
