@@ -1,112 +1,148 @@
-import { buildArenaSlug } from "@/lib/arena-slug";
-import type { ArenaSearchHit } from "@/lib/client/useArenaSearch";
+"use client";
+
+import Image from "next/image";
+import { CornerDownLeft } from "lucide-react";
+import type { SearchGroup, SearchHit } from "@/lib/client/useSiteSearch";
 
 /**
- * Results for the nav search dialog.
+ * Grouped results, five per group.
  *
- * One category, because the platform has exactly one searchable public entity
- * today. The previous version rendered three - People, Companies and Context -
- * all of them hardcoded fiction pointing at routes that do not resolve. A
- * single honest category beats three invented ones, and this is the site whose
- * entire product is that a claim can be checked.
+ * Grouping is not decoration here - "karim" is plausibly a person and
+ * plausibly a brief, and a flat list makes a reader work out which kind each
+ * row is from its text. The heading does that work once per group.
+ *
+ * Five is deliberate: enough to recognise the right one, short enough that the
+ * whole panel is still scannable when several groups have hits. Anyone who
+ * needs the sixth needs a filtered page, not a longer dropdown.
+ *
+ * `activeIndex` is an index into the FLAT order across all groups, so the
+ * arrow keys cross group boundaries without the caller having to know how the
+ * groups are shaped.
  */
-
-const DOMAIN_LABEL: Record<string, string> = {
-  FULL_STACK_WEB: "Full stack",
-  BACKEND_DISTRIBUTED: "Backend",
-  FRONTEND_MOBILE: "Frontend",
-  AI_MACHINE_LEARNING: "AI / ML",
-  DATA_ENGINEERING: "Data",
-  CYBERSECURITY_ETHICAL_HACKING: "Security",
-  SYSTEMS_DEV_OPS: "Systems",
-  EMBEDDED_IOT: "Embedded",
-  BLOCKCHAIN_WEB3: "Web3",
-};
-
 interface NavSearchResultsProps {
-  query: string;
-  hits: ArenaSearchHit[];
+  groups: SearchGroup[];
   loading: boolean;
   failed: boolean;
-  onResultClick: (url: string) => void;
+  query: string;
+  activeIndex: number;
+  onSelect: (hit: SearchHit) => void;
+  onHover: (index: number) => void;
 }
 
 export function NavSearchResults({
-  query,
-  hits,
+  groups,
   loading,
   failed,
-  onResultClick,
+  query,
+  activeIndex,
+  onSelect,
+  onHover,
 }: NavSearchResultsProps) {
-  if (loading && hits.length === 0) {
-    return (
-      <p className="py-6 text-center text-foreground/50" role="status">
-        Searching&hellip;
-      </p>
-    );
-  }
-
   if (failed) {
     return (
-      <p className="py-6 text-center text-accent" role="status">
-        Search is unavailable right now. Try again in a moment.
+      <p className="px-5 py-10 text-center font-mono text-[0.6rem] uppercase tracking-[0.14em] text-accent">
+        Search is not answering. Try again.
       </p>
     );
   }
 
-  if (hits.length === 0) {
+  if (loading) {
     return (
-      <div className="py-6 text-center space-y-2" role="status">
-        <p className="text-foreground/70">
-          No arena matches &ldquo;{query}&rdquo;
-        </p>
-        <button
-          onClick={() => onResultClick("/arena")}
-          className="text-orange border-b border-orange/40 hover:border-orange transition-colors bg-transparent border-x-0 border-t-0 cursor-pointer font-mono text-[0.6rem] uppercase tracking-wider"
-        >
-          Browse the whole board &rarr;
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-baseline justify-between border-b border-foreground/10 pb-1 font-bold text-foreground/60">
-        <span>Arenas ({hits.length})</span>
-        <button
-          onClick={() => onResultClick("/arena")}
-          className="font-mono text-[0.55rem] uppercase tracking-wider text-orange hover:underline bg-transparent border-none cursor-pointer p-0"
-        >
-          See all &rarr;
-        </button>
-      </div>
-
-      <ul className="divide-y divide-foreground/5">
-        {hits.map((a) => (
-          <li key={a.id}>
-            <button
-              onClick={() => onResultClick(`/arena/${buildArenaSlug(a.title, a.id)}`)}
-              className="w-full text-left py-2 px-2 hover:bg-foreground/5 transition-colors cursor-pointer bg-transparent border-none flex items-start justify-between gap-4"
-            >
-              <span className="min-w-0 flex-1">
-                <span className="block font-bold text-foreground truncate normal-case">
-                  {a.title}
-                </span>
-                <span className="block text-[0.55rem] text-foreground/50 mt-0.5">
-                  {[
-                    a.domain ? DOMAIN_LABEL[a.domain] ?? a.domain : null,
-                    a.isTeam ? "Team" : "Solo",
-                  ]
-                    .filter(Boolean)
-                    .join(" / ")}
-                </span>
-              </span>
-              <span className="text-[0.55rem] opacity-40 shrink-0 pt-0.5">Open &rarr;</span>
-            </button>
+      <ul aria-hidden className="animate-pulse">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <li key={i} className="flex items-center gap-3 px-5 py-3">
+            <span className="h-6 w-6 shrink-0 bg-foreground/10" />
+            <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <span className="block h-[0.9rem] w-2/5 bg-foreground/12" />
+              <span className="block h-[0.6rem] w-1/4 bg-foreground/8" />
+            </span>
           </li>
         ))}
       </ul>
+    );
+  }
+
+  if (groups.length === 0) {
+    return (
+      <p className="px-5 py-10 text-center font-sans text-sm text-foreground/60">
+        Nothing matches <span className="font-medium text-foreground">{query}</span>.
+      </p>
+    );
+  }
+
+  // Where each group starts in the flat order the arrow keys walk. Computed
+  // rather than counted with a mutable cursor during render - a variable
+  // reassigned mid-render is exactly what the compiler cannot reason about,
+  // and with at most a handful of groups the slice costs nothing.
+  const groupStart = groups.map((_, i) =>
+    groups.slice(0, i).reduce((total, g) => total + g.hits.length, 0)
+  );
+
+  return (
+    <div className="flex flex-col">
+      {groups.map((group, groupIndex) => (
+        <section key={group.key}>
+          <h3 className="sticky top-0 z-10 border-b border-foreground/10 bg-card px-5 py-2 font-mono text-[0.52rem] font-bold uppercase tracking-[0.2em] text-orange-ink">
+            {group.label}
+          </h3>
+          <ul>
+            {group.hits.map((hit, hitIndex) => {
+              const index = groupStart[groupIndex] + hitIndex;
+              const active = index === activeIndex;
+
+              return (
+                <li key={`${group.key}-${hit.id}`}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(hit)}
+                    onMouseEnter={() => onHover(index)}
+                    aria-selected={active}
+                    role="option"
+                    className={`flex w-full items-center gap-3 px-5 py-3 text-left transition-colors ${
+                      active ? "bg-orange/15" : "hover:bg-foreground/[0.04]"
+                    }`}
+                  >
+                    {hit.imageUrl ? (
+                      <Image
+                        src={hit.imageUrl}
+                        alt=""
+                        width={24}
+                        height={24}
+                        className="h-6 w-6 shrink-0 border border-foreground/15 object-cover"
+                      />
+                    ) : (
+                      <span
+                        aria-hidden
+                        className="flex h-6 w-6 shrink-0 items-center justify-center border border-foreground/20 bg-secondary font-mono text-[0.55rem] font-bold text-foreground/60"
+                      >
+                        {hit.title.replace(/^@/, "").charAt(0).toUpperCase()}
+                      </span>
+                    )}
+
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate font-display text-[0.98rem] leading-snug text-foreground">
+                        {hit.title}
+                      </span>
+                      {hit.subtitle && (
+                        <span className="truncate font-mono text-[0.55rem] uppercase tracking-[0.1em] text-foreground/60">
+                          {hit.subtitle}
+                        </span>
+                      )}
+                    </span>
+
+                    {active && (
+                      <CornerDownLeft
+                        aria-hidden
+                        className="h-3.5 w-3.5 shrink-0 text-orange-ink"
+                      />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
     </div>
   );
 }

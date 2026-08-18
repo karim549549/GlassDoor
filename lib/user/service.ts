@@ -87,6 +87,37 @@ export async function isHandleAvailable(handle: string): Promise<boolean> {
   return existing === null;
 }
 
+/**
+ * People, for the site-wide search palette.
+ *
+ * A deliberately narrow select rather than USER_PROFILE_SELECT: search results
+ * go to anyone who types, so this returns only what a result row draws. Note
+ * what is absent - `email` is not here for the same reason it is not in
+ * USER_PROFILE_SELECT, and a search endpoint is the single easiest place in an
+ * app to turn a user table into a mailing list.
+ *
+ * Matching on handle and full name only. Searching `bio` would surface people
+ * for words they wrote about themselves, which is a different feature and a
+ * worse one - someone looking for "karim" does not want everyone whose bio
+ * mentions a Karim.
+ */
+export async function searchUsers(query: string, limit = 5) {
+  const q = query.trim();
+  if (q.length < 2) return [];
+
+  return prisma.user.findMany({
+    where: {
+      OR: [
+        { handle: { contains: q, mode: "insensitive" } },
+        { fullName: { contains: q, mode: "insensitive" } },
+      ],
+    },
+    select: { id: true, handle: true, fullName: true, avatarUrl: true, location: true },
+    orderBy: { createdAt: "asc" },
+    take: limit,
+  });
+}
+
 export async function getUserProfileByHandle(
   handle: string,
   viewerId: string | null

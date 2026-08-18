@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { Search, X } from "lucide-react";
+import { openSearchDialog } from "@/lib/client/search-dialog";
 import {
   ARENA_PLACE_FILTERS,
   ARENA_ENTRY_FILTERS,
@@ -61,7 +62,6 @@ export interface ArenaFilterState {
   difficulty: string;
   prized: boolean;
   sortBy: ArenaSortOption;
-  search: string;
   tab: ArenaTabScope;
 }
 
@@ -92,8 +92,7 @@ export function ArenaFilterBar({
     value.place !== "all" ||
     value.entry !== "all" ||
     value.difficulty !== "" ||
-    value.prized ||
-    value.search !== "";
+    value.prized;
 
   return (
     <div className="flex flex-col gap-4">
@@ -124,21 +123,22 @@ export function ArenaFilterBar({
 
       {/* Search + the four axes + sort */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[12rem] flex-1">
-          <Search
-            aria-hidden
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground/50"
-          />
-          <input
-            id={`${id}-search`}
-            type="search"
-            value={value.search}
-            onChange={(e) => onChange({ search: e.target.value })}
-            placeholder="Search briefs"
-            aria-label="Search arenas"
-            className="w-full border border-foreground/20 bg-secondary py-2 pl-8 pr-3 font-sans text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-orange focus:outline-none focus:ring-1 focus:ring-orange/30 transition-colors"
-          />
-        </div>
+        {/* A button dressed as a field, not a field.
+            The board used to filter its own list from a text box here while
+            the nav had a dialog that searched arenas - two searches, different
+            scopes, different answers to the same words. This opens the one
+            dialog, which also finds people. */}
+        <button
+          type="button"
+          onClick={() => openSearchDialog()}
+          className="flex min-w-[12rem] flex-1 items-center gap-2 border border-foreground/20 bg-secondary px-3 py-2 text-left font-sans text-sm text-foreground/45 transition-colors hover:border-foreground/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+        >
+          <Search aria-hidden className="h-3.5 w-3.5 shrink-0 text-foreground/50" />
+          <span className="flex-1 truncate">Search arenas and people</span>
+          <kbd className="hidden shrink-0 border border-foreground/20 px-1.5 py-0.5 font-mono text-[0.5rem] uppercase tracking-wider text-foreground/50 sm:inline">
+            &#8984;K
+          </kbd>
+        </button>
 
         <label className="sr-only" htmlFor={`${id}-difficulty`}>
           Difficulty

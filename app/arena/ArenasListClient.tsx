@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/client/useAuthStore";
-import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
 import { logger } from "@/lib/client/logger";
 import { ArenaRow, ArenaRowSkeleton } from "@/components/arena/list/ArenaRow";
 import { ArenaFilterBar, type ArenaFilterState } from "@/components/arena/list/ArenaFilterBar";
@@ -35,7 +34,6 @@ const DEFAULTS: ArenaFilterState = {
   difficulty: "",
   prized: false,
   sortBy: "closing",
-  search: "",
   tab: "all",
 };
 
@@ -85,9 +83,8 @@ export function ArenasListClient({
   // data - two full list queries on every visit.
   const isInitialRender = useRef(true);
 
-  // Only free text needs debouncing; the rest are discrete controls that can
-  // fetch immediately.
-  const debouncedSearch = useDebouncedValue(filters.search, 250);
+  // No debounce needed any more: every remaining control is discrete, and
+  // free-text search moved to the site-wide dialog.
 
   const patch = useCallback((next: Partial<ArenaFilterState>) => {
     setFilters((prev) => ({ ...prev, ...next }));
@@ -111,9 +108,8 @@ export function ArenasListClient({
     params.set("tab", filters.tab);
     if (filters.difficulty) params.set("difficulty", filters.difficulty);
     if (filters.prized) params.set("prized", "true");
-    if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
     return params.toString();
-  }, [page, filters, debouncedSearch]);
+  }, [page, filters]);
 
   useEffect(() => {
     if (isInitialRender.current) {
