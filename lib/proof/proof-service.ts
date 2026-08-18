@@ -13,7 +13,6 @@ export interface ProofPacketSnapshot {
     domain: string;
     difficulty: string;
     authority: string;
-    format: string;
   };
   entrant: {
     isTeam: boolean;
@@ -122,7 +121,6 @@ export async function generateProofPacket(submissionId: string) {
       domain: sub.arena.domain,
       difficulty: sub.arena.difficulty,
       authority: sub.arena.authority,
-      format: sub.arena.format,
     },
     entrant: {
       isTeam: !!sub.entry.team,

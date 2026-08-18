@@ -205,6 +205,41 @@ enum CompanySize {
 }
 ```
 
+### 3.3 Arena Technical Domain (`ArenaDomain`) — DORMANT, and tags are gone
+
+**Decided 2026-08-18.** Arenas are no longer classified. The domain enum below
+survives in the schema as a dormant rating bucket; nothing asks for it, nothing
+displays it, nothing filters on it. The `Tag` and `TagOnArena` tables are
+dropped.
+
+**Why domains were wrong.** The values are the seeded `JOB_TYPES` list under
+different names — `FRONTEND_MOBILE` / Frontend Developer,
+`BACKEND_DISTRIBUTED` / Backend Developer, `SYSTEMS_DEV_OPS` / DevOps
+Engineer. That is a hiring taxonomy, and 1.2 is explicit that the hiring
+framing must not reach developer-facing surfaces. Worse than off-brand, it is
+counter-productive: asking a host to pick a discipline nudges them toward a
+discipline-shaped brief, and a "backend arena" has no interface and is a boring
+product. The reference format's briefs — *the worst landing page*, *a solution
+that makes people connect*, *the most boring solution using this tool* — are
+not classifiable by discipline, and the interesting half of "the worst landing
+page" is **worst**.
+
+**Why tags went too.** Six were seeded and zero arenas ever used one, because
+they duplicated the same list. The right axis is the twist and the constraint —
+`make-it-bad`, `hostile`, `one-tool-only`, `multi-device` — but that is the
+right axis at the wrong time: with no entries yet, any taxonomy is a guess, and
+having none is more honest than having a wrong one. Tags are cheap to reseed
+when real briefs show what they have in common; an enum is a migration.
+
+**What discovery uses instead:** status, place, entry mode, prize, difficulty
+and free-text search over the brief itself.
+
+**Why the column stays where `format` and `intent` were dropped:** those had
+no consumer at all. `domain` still has two — the Glicko batch in `lib/rating`
+groups arenas by it, and a proof packet snapshots it. Rating is reserved for
+OFFICIAL and COMPANY arenas (7.1a), so this is the ladder's bucket waiting for
+the arenas that will fill it.
+
 ### 3.3 Arena Technical Domain (`ArenaDomain`)
 ```prisma
 enum ArenaDomain {

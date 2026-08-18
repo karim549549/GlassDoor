@@ -4,7 +4,6 @@ import Link from "next/link";
 import { memo } from "react";
 import { buildArenaSlug } from "@/lib/arena-slug";
 import { deriveArenaStatus, type ArenaStatus } from "@/lib/arena/status";
-import { domainLabel } from "@/lib/arena/taxonomy";
 import type { SerializedArenaListItem } from "@/lib/arena/types";
 
 /**
@@ -199,10 +198,9 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
    * #6A6860 on #FAF8F5, which is 5.3:1 and technically passes AA, but at
    * 8.8px uppercase with letter-spacing it reads as grey mush and nothing in
    * it is findable at a glance. The rest is darker and a shade larger now, and
-   * two fields are pulled out in `--orange-ink` (#B0450A, 5.35:1 on the card):
-   * the domain, because it is the categorical anchor a reader scans for, and
-   * the prize, because money is the loudest thing on any board. Spending the
-   * accent on more than that would spend it on nothing.
+   * the prize is pulled out in `--orange-ink` (#B0450A, 5.35:1 on the card),
+   * because money is the loudest thing on any board. A domain chip used to sit
+   * beside it; domains are gone from the product entirely.
    */
   const facts = [
     arena.difficulty.charAt(0) + arena.difficulty.slice(1).toLowerCase(),
@@ -211,7 +209,6 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
     entered === 1 ? "1 entered" : `${entered} entered`,
     host(arena),
   ].filter(Boolean) as string[];
-  const domain = domainLabel(arena.domain);
 
   return (
     <li className="border-b border-foreground/12 last:border-b-0">
@@ -264,11 +261,6 @@ function ArenaRowInner({ arena, now, viewerId }: ArenaRowProps) {
             )}
           </span>
           <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-foreground/75">
-            {domain && (
-              <span className="border border-orange-ink/45 px-1.5 py-px font-bold text-orange-ink">
-                {domain}
-              </span>
-            )}
             {facts.map((fact, i) => (
               <span key={fact} className="flex items-center gap-2">
                 {i > 0 && (

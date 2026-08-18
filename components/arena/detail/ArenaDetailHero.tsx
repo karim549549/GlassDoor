@@ -31,15 +31,6 @@ interface ArenaDetailHeroProps {
     handle: string | null;
     avatarUrl: string | null;
   };
-  tags: {
-    tag: {
-      id: string;
-      name: string;
-      slug: string;
-      color?: string | null;
-    };
-  }[];
-
   mode?: "details" | "matchmaking";
 
   // Actor & Action props
@@ -73,7 +64,6 @@ export function ArenaDetailHero({
   venueName = null,
   googleMapsUrl = null,
   creator,
-  tags,
   mode = "details",
   isGuest = false,
   isJoined = false,
@@ -212,18 +202,6 @@ export function ArenaDetailHero({
                 )}
               </div>
 
-              {tags.length > 0 && (
-                <>
-                  <span className="text-white/20">•</span>
-                  <div className="flex items-center gap-1">
-                    {tags.map((t) => (
-                      <span key={t.tag.id} className="text-background/80 font-bold uppercase">
-                        #{t.tag.name}
-                      </span>
-                    ))}
-                  </div>
-                </>
-              )}
             </div>
 
             {/* LOCATION BADGE & OPEN IN GOOGLE MAPS BUTTON UNDER IT */}

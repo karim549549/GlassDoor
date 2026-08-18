@@ -146,7 +146,7 @@ export function ProofPacketView({
               </div>
               <div>
                 <span className="text-[0.55rem] text-muted-foreground uppercase block">Format</span>
-                <span className="font-bold">{snapshot.arena.format}</span>
+                <span className="font-bold">{snapshot.arena.difficulty}</span>
               </div>
               <div>
                 <span className="text-[0.55rem] text-muted-foreground uppercase block">Issued At</span>

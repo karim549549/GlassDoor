@@ -1,7 +1,6 @@
 import { buildArenaSlug } from "@/lib/arena-slug";
 import { deriveArenaStatus } from "@/lib/arena/status";
 import type { ArenaListItem } from "@/lib/arena/types";
-import { domainLabel } from "@/lib/arena/taxonomy";
 
 export interface ArenaCardData {
   id: string;
@@ -101,7 +100,6 @@ function initialsOf(label: string): string {
  */
 export function toArenaCardData(arena: ArenaListItem, now: Date): ArenaCardData {
   const status = deriveArenaStatus(arena, now);
-  const primaryTag = arena.tags[0]?.tag;
 
   let timeLabel = "STATUS";
   let timeValue = "—";
@@ -145,22 +143,19 @@ export function toArenaCardData(arena: ArenaListItem, now: Date): ArenaCardData 
     }
   }
 
-  // Prefer the arena's own tag, then its rating domain. "Devs Arena" is the
-  // last resort only - three cards all labelled with the platform name tell a
-  // reader nothing about what is being built.
-  const trackLabel =
-    primaryTag?.name ?? domainLabel(arena.domain) ?? (arena.isTeam ? "Team Arena" : "Solo Arena");
+  // Tags and domains are both gone from the product, so the shape of the entry
+  // is what is left to label a card with - and it is more honest than either
+  // was: it is set by the host and it is true of every arena.
+  const trackLabel = arena.isTeam ? "Team Arena" : "Solo Arena";
 
   return {
     id: arena.id,
-    // Was `primaryTag.category`. The list select no longer carries a tag's
-    // `category` or `color` - both were presentation stored in the database,
-    // and a list query had no business shipping either. The domain is the
-    // better label anyway: it is on every arena, where a tag is on almost none.
-    tag: domainLabel(arena.domain) ?? (arena.isTeam ? "Team Arena" : "Solo Arena"),
+    tag: trackLabel,
     title: arena.title,
     description: arena.description ?? "",
-    tech: arena.tags.slice(0, 3).map((t) => t.tag.name.toUpperCase()),
+    // The card's third line used to list an arena's tags. With tags gone the
+    // honest replacement is the difficulty, which every arena has.
+    tech: [arena.difficulty.replace(/_/g, " ")],
     timeLabel,
     timeValue,
     isLive,

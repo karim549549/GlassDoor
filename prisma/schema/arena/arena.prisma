@@ -1,19 +1,7 @@
-enum ArenaFormat {
-  REP
-  LIVE
-  ARENA
-}
-
 enum ArenaAuthority {
   OFFICIAL
   COMPANY
   COMMUNITY
-}
-
-enum ArenaIntent {
-  HIRING_ASSESSMENT
-  BRAND_HACKATHON
-  COMMUNITY_FUN
 }
 
 enum RatingDomain {
@@ -61,12 +49,24 @@ model Arena {
   creatorId                String            @db.Uuid
   creator                  User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   
-  // Format & Domain Discriminators
-  format                   ArenaFormat       @default(ARENA)
   authority                ArenaAuthority    @default(COMMUNITY)
-  intent                   ArenaIntent       @default(COMMUNITY_FUN)
-  domain                   RatingDomain      @default(FULL_STACK_WEB)
   difficulty               DifficultyTier    @default(INTERMEDIATE)
+
+  /// Dormant. Not asked for at creation, not shown, not filterable.
+  ///
+  /// Classifying a playful build challenge by engineering discipline was the
+  /// hiring taxonomy in disguise - ArenaDomain's values were the JOB_TYPES list
+  /// with different names - and it pushed hosts toward discipline-shaped briefs,
+  /// which are the boring ones. "The worst landing page" is not frontend; the
+  /// interesting half is "worst".
+  ///
+  /// The column survives where `format` and `intent` did not, because unlike
+  /// them it still has consumers: the Glicko batch in lib/rating groups arenas
+  /// by it, and a proof packet snapshots it. Rating is reserved for OFFICIAL and
+  /// COMPANY arenas (PRD 7.1a), so this is the ladder's bucket waiting for the
+  /// arenas that will fill it. Every community arena carries the default and
+  /// nothing reads it.
+  domain                   RatingDomain      @default(FULL_STACK_WEB)
 
   // Status is a pure function of phase timestamps + now.
   // publishedAt is null for DRAFT; canceledAt records cancellation; resultsPublishedAt locks results.
@@ -129,7 +129,6 @@ model Arena {
   entries                  ArenaEntry[]
   invitations              ArenaInvitation[]
   teams                    ArenaTeam[]
-  tags                     TagOnArena[]
   submissions              ArenaSubmission[]
   requirements             ArenaRequirement[]
   rubrics                  Rubric[]

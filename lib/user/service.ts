@@ -38,7 +38,6 @@ export const USER_PROFILE_SELECT = {
           title: true,
           domain: true,
           difficulty: true,
-          format: true,
         },
       },
       submission: {

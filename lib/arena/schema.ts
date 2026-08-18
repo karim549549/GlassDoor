@@ -20,18 +20,6 @@ export const RULES_MAX = 2000;
  * convention exists to prevent. `lib/arena/taxonomy.ts` holds how they read;
  * this holds what is valid.
  */
-export const ARENA_DOMAIN_VALUES = [
-  "FULL_STACK_WEB",
-  "BACKEND_DISTRIBUTED",
-  "FRONTEND_MOBILE",
-  "AI_MACHINE_LEARNING",
-  "DATA_ENGINEERING",
-  "CYBERSECURITY_ETHICAL_HACKING",
-  "SYSTEMS_DEV_OPS",
-  "EMBEDDED_IOT",
-  "BLOCKCHAIN_WEB3",
-] as const;
-
 export const ARENA_DIFFICULTY_VALUES = [
   "NOVICE",
   "INTERMEDIATE",
@@ -67,9 +55,7 @@ export const arenaBaseSchema = z.object({
   isPrivate: z.boolean().default(false),
   inviteCode: z.string().optional().nullable(),
 
-  // Format, Authority, Domain & Difficulty
-  format: z.enum(["REP", "LIVE", "ARENA"]).default("ARENA"),
-  // `authority` and `intent` are deliberately NOT here.
+  // `authority`, `intent`, `format` and `domain` are deliberately NOT here.
   //
   // `authority` used to be accepted from the request body, so any logged-in
   // caller could ask for "OFFICIAL" - the tier PRD 7.1 grants full XP and cash
@@ -79,7 +65,6 @@ export const arenaBaseSchema = z.object({
   //
   // `intent` went with it: it is not in the PRD, and it duplicated the
   // distinction `authority` already draws.
-  domain: z.enum(ARENA_DOMAIN_VALUES).default("FULL_STACK_WEB"),
   difficulty: z.enum(ARENA_DIFFICULTY_VALUES).default("INTERMEDIATE"),
 
   // Location
@@ -125,8 +110,6 @@ export const arenaBaseSchema = z.object({
     .max(RULES_MAX, `Rules must be at most ${RULES_MAX} characters`)
     .default(""),
 
-  // Tags (IDs or Slugs)
-  tags: z.array(z.string()).default([]),
 });
 
 /**
@@ -156,13 +139,13 @@ export const arenaSchema = arenaBaseSchema
       path: ["allowLeaderAccessControl"],
     }
   )
-  // Full phase-order and per-format duration check. Without this only the
-  // registration pair above was validated, so an arena whose implementation
-  // window started before registration closed was creatable - and because
-  // status is derived from these timestamps, it reported UNDER_JUDGING from the
-  // moment it was published. Adjacent phases may be EQUAL (a 90-minute REP has
-  // a zero-width idea window), so the check is "not before", not "strictly
-  // after"; see PHASE_ORDER in lib/arena/formats.ts.
+  // Phase-order check. Without this only the registration pair above was
+  // validated, so an arena whose implementation window started before
+  // registration closed was creatable - and because status is derived from
+  // these timestamps, it reported UNDER_JUDGING from the moment it was
+  // published. Adjacent phases may be EQUAL (a host may want no separate
+  // planning stage), so the check is "not before", not "strictly after"; see
+  // PHASE_ORDER in lib/arena/formats.ts.
   .superRefine((data, ctx) => {
     const result = validateArenaTimeline({
       registrationStart: new Date(data.registrationStart),
@@ -192,10 +175,12 @@ export type ArenaFormOutput = z.output<typeof arenaSchema>;
  *
  * These replace a set that did not match what a reader wants to know. Status
  * was `active`/`completed`; you could filter by `access` (why filter *for*
- * arenas you cannot join?); and there was no way to filter by domain,
- * difficulty, online-versus-Cairo or prize - the four things that actually
- * decide whether someone enters, and two of which only became real data once
- * the create form started asking for them.
+ * arenas you cannot join?); and there was no way to filter by difficulty,
+ * online-versus-Cairo or prize - the things that actually decide whether
+ * someone enters.
+ *
+ * There is no domain or tag filter: both taxonomies were removed. See
+ * lib/arena/taxonomy.ts and the note on Arena.domain in the Prisma schema.
  *
  * `judging` is deliberately absent. Nothing in the codebase can create a judge
  * assignment yet, so every arena past its build window would sit in it
@@ -227,14 +212,12 @@ export const arenaListQuerySchema = z.object({
   status: z.enum(ARENA_STATUS_FILTERS).default("all"),
   place: z.enum(ARENA_PLACE_FILTERS).default("all"),
   entry: z.enum(ARENA_ENTRY_FILTERS).default("all"),
-  domain: z.enum(ARENA_DOMAIN_VALUES).optional(),
   difficulty: z.enum(ARENA_DIFFICULTY_VALUES).optional(),
   /** Only arenas offering prize money. */
   prized: z.coerce.boolean().default(false),
   sortBy: z.enum(ARENA_SORT_OPTIONS).default("closing"),
   tab: z.enum(ARENA_TAB_SCOPES).default("all"),
   search: z.string().trim().default(""),
-  tag: z.string().optional(),
 });
 
 export type ArenaListQuery = z.output<typeof arenaListQuerySchema>;

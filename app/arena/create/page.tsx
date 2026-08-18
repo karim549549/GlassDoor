@@ -76,7 +76,6 @@ export default function CreateArenaPage() {
   } = useForm<ArenaFormInput, unknown, ArenaFormOutput>({
     resolver: zodResolver(arenaSchema),
     defaultValues: {
-      domain: "FULL_STACK_WEB",
       difficulty: "INTERMEDIATE",
       locationType: "ONLINE",
       isPrivate: false,
@@ -94,7 +93,6 @@ export default function CreateArenaPage() {
       requireFigmaUrl: false,
       requireVideoUrl: true,
       requireWriteup: true,
-      tags: [],
     },
   });
 
@@ -124,10 +122,8 @@ export default function CreateArenaPage() {
         label: "The brief",
         complete: briefSchema.safeParse({ title, description }).success,
       },
-      // Domain and difficulty always hold a value, so this step cannot be
-      // incomplete - it is marked done once the reader has been past it, which
-      // is what the default marks anyway.
-      { id: "kind", label: "What kind", complete: true },
+      // Difficulty always holds a value, so this step cannot be incomplete.
+      { id: "kind", label: "How hard", complete: true },
       {
         id: "when",
         label: "When",
@@ -300,8 +296,8 @@ export default function CreateArenaPage() {
             <div hidden={activeStep !== "kind"} className="step-in">
               <StepPanel
                 index={2}
-                title="What kind"
-                lead="Domain decides which ladder a result counts on. Difficulty decides what it is worth."
+                title="How hard"
+                lead="Difficulty is the one signal a reader uses to decide whether to attempt it."
               >
                 <KindStep watch={watch} setValue={setValue} />
               </StepPanel>

@@ -27,7 +27,6 @@ export const ARENA_LIST_SELECT = {
   title: true,
   description: true,
   authority: true,
-  domain: true,
   difficulty: true,
   publishedAt: true,
   canceledAt: true,
@@ -52,7 +51,6 @@ export const ARENA_LIST_SELECT = {
   companyId: true,
   creator: { select: { handle: true, fullName: true } },
   _count: { select: { entries: true, teams: true } },
-  tags: { select: { tag: { select: { id: true, name: true, slug: true } } } },
 } satisfies Prisma.ArenaSelect;
 
 /**
@@ -149,11 +147,6 @@ export const ARENA_DETAIL_INCLUDE = {
           user: { select: { id: true, fullName: true, handle: true, avatarUrl: true } },
         },
       },
-    },
-  },
-  tags: {
-    select: {
-      tag: { select: { id: true, name: true, slug: true, color: true } },
     },
   },
   _count: {

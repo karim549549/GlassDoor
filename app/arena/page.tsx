@@ -57,7 +57,6 @@ export default async function ArenasPage() {
         live: facets.live,
         finished: facets.finished,
         total: facets.total,
-        domains: facets.domains,
         nextDeadline: facets.nextDeadline ? facets.nextDeadline.toISOString() : null,
       }}
       spotlight={{

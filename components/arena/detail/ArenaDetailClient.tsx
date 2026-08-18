@@ -45,14 +45,6 @@ interface ArenaDetailClientProps {
       handle: string | null;
       avatarUrl: string | null;
     };
-    tags: {
-      tag: {
-        id: string;
-        name: string;
-        slug: string;
-        color?: string | null;
-      };
-    }[];
   };
   meta: {
     isOwner: boolean;
@@ -177,7 +169,6 @@ export function ArenaDetailClient({ arena, meta, isGuest }: ArenaDetailClientPro
           venueName={null}
           googleMapsUrl={arena.googleMapsUrl}
           creator={arena.creator}
-          tags={arena.tags}
           isGuest={isGuest}
           isJoined={isJoined}
           isHost={isHost}

@@ -1,48 +1,19 @@
 /**
- * Human labels for the arena enums, in one place.
+ * Human labels for the arena enums.
  *
- * `FULL_STACK_WEB` and `GRANDMASTER` are storage values; nothing should render
- * them raw, and nothing should hand-write a prettified copy next to a
- * `<select>`. The values themselves live in `lib/arena/schema.ts`, which stays
- * the single source of truth for what is valid - this file only decides how
- * they read.
- */
-
-export const ARENA_DOMAINS = [
-  { value: "FULL_STACK_WEB", label: "Full-stack web", detail: "Front to back, one build" },
-  { value: "FRONTEND_MOBILE", label: "Frontend & mobile", detail: "Interfaces, apps, motion" },
-  { value: "BACKEND_DISTRIBUTED", label: "Backend", detail: "APIs, services, scale" },
-  { value: "AI_MACHINE_LEARNING", label: "AI & ML", detail: "Models, agents, prompts" },
-  { value: "DATA_ENGINEERING", label: "Data", detail: "Pipelines, warehouses, viz" },
-  { value: "SYSTEMS_DEV_OPS", label: "Systems & DevOps", detail: "Infra, CI, observability" },
-  { value: "CYBERSECURITY_ETHICAL_HACKING", label: "Security", detail: "Break it, then fix it" },
-  { value: "EMBEDDED_IOT", label: "Embedded & IoT", detail: "Hardware in the loop" },
-  { value: "BLOCKCHAIN_WEB3", label: "Blockchain", detail: "Contracts and chains" },
-] as const;
-
-export type ArenaDomainValue = (typeof ARENA_DOMAINS)[number]["value"];
-
-const DOMAIN_LABELS = new Map<string, string>(
-  ARENA_DOMAINS.map((d) => [d.value, d.label])
-);
-
-/**
- * "FULL_STACK_WEB" -> "Full-stack web".
+ * `ARENA_DOMAINS` and `domainLabel` used to live here. Domains are gone from
+ * the product: classifying a playful build challenge by engineering discipline
+ * was the hiring taxonomy in disguise - the values were the JOB_TYPES list
+ * under different names - and it nudged hosts toward discipline-shaped briefs,
+ * which are the boring ones. "The worst landing page" is not frontend; the
+ * interesting half is "worst". The column survives as a dormant rating bucket;
+ * see the note on the Prisma model.
  *
- * Returns null for an unrecognised value rather than a mangled
- * `replace(/_/g, " ")` of it - callers already have a fallback worth showing,
- * and a half-formatted enum name is worse than theirs.
+ * Difficulty stays. "Can a beginner attempt this" is a real question, it is
+ * orthogonal to what the brief asks for, and PRD 8.1 hangs the XP multiplier
+ * on it.
  */
-export function domainLabel(domain: string | null | undefined): string | null {
-  if (!domain) return null;
-  return DOMAIN_LABELS.get(domain) ?? null;
-}
 
-/**
- * Difficulty carries the XP multiplier in PRD 8.1, so it is not decoration -
- * picking it wrong under-rewards everyone who enters. The detail line is the
- * PRD's own scope description, shortened.
- */
 export const ARENA_DIFFICULTIES = [
   { value: "NOVICE", label: "Novice", detail: "First one? Start here" },
   { value: "INTERMEDIATE", label: "Intermediate", detail: "Full-stack, auth, caching" },

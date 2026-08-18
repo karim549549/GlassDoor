@@ -13,7 +13,7 @@ import {
   type ArenaSortOption,
   type ArenaTabScope,
 } from "@/lib/arena/schema";
-import { ARENA_DOMAINS, ARENA_DIFFICULTIES } from "@/lib/arena/taxonomy";
+import { ARENA_DIFFICULTIES } from "@/lib/arena/taxonomy";
 
 /**
  * The board's controls.
@@ -66,7 +66,6 @@ export interface ArenaFilterState {
   status: ArenaStatusFilter;
   place: ArenaPlaceFilter;
   entry: ArenaEntryFilter;
-  domain: string;
   difficulty: string;
   prized: boolean;
   sortBy: ArenaSortOption;
@@ -100,7 +99,6 @@ export function ArenaFilterBar({
     value.status !== "all" ||
     value.place !== "all" ||
     value.entry !== "all" ||
-    value.domain !== "" ||
     value.difficulty !== "" ||
     value.prized ||
     value.search !== "";
@@ -164,23 +162,6 @@ export function ArenaFilterBar({
             className="w-full border border-foreground/20 bg-secondary py-2 pl-8 pr-3 font-sans text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-orange focus:outline-none focus:ring-1 focus:ring-orange/30 transition-colors"
           />
         </div>
-
-        <label className="sr-only" htmlFor={`${id}-domain`}>
-          Domain
-        </label>
-        <select
-          id={`${id}-domain`}
-          value={value.domain}
-          onChange={(e) => onChange({ domain: e.target.value })}
-          className={SELECT_CLASS}
-        >
-          <option value="">Any domain</option>
-          {ARENA_DOMAINS.map((d) => (
-            <option key={d.value} value={d.value}>
-              {d.label}
-            </option>
-          ))}
-        </select>
 
         <label className="sr-only" htmlFor={`${id}-difficulty`}>
           Difficulty

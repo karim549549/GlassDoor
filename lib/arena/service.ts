@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma, type ArenaFormat, type ArenaAuthority, type RatingDomain, type DifficultyTier, type PrizeCurrency } from "@prisma/client";
+import { Prisma, type ArenaAuthority, type DifficultyTier, type PrizeCurrency } from "@prisma/client";
 import { mayHavePrizePool, type ArenaAuthorityValue } from "./authority";
 import prisma from "@/lib/server/prisma";
 import { arenaStatusWhere } from "./status";
@@ -46,8 +46,8 @@ function myArenasWhere(userId: string): Prisma.ArenaWhereInput {
 
 export async function listArenas(params: ListArenasParams): Promise<ListArenasResult> {
   const {
-    page, limit, status, place, entry, domain, difficulty, prized,
-    search, sortBy, tab, userId, tag, now = new Date(),
+    page, limit, status, place, entry, difficulty, prized,
+    search, sortBy, tab, userId, now = new Date(),
   } = params;
   const skip = (page - 1) * limit;
 
@@ -113,22 +113,8 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
     where.isTeam = true;
   }
 
-  if (domain) where.domain = domain;
   if (difficulty) where.difficulty = difficulty;
   if (prized) where.hasPrizePool = true;
-
-  if (tag && tag.trim()) {
-    where.tags = {
-      some: {
-        tag: {
-          OR: [
-            { slug: tag.toLowerCase() },
-            { name: { equals: tag, mode: "insensitive" } },
-          ],
-        },
-      },
-    };
-  }
 
   if (search.trim()) {
     conditions.push({
@@ -271,40 +257,13 @@ export async function createArena(
     }
   }
 
-  // Connect tags safely if provided
-  let tagCreateInput: Prisma.TagOnArenaCreateNestedManyWithoutArenaInput | undefined;
-  if (data.tags && data.tags.length > 0) {
-    const existingTags = await prisma.tag.findMany({
-      where: {
-        OR: [
-          { id: { in: data.tags } },
-          { name: { in: data.tags } },
-          { slug: { in: data.tags } },
-        ],
-      },
-      select: { id: true },
-    });
-
-    if (existingTags.length > 0) {
-      tagCreateInput = {
-        create: existingTags.map((t) => ({
-          tag: {
-            connect: { id: t.id },
-          },
-        })),
-      };
-    }
-  }
-
   const prizesAllowed = mayHavePrizePool(data.authority);
 
   const arena = await prisma.arena.create({
     data: {
       title: data.title,
       description: data.description,
-      format: data.format as ArenaFormat,
       authority: data.authority as ArenaAuthority,
-      domain: data.domain as RatingDomain,
       difficulty: data.difficulty as DifficultyTier,
       publishedAt: new Date(),
       locationType: data.locationType,
@@ -341,51 +300,10 @@ export async function createArena(
       requireWriteup: data.requireWriteup,
       rulesText: data.rulesText || "",
       creatorId: data.creatorId,
-      tags: tagCreateInput,
     },
   });
 
   return { id: arena.id };
-}
-
-/** Fetches all available tags with total count of associated arenas. */
-export async function getAllTags() {
-  const tags = await prisma.tag.findMany({
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      color: true,
-      category: true,
-      description: true,
-      _count: {
-        select: { arenas: true },
-      },
-    },
-  });
-
-  return tags.map((t) => ({
-    id: t.id,
-    name: t.name,
-    slug: t.slug,
-    color: t.color || "golden",
-    category: t.category || "General",
-    description: t.description || "",
-    count: t._count.arenas,
-  }));
-}
-
-/**
- * Hook for RAG & AI Tag Extraction.
- */
-export async function extractAndSuggestTags(title: string, description: string) {
-  const allTags = await getAllTags();
-  const textContent = `${title} ${description}`.toLowerCase();
-
-  return allTags.filter((tag) =>
-    textContent.includes(tag.name.toLowerCase()) || textContent.includes(tag.slug.toLowerCase())
-  );
 }
 
 /**

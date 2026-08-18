@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { domainLabel } from "@/lib/arena/taxonomy";
 import { timeUntil } from "./ArenaRow";
 import type { ArenaStatusFilter } from "@/lib/arena/schema";
 
@@ -11,8 +10,8 @@ import type { ArenaStatusFilter } from "@/lib/arena/schema";
  * The page was a masthead, a filter bar, and rows - correct, and thin. These
  * are the numbers that make it feel like a board rather than a query result,
  * and none of them is decoration: the status counts are the rail restated with
- * quantities, the domain chips are one-click filters that also show the spread
- * of what gets built here, and the deadline is the reason to act today.
+ * quantities, and the deadline is the reason to act today. A row of domain
+ * chips sat here too, until domains were removed from the product.
  *
  * All of it comes from aggregates computed once on the server - see
  * `getBoardFacets`. Nothing here costs a row.
@@ -23,7 +22,6 @@ export interface BoardFacetData {
   live: number;
   finished: number;
   total: number;
-  domains: { domain: string; count: number }[];
   /** ISO, or null when nothing is scheduled to close. */
   nextDeadline: string | null;
 }
@@ -32,9 +30,7 @@ interface BoardFacetsProps {
   facets: BoardFacetData;
   now: Date;
   activeStatus: ArenaStatusFilter;
-  activeDomain: string;
   onStatus: (status: ArenaStatusFilter) => void;
-  onDomain: (domain: string) => void;
 }
 
 const STATS: { key: ArenaStatusFilter; label: string; hint: string }[] = [
@@ -47,9 +43,7 @@ export function BoardFacets({
   facets,
   now,
   activeStatus,
-  activeDomain,
   onStatus,
-  onDomain,
 }: BoardFacetsProps) {
   const closesIn = facets.nextDeadline ? timeUntil(new Date(facets.nextDeadline), now) : null;
 
@@ -101,41 +95,6 @@ export function BoardFacets({
         </p>
       )}
 
-      {facets.domains.length > 1 && (
-        <div className="flex flex-col gap-2">
-          <span className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.18em] text-foreground/70">
-            What gets built here
-          </span>
-          <ul className="flex flex-wrap gap-2">
-            {facets.domains.map(({ domain, count }) => {
-              const active = activeDomain === domain;
-              return (
-                <li key={domain}>
-                  <button
-                    type="button"
-                    onClick={() => onDomain(active ? "" : domain)}
-                    aria-pressed={active}
-                    className={`flex items-baseline gap-2 border px-3 py-1.5 font-mono text-[0.58rem] uppercase tracking-[0.1em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ${
-                      active
-                        ? "border-orange bg-orange text-[#0E0E0D]"
-                        : "border-foreground/25 bg-card text-foreground/80 hover:border-orange-ink/60 hover:text-foreground"
-                    }`}
-                  >
-                    {domainLabel(domain) ?? domain}
-                    <span
-                      className={`tabular-nums font-bold ${
-                        active ? "text-[#0E0E0D]/70" : "text-orange-ink"
-                      }`}
-                    >
-                      {count}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

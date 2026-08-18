@@ -32,7 +32,6 @@ const DEFAULTS: ArenaFilterState = {
   status: "all",
   place: "all",
   entry: "all",
-  domain: "",
   difficulty: "",
   prized: false,
   sortBy: "closing",
@@ -110,7 +109,6 @@ export function ArenasListClient({
     params.set("entry", filters.entry);
     params.set("sortBy", filters.sortBy);
     params.set("tab", filters.tab);
-    if (filters.domain) params.set("domain", filters.domain);
     if (filters.difficulty) params.set("difficulty", filters.difficulty);
     if (filters.prized) params.set("prized", "true");
     if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
@@ -171,9 +169,7 @@ export function ArenasListClient({
             facets={facets}
             now={now}
             activeStatus={filters.status}
-            activeDomain={filters.domain}
             onStatus={(status) => patch({ status })}
-            onDomain={(domain) => patch({ domain })}
           />
         </div>
 

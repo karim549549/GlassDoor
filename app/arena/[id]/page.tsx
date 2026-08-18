@@ -138,14 +138,6 @@ export default async function ArenaDetailPage({ params }: PageProps) {
             handle: arena.creator.handle ?? "",
             avatarUrl: arena.creator.avatarUrl,
           },
-          tags: arena.tags.map((t) => ({
-            tag: {
-              id: t.tag.id,
-              name: t.tag.name,
-              slug: t.tag.slug,
-              color: t.tag.color,
-            },
-          })),
         }}
         meta={meta}
         isGuest={!viewer}
