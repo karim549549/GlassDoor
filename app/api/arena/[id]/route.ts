@@ -1,10 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { extractUuidFromSlug } from "@/lib/arena-slug";
-import { getArenaDetail } from "@/lib/arena/service";
+import { getArenaDetail, updateArena, cancelArena } from "@/lib/arena/service";
 import { resolveViewer, toArenaDetailDto } from "@/lib/arena/dto";
 import { deriveArenaStatus } from "@/lib/arena/status";
-import { getOptionalUser } from "@/lib/server/auth/require-user";
+import { getOptionalUser, requireUser } from "@/lib/server/auth/require-user";
 import { withApiErrorHandling } from "@/lib/server/api-route";
+import { arenaSchema } from "@/lib/arena/schema";
+import { resolveArenaAuthority } from "@/lib/arena/authority";
+import { getUserRoles } from "@/lib/server/auth/auth-service";
+import { getCompanyStanding } from "@/lib/companies/service";
+import { logger } from "@/lib/server/logger";
 import { checkRateLimit, clientKey, rateLimitResponse } from "@/lib/server/rate-limit";
 
 interface RouteContext {
@@ -76,4 +81,127 @@ export async function GET(request: NextRequest, context: RouteContext) {
       },
     });
   });
+}
+
+/**
+ * Edit an arena. Host only.
+ *
+ * A full-object PATCH: the edit screen is the create form, so it submits every
+ * field and `arenaSchema` validates it exactly as it does on POST. Partial
+ * merging would mean a second validation path for one schema, and the second
+ * one is always the one nobody exercises.
+ */
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  return withApiErrorHandling(
+    "Arena update API error",
+    async () => {
+      const auth = await requireUser();
+      if ("response" in auth) return auth.response;
+      const { user } = auth;
+
+      const limit = checkRateLimit(`arena-update:${user.id}`, {
+        limit: 30,
+        windowMs: 3_600_000,
+      });
+      if (!limit.ok) return rateLimitResponse(limit.retryAfterSeconds);
+
+      const { id: slugParam } = await context.params;
+      const uuid = extractUuidFromSlug(decodeURIComponent(slugParam));
+      if (!uuid) {
+        return NextResponse.json({ error: "Arena not found." }, { status: 404 });
+      }
+
+      const body = await request.json();
+      const parsed = arenaSchema.safeParse(body);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Validation failed.", details: parsed.error.format() },
+          { status: 400 }
+        );
+      }
+
+      /**
+       * Re-derived on every edit, never carried over from the row and never
+       * read from the body.
+       *
+       * Both would be wrong in the same direction. Trusting the body reopens
+       * the exact self-assignment hole `resolveArenaAuthority` was written to
+       * close - on the route nobody re-checked, because the create route had
+       * already been fixed. Carrying the stored value over would keep COMPANY
+       * attribution alive after the host lost the seat that justified it.
+       */
+      const requestedCompanyId =
+        typeof body?.companyId === "string" ? body.companyId : null;
+
+      const [roles, standing] = await Promise.all([
+        getUserRoles(user.id),
+        requestedCompanyId
+          ? getCompanyStanding(user.id, requestedCompanyId)
+          : Promise.resolve(null),
+      ]);
+
+      const decision = resolveArenaAuthority({ roles, requestedCompanyId, standing });
+      if (!decision.ok) {
+        logger.warn("Arena authority refused on edit", {
+          userId: user.id,
+          arenaId: uuid,
+          requestedCompanyId,
+          reason: decision.reason,
+        });
+        return NextResponse.json({ error: decision.reason }, { status: 403 });
+      }
+
+      const result = await updateArena(uuid, user.id, {
+        ...parsed.data,
+        authority: decision.authority,
+        companyId: decision.companyId,
+      });
+
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: result.status });
+      }
+      return NextResponse.json({ success: true, id: result.id });
+    },
+    "An unexpected error occurred while saving this arena.",
+    request
+  );
+}
+
+/**
+ * Call an arena off. Host only, and soft.
+ *
+ * DELETE rather than a POST to /cancel because the arena stops being a live
+ * thing, which is what the verb means here - but nothing is removed. Entrants
+ * who blocked out their Saturday get the page they bookmarked, saying what
+ * happened.
+ */
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  return withApiErrorHandling(
+    "Arena cancel API error",
+    async () => {
+      const auth = await requireUser();
+      if ("response" in auth) return auth.response;
+      const { user } = auth;
+
+      const limit = checkRateLimit(`arena-cancel:${user.id}`, {
+        limit: 10,
+        windowMs: 3_600_000,
+      });
+      if (!limit.ok) return rateLimitResponse(limit.retryAfterSeconds);
+
+      const { id: slugParam } = await context.params;
+      const uuid = extractUuidFromSlug(decodeURIComponent(slugParam));
+      if (!uuid) {
+        return NextResponse.json({ error: "Arena not found." }, { status: 404 });
+      }
+
+      const result = await cancelArena(uuid, user.id);
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: result.status });
+      }
+      return NextResponse.json({ success: true, id: result.id });
+    },
+    "An unexpected error occurred while calling off this arena.",
+    request
+  );
 }

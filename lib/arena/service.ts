@@ -3,6 +3,7 @@ import { Prisma, type ArenaAuthority, type DifficultyTier, type PrizeCurrency } 
 import { mayHavePrizePool, type ArenaAuthorityValue } from "./authority";
 import prisma from "@/lib/server/prisma";
 import { arenaStatusWhere } from "./status";
+import { checkScheduleEdit } from "./edit-rules";
 import type { ArenaFormOutput, ArenaListQuery, ArenaSortOption } from "./schema";
 import {
   ARENA_LIST_SELECT,
@@ -345,6 +346,190 @@ export async function createArena(
   });
 
   return { id: arena.id };
+}
+
+/**
+ * Every field a host may change, and the schedule as it stands.
+ *
+ * Editing is a full-object PUT wearing PATCH's name: the edit screen is the
+ * create form, so it submits every field, and merging a partial payload onto
+ * a row would mean two validation paths for one schema - the second of which
+ * nobody exercises until it is wrong.
+ */
+const ARENA_EDIT_GUARD_SELECT = {
+  id: true,
+  creatorId: true,
+  canceledAt: true,
+  resultsPublishedAt: true,
+  registrationStart: true,
+  registrationEnd: true,
+  ideaPhaseStart: true,
+  ideaPhaseEnd: true,
+  implPhaseStart: true,
+  implPhaseEnd: true,
+} satisfies Prisma.ArenaSelect;
+
+export type MutateArenaResult =
+  | { ok: true; id: string }
+  | { ok: false; status: 400 | 403 | 404 | 409; error: string };
+
+/**
+ * The first `prisma.arena.update` in the codebase.
+ *
+ * There was no PATCH, PUT or DELETE for an arena anywhere, which is why the
+ * detail page carried two EDIT ARENA buttons with no `onClick` between them:
+ * there was nothing for either of them to call.
+ *
+ * `authority` and `companyId` arrive as arguments for the same reason they do
+ * in `createArena`. An edit that forwarded them from the body would reopen the
+ * self-assignment hole `resolveArenaAuthority` exists to close, on a route
+ * nobody thought to check because the create route had already been fixed.
+ */
+export async function updateArena(
+  arenaId: string,
+  editorId: string,
+  data: ArenaFormOutput & { authority: ArenaAuthorityValue; companyId: string | null },
+  now: Date = new Date()
+): Promise<MutateArenaResult> {
+  const current = await prisma.arena.findFirst({
+    where: { id: arenaId, isDeleted: false },
+    select: ARENA_EDIT_GUARD_SELECT,
+  });
+
+  // 404 rather than 403 for a non-host, matching `getArenaDetail`: a private
+  // arena's existence is not something a stranger's failed edit should confirm.
+  if (!current || current.creatorId !== editorId) {
+    return { ok: false, status: 404, error: "Arena not found." };
+  }
+
+  if (current.canceledAt) {
+    return {
+      ok: false,
+      status: 409,
+      error: "This arena was called off and can no longer be edited.",
+    };
+  }
+
+  // Once the build window shuts, entries are in and judging is what happens
+  // next. Changing the brief, the deliverables or the clock at that point
+  // changes what people were judged against after they were judged.
+  if (current.resultsPublishedAt || now >= current.implPhaseEnd) {
+    return {
+      ok: false,
+      status: 409,
+      error: "This arena has finished. Its brief is now a record of what was run.",
+    };
+  }
+
+  const schedule = checkScheduleEdit(current, data, now);
+  if (!schedule.ok) {
+    return { ok: false, status: 400, error: schedule.error };
+  }
+
+  // Uniqueness excluding self, or a host who saves twice without touching the
+  // code collides with their own arena.
+  if (data.isPrivate && data.inviteCode) {
+    const clash = await prisma.arena.findFirst({
+      where: { inviteCode: data.inviteCode, id: { not: arenaId } },
+      select: { id: true },
+    });
+    if (clash) {
+      return {
+        ok: false,
+        status: 400,
+        error: "This invitation code is already in use by another arena.",
+      };
+    }
+  }
+
+  const prizesAllowed = mayHavePrizePool(data.authority);
+
+  await prisma.arena.update({
+    where: { id: arenaId },
+    data: {
+      title: data.title,
+      description: data.description,
+      authority: data.authority as ArenaAuthority,
+      difficulty: data.difficulty as DifficultyTier,
+      locationType: data.locationType,
+      locationName: data.locationType === "IN_PERSON" ? data.locationName || null : null,
+      googleMapsUrl: data.locationType === "IN_PERSON" ? data.googleMapsUrl || null : null,
+      isPrivate: data.isPrivate,
+      inviteCode: data.isPrivate ? data.inviteCode || null : null,
+      hasPrizePool: prizesAllowed && data.hasPrizePool,
+      totalPrizePool: prizesAllowed ? data.totalPrizePool || null : null,
+      prizeCurrency: data.prizeCurrency as PrizeCurrency,
+      firstPlacePrize: prizesAllowed ? data.firstPlacePrize || null : null,
+      secondPlacePrize: prizesAllowed ? data.secondPlacePrize || null : null,
+      thirdPlacePrize: prizesAllowed ? data.thirdPlacePrize || null : null,
+      prizeDisbursementTerms: prizesAllowed ? data.prizeDisbursementTerms || null : null,
+      requireHiringConsent: data.requireHiringConsent,
+      companyId: data.companyId,
+      registrationStart: new Date(data.registrationStart),
+      registrationEnd: new Date(data.registrationEnd),
+      ideaPhaseStart: new Date(data.ideaPhaseStart),
+      ideaPhaseEnd: new Date(data.ideaPhaseEnd),
+      implPhaseStart: new Date(data.implPhaseStart),
+      implPhaseEnd: new Date(data.implPhaseEnd),
+      isTeam: data.isTeam,
+      minTeamSize: data.isTeam ? data.minTeamSize : 1,
+      maxTeamSize: data.isTeam ? data.maxTeamSize : 1,
+      maxParticipants: data.maxParticipants || null,
+      allowLeaderAccessControl: data.isTeam ? data.allowLeaderAccessControl ?? true : null,
+      requireGithubUrl: data.requireGithubUrl,
+      requireFigmaUrl: data.requireFigmaUrl,
+      requireVideoUrl: data.requireVideoUrl,
+      requireWriteup: data.requireWriteup,
+      rulesText: data.rulesText || "",
+    },
+  });
+
+  return { ok: true, id: arenaId };
+}
+
+/**
+ * Call an arena off. Soft, and the only thing that makes CANCELED reachable.
+ *
+ * `deriveArenaStatus` has reported CANCELED from `canceledAt` since the status
+ * column was dropped, and nothing has ever written that timestamp - so one of
+ * the eight statuses was decorative. It is a lifecycle flag rather than a
+ * delete: entrants who cleared their weekend for this should find the arena
+ * where they left it, saying what happened, not a 404.
+ */
+export async function cancelArena(
+  arenaId: string,
+  editorId: string,
+  now: Date = new Date()
+): Promise<MutateArenaResult> {
+  const current = await prisma.arena.findFirst({
+    where: { id: arenaId, isDeleted: false },
+    select: ARENA_EDIT_GUARD_SELECT,
+  });
+
+  if (!current || current.creatorId !== editorId) {
+    return { ok: false, status: 404, error: "Arena not found." };
+  }
+
+  if (current.canceledAt) {
+    // Idempotent on purpose: a double-submit is a double-submit, not an error
+    // worth showing someone who already got what they asked for.
+    return { ok: true, id: arenaId };
+  }
+
+  if (now >= current.implPhaseEnd) {
+    return {
+      ok: false,
+      status: 409,
+      error: "This arena already ran. It cannot be called off after the fact.",
+    };
+  }
+
+  await prisma.arena.update({
+    where: { id: arenaId },
+    data: { canceledAt: now },
+  });
+
+  return { ok: true, id: arenaId };
 }
 
 /**
