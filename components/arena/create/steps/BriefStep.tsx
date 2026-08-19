@@ -38,8 +38,11 @@ export function BriefStep({
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          {/* "Title", not "The brief". The brief is the paragraph below, and
+              that is what the arena page calls it - two fields sharing one
+              name was enough to make a reader ask which one had been dropped. */}
           <FieldLabel htmlFor="arena-title" error={errors.title?.message}>
-            The brief
+            Title
           </FieldLabel>
           <CharCount value={title} max={TITLE_MAX} min={3} />
         </div>
@@ -62,14 +65,14 @@ export function BriefStep({
           {...register("title")}
         />
         <p className="font-mono text-[0.55rem] uppercase tracking-wider text-muted-foreground">
-          Short, specific, a little absurd. This is the whole pitch.
+          Short, specific, a little absurd. This is the headline on the board.
         </p>
       </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <FieldLabel htmlFor="arena-description" error={errors.description?.message}>
-            What are they actually building?
+            The brief
           </FieldLabel>
           <CharCount value={description} max={DESCRIPTION_MAX} min={10} />
         </div>
@@ -84,7 +87,7 @@ export function BriefStep({
           {...register("description")}
         />
         <p className="font-mono text-[0.55rem] uppercase tracking-wider text-muted-foreground">
-          Constraints are more fun than requirements
+          What are they actually building? Constraints are more fun than requirements
         </p>
       </div>
     </div>

@@ -16,6 +16,7 @@ import { ArenaPhaseline } from "@/components/arena/detail/ArenaPhaseline";
 import { ArenaBrief } from "@/components/arena/detail/ArenaBrief";
 import { ArenaActionPanel } from "@/components/arena/detail/ArenaActionPanel";
 import { ArenaParticipants } from "@/components/arena/detail/ArenaParticipants";
+import { ArenaSectionTabs, type ArenaSection } from "@/components/arena/detail/ArenaSectionTabs";
 import { ArenaHostSections } from "@/components/arena/detail/ArenaHostSections";
 import { ArenaComments } from "@/components/arena/detail/ArenaComments";
 import { ArenaLeaderboard } from "@/components/arena/detail/ArenaLeaderboard";
@@ -220,6 +221,40 @@ export default async function ArenaDetailPage({ params }: PageProps) {
   const registrationOpen = status === "REGISTRATION_OPEN" || status === "SCHEDULED";
   const hasRun = now >= new Date(arena.implPhaseEnd);
 
+  /**
+   * Standings only once there is something to stand in. Before the build
+   * window shuts the panel can only say "no results yet", which is a tab that
+   * exists to disappoint whoever opens it.
+   */
+  const sections: ArenaSection[] = [
+    {
+      key: "who",
+      label: arena.isTeam ? "Teams" : "Who's in",
+      count: arena.isTeam ? arena.teamCount : arena.entrantCount,
+      content: (
+        <ArenaParticipants
+          participants={arena.participants}
+          isTeam={arena.isTeam}
+          maxTeamSize={arena.maxTeamSize}
+        />
+      ),
+    },
+    ...(hasRun
+      ? [
+          {
+            key: "standings",
+            label: "Standings",
+            content: <ArenaLeaderboard arenaId={arena.id} />,
+          },
+        ]
+      : []),
+    {
+      key: "discussion",
+      label: "Discussion",
+      content: <ArenaComments arenaId={arena.id} />,
+    },
+  ];
+
   return (
     <>
       <script
@@ -399,10 +434,6 @@ export default async function ArenaDetailPage({ params }: PageProps) {
             </aside>
 
             <div className="flex min-w-0 flex-col gap-8">
-              <ArenaParticipants participants={arena.participants} isTeam={arena.isTeam} />
-
-              {hasRun && <ArenaLeaderboard arenaId={arena.id} />}
-
               {invitations?.ok && (
                 <ArenaHostSections
                   arenaId={arena.id}
@@ -429,17 +460,16 @@ export default async function ArenaDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Last, and across the whole rail.
+          {/* Last, across the whole rail, and one section at a time.
 
-              It sat in the right-hand column beside a sidebar, which gave a
-              threaded discussion about two thirds of the page to indent
-              replies into - and put it above the host's own sections, so a
-              host scrolled past everyone else's comments to reach their
-              invitation roster. Comments are what you read after the page,
-              not part of it. */}
-          <section className="mt-12 border-t-2 border-foreground pt-10">
-            <ArenaComments arenaId={arena.id} />
-          </section>
+              Stacked, this is the part of the page that does not survive a
+              real arena: fifty teams of four is two hundred names before the
+              first comment, and a thousand comments is a page nobody reaches
+              the end of. Tabs also stop the discussion being fetched at all
+              until someone asks for it - only the active panel is mounted. */}
+          <div className="mt-12">
+            <ArenaSectionTabs sections={sections} />
+          </div>
         </ArenaContainer>
       </main>
     </>
