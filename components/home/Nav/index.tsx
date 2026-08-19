@@ -34,9 +34,22 @@ export function Nav() {
           ? "bg-transparent text-background"
           : "bg-transparent text-foreground"
     }`}>
-      <div className={`flex items-center justify-between h-11 transition-all duration-300 ${
-        isScrolled ? "md:px-40 px-6" : "px-6"
-      }`}>
+      {/* The same rail every page uses, rather than a padding jump.
+
+          This was `isScrolled ? "md:px-40 px-6" : "px-6"` - 160px of padding a
+          side from 768px up, the moment anyone scrolled. On a tablet that left
+          about 450px for the entire bar, so the brand, the tabs and the user
+          menu collided into the middle of an otherwise empty strip, and did it
+          abruptly on the first scroll event. It also disagreed with the content
+          underneath it, which runs to 1700px.
+
+          The bar still marks the scrolled state, by tightening its own height
+          instead - a change nothing has to collide over. */}
+      <div
+        className={`mx-auto flex w-[92%] max-w-[1700px] items-center justify-between transition-all duration-300 xl:w-[80%] ${
+          isScrolled ? "h-11" : "h-14"
+        }`}
+      >
         {/* Left Section: Branding */}
         <NavBrand isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
 
@@ -50,8 +63,15 @@ export function Nav() {
 
         {/* Right Section: User Menu / Actions & Responsive Burger Menu */}
         <div className="flex items-center gap-3 sm:gap-5">
-          {/* User Menu Actions: Visible on Tablet/Desktop (>= md), Hidden on Mobile (< md) */}
-          <div className="hidden md:flex items-center">
+          {/* One boundary, not two.
+
+              The user menu appeared from `md` while the burger stayed until
+              `lg`, so every tablet between 768px and 1023px got both - two
+              ways to reach the same account actions side by side, one of them
+              a panel that also lists the links the other is hiding. `lg` is
+              the line: below it the burger owns navigation and account, above
+              it the bar does. */}
+          <div className="hidden lg:flex items-center">
             <NavUserMenu isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
           </div>
 

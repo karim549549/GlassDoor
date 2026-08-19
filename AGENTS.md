@@ -131,13 +131,23 @@ These come up in almost every task. Assume them rather than re-deriving them.
   - `npm run build` is `prisma generate && next build --webpack`. It never
     touches the database, which is why Vercel deployments succeed even while
     every request there fails.
-  - On Vercel, `DATABASE_URL` holds a stale password: every runtime query fails
-    with **P1000 `credentials for 'postgres' are not valid`**, across
-    `/api/auth/login`, `/api/auth/me`, `/arena`, `/recruiter` and more. Supabase
-    Auth succeeds first, so login returns a 500 `PROFILE_SYNC_FAILED` rather
-    than a 401 — the password is right, the profile sync behind it cannot reach
-    Postgres. Fixing it means updating the env var in the Vercel dashboard; no
-    code change will help.
+  - **Vercel's `DATABASE_URL` works.** This entry used to say it held a stale
+    password and that every runtime query failed with P1000
+    `credentials for 'postgres' are not valid`. That was true when written and
+    is not now — Vercel's runtime errors for 2026-08-19 show queries reaching
+    Postgres and failing on a *missing column*, which only happens after the
+    connection succeeds. Whoever fixed the env var did not update this file.
+  - **Local and Vercel share one database.** This is the fact worth
+    internalising, because it is the one that bites. A destructive migration
+    applied from a laptop — a dropped column, a renamed table — breaks the
+    deployed site immediately, since that build is still selecting what you
+    just removed. It happened on 2026-08-19: dropping `arenas.rulesText` took
+    every `/arena/[id]` down with `P2022 ColumnNotFound` while Vercel served a
+    build sixteen commits old.
+
+    So a destructive migration is only half a change. Deploy the code that
+    matches it in the same sitting, or expand first and contract later: add the
+    new column, backfill, ship the code that reads it, drop the old one after.
   - The green check is:
     `npx prisma generate && npx tsc --noEmit && npx eslint && npx next build && npm test`
 - **Nothing can be judged.** `ArenaJudge` and `JudgeAssignment` exist in the

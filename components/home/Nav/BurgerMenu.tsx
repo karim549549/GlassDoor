@@ -3,12 +3,12 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, Search } from "lucide-react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { useAuthStore } from "@/lib/client/useAuthStore";
 import { removeSavedAccount } from "@/lib/client/saved-accounts";
 import { logger } from "@/lib/client/logger";
-import { NavSearch } from "./NavSearch";
+import { openSearchDialog } from "@/lib/client/search-dialog";
 import { NAV_LINKS } from "./nav-links-data";
 import { BurgerMenuUserPanel } from "./BurgerMenuUserPanel";
 
@@ -89,12 +89,26 @@ export function BurgerMenu({ isDarkTheme }: BurgerMenuProps) {
               />
             </div>
 
-            {/* 1. Search Bar */}
+            {/* Opens the one dialog, rather than mounting a second copy of it.
+
+                This rendered its own `<NavSearch>`, and the bar renders one
+                too - hidden below `lg`, but `hidden` does not unmount. So
+                while this panel was open there were two live instances, both
+                subscribed to `onOpenSearchDialog` and both bound to Cmd+K:
+                one keystroke opened two stacked dialogs. */}
             <div className="space-y-1">
               <span className="font-mono text-[0.55rem] text-foreground/50 font-bold block mb-1">Search site</span>
-              <Suspense fallback={null}>
-                <NavSearch isDarkTheme={false} />
-              </Suspense>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  openSearchDialog();
+                }}
+                className="flex w-full cursor-pointer items-center gap-2 border border-foreground/25 bg-card px-3 py-2.5 text-left font-sans text-sm text-foreground/60 transition-colors hover:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+              >
+                <Search aria-hidden className="h-4 w-4 shrink-0" />
+                Search arenas and people
+              </button>
             </div>
 
             {/* 2. Navigation links */}
