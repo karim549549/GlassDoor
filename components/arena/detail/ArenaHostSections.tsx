@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/providers/ToastProvider";
 import { logger } from "@/lib/client/logger";
@@ -31,10 +33,11 @@ export interface HostInvitation {
   };
 }
 
+/** Measured against `bg-card`: /40 came out at 2.5:1, which is not a word. */
 const STATUS_TONE: Record<HostInvitation["status"], string> = {
-  PENDING: "text-foreground/55",
+  PENDING: "text-foreground/65",
   ACCEPTED: "text-orange-ink",
-  REJECTED: "text-foreground/40",
+  REJECTED: "text-foreground/65",
 };
 
 const STATUS_LABEL: Record<HostInvitation["status"], string> = {
@@ -185,19 +188,60 @@ export function ArenaHostSections({
                 invitation.receiver.fullName ??
                 (invitation.receiver.handle ? `@${invitation.receiver.handle}` : "Someone");
 
+              /**
+               * A face, not a line of text. The roster is a list of people the
+               * host chose by recognising them in the picker, which shows
+               * avatars - arriving here as names only made the same list
+               * harder to scan than the one they were picked from.
+               */
+              const avatar = invitation.receiver.avatarUrl ? (
+                <Image
+                  src={invitation.receiver.avatarUrl}
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 shrink-0 border border-foreground/15 object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden
+                  className="flex h-7 w-7 shrink-0 items-center justify-center border border-foreground/15 bg-secondary font-mono text-[0.6rem] font-bold uppercase text-foreground/65"
+                >
+                  {name.replace(/^@/, "").charAt(0)}
+                </span>
+              );
+
               return (
                 <li
                   key={invitation.id}
-                  className="flex items-baseline justify-between gap-3 px-4 py-2.5"
+                  className="flex items-center gap-2.5 px-4 py-2.5"
                 >
-                  <span className="min-w-0 truncate font-sans text-sm text-foreground">
-                    {name}
-                    {invitation.receiver.handle && invitation.receiver.fullName && (
-                      <span className="ml-1.5 font-mono text-[0.55rem] text-foreground/45">
-                        @{invitation.receiver.handle}
+                  {invitation.receiver.handle ? (
+                    <Link
+                      href={`/u/${invitation.receiver.handle}`}
+                      className="flex min-w-0 flex-1 items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+                    >
+                      {avatar}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-sans text-sm text-foreground">
+                          {name}
+                        </span>
+                        {invitation.receiver.fullName && (
+                          <span className="block truncate font-mono text-[0.55rem] text-foreground/55">
+                            @{invitation.receiver.handle}
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </span>
+                    </Link>
+                  ) : (
+                    <span className="flex min-w-0 flex-1 items-center gap-2.5">
+                      {avatar}
+                      <span className="min-w-0 flex-1 truncate font-sans text-sm text-foreground">
+                        {name}
+                      </span>
+                    </span>
+                  )}
+
                   {/* Word, not colour. Nothing here is legible from hue alone. */}
                   <span
                     className={`shrink-0 font-mono text-[0.55rem] font-bold uppercase tracking-[0.14em] ${STATUS_TONE[invitation.status]}`}

@@ -278,19 +278,23 @@ export default async function ArenaDetailPage({ params }: PageProps) {
               <span aria-hidden className="h-px flex-1 bg-foreground/15" />
             </div>
 
-            <div className="mt-5 text-[1.02rem] leading-[1.75]">
+            <div className="mt-5">
               <ArenaBrief markdown={arena.description} />
             </div>
 
+            {/* Rules sit on the card ground rather than on paper, which is the
+                whole distinction: the brief is writing, the rules are
+                reference. Nobody reads house rules top to bottom - they check
+                them - so they get a box, a smaller size and markers. */}
             {arena.rulesText.trim().length > 0 && (
-              <div className="mt-10 border-t border-foreground/12 pt-6">
-                <span className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.28em] text-foreground/50">
+              <aside className="mt-8 border border-foreground/15 bg-card">
+                <h2 className="border-b border-foreground/12 px-5 py-2.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.18em] text-foreground/70">
                   House rules
-                </span>
-                <div className="mt-4">
-                  <ArenaBrief markdown={arena.rulesText} />
+                </h2>
+                <div className="px-5 py-4">
+                  <ArenaBrief markdown={arena.rulesText} variant="rules" />
                 </div>
-              </div>
+              </aside>
             )}
           </article>
 

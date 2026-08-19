@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 
-export function useRecentSearches() {
+/**
+ * `storageKey` namespaces the history. The nav dialog and the invite picker
+ * both search, but they search for different things - arena titles in an
+ * invite box would be noise, and a person's name is not what you meant when
+ * you last used Cmd+K.
+ */
+export function useRecentSearches(storageKey = "recent_searches") {
   const [searches, setSearches] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
-    const saved = localStorage.getItem("recent_searches");
+    const saved = localStorage.getItem(storageKey);
     if (!saved) return [];
     try {
       return JSON.parse(saved);
@@ -23,14 +29,14 @@ export function useRecentSearches() {
     setSearches((prev) => {
       const filtered = prev.filter((s) => s.toLowerCase() !== trimmed.toLowerCase());
       const next = [trimmed, ...filtered].slice(0, 5);
-      localStorage.setItem("recent_searches", JSON.stringify(next));
+      localStorage.setItem(storageKey, JSON.stringify(next));
       return next;
     });
   };
 
   const clearSearches = () => {
     setSearches([]);
-    localStorage.removeItem("recent_searches");
+    localStorage.removeItem(storageKey);
   };
 
   return { searches, addSearch, clearSearches };

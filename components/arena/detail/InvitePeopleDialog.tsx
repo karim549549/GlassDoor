@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Search } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useDebouncedValue } from "@/lib/client/useDebouncedValue";
+import { useRecentSearches } from "@/lib/client/useRecentSearches";
 import { useSiteSearch, type SearchHit } from "@/lib/client/useSiteSearch";
 
 /**
@@ -66,6 +67,16 @@ export function InvitePeopleDialog({
     only: "people",
   });
 
+  /**
+   * Its own history, under its own key. The nav dialog's recents are arena
+   * titles and half-typed queries about the site; offering those here would be
+   * noise, and putting "karim" into the nav dialog's list would be too.
+   *
+   * A name is exactly the thing worth remembering: a host invites the same few
+   * people to the next arena as the last one.
+   */
+  const { searches, addSearch, clearSearches } = useRecentSearches("recent_invite_searches");
+
   const hidden = new Set(hiddenIds);
   const people = (groups.find((g) => g.key === "people")?.hits ?? []).filter(
     (hit) => !hidden.has(hit.id)
@@ -81,6 +92,10 @@ export function InvitePeopleDialog({
         setError(message);
         return;
       }
+      // The search that found someone worth inviting is the one worth
+      // keeping - not every keystroke on the way to it.
+      if (query.trim()) addSearch(query.trim());
+
       // The dialog stays open. Inviting one person is usually inviting three,
       // and closing after each would make the second one a fresh search.
       setInvited((prev) => [...prev, hit.id]);
@@ -146,10 +161,42 @@ export function InvitePeopleDialog({
             between keystrokes resizes under the reader's cursor. */}
         <div className="mt-4 h-72 overflow-y-auto border-t border-foreground/12">
           {query.trim().length < 2 ? (
-            <p className="px-6 py-6 font-sans text-sm leading-relaxed text-foreground/60">
-              Type a name or a handle. They get a card on their board and enter
-              with one click — no code to pass around.
-            </p>
+            <div className="px-6 py-6">
+              <p className="font-sans text-sm leading-relaxed text-foreground/60">
+                Type a name or a handle. They get a card on their board and
+                enter with one click — no code to pass around.
+              </p>
+
+              {searches.length > 0 && (
+                <div className="mt-6 border-t border-foreground/12 pt-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-mono text-[0.52rem] font-bold uppercase tracking-[0.2em] text-foreground/60">
+                      Recent
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearSearches}
+                      className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.55rem] text-orange-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+                    >
+                      Clear
+                    </button>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {searches.map((term) => (
+                      <button
+                        key={term}
+                        type="button"
+                        onClick={() => setQuery(term)}
+                        className="cursor-pointer border border-foreground/30 bg-card px-2.5 py-1 font-sans text-[0.75rem] text-foreground/85 transition-colors hover:border-orange-ink hover:text-orange-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           ) : loading ? (
             <p className="px-6 py-6 font-mono text-[0.55rem] uppercase tracking-[0.14em] text-foreground/55">
               Searching…
