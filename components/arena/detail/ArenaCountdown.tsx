@@ -67,14 +67,23 @@ export function ArenaCountdown({ target, label, nowIso }: ArenaCountdownProps) {
   const targetDate = new Date(target);
   const [now, setNow] = useState(() => new Date(nowIso));
 
+  /**
+   * A second when seconds are on screen, a minute when they are not.
+   *
+   * The display drops to days/hours/minutes more than a day out, so ticking
+   * every second there re-rendered sixty times to change nothing - on a page
+   * most people leave open. The interval is keyed on which unit is smallest,
+   * so it is rebuilt exactly once, as the arena crosses into its final day.
+   */
+  const showsSeconds = targetDate.getTime() - now.getTime() < 86_400_000;
+
   useEffect(() => {
-    // One second, unconditionally. The component is a dozen nodes, and the
-    // alternative - a variable interval that has to be torn down and rebuilt
-    // as the remaining time crosses a day boundary - is more moving parts than
-    // the saving is worth.
-    const id = window.setInterval(() => setNow(new Date()), 1_000);
+    const id = window.setInterval(
+      () => setNow(new Date()),
+      showsSeconds ? 1_000 : 30_000
+    );
     return () => window.clearInterval(id);
-  }, []);
+  }, [showsSeconds]);
 
   const { units, passed } = split(targetDate, now);
 

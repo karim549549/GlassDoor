@@ -7,6 +7,7 @@ import { useToast } from "@/components/providers/ToastProvider";
 import { logger } from "@/lib/client/logger";
 import type { ViewerRelationship } from "@/lib/arena/dto";
 import { DetailPanel } from "./panels";
+import { StartTeamDialog } from "./StartTeamDialog";
 
 /**
  * The only thing on this page that varies by who is reading it.
@@ -46,6 +47,8 @@ export interface ArenaActionPanelProps {
   entrantCount: number;
   maxParticipants: number | null;
   isTeam: boolean;
+  /** The team the viewer is on, so the panel says so instead of offering one. */
+  viewerTeamName: string | null;
   /**
    * False once the arena has run or been called off. `updateArena` refuses
    * both with a 409 and `/arena/[id]/edit` answers 404, so offering the button
@@ -64,12 +67,14 @@ export function ArenaActionPanel({
   entrantCount,
   maxParticipants,
   isTeam,
+  viewerTeamName,
   isEditable,
 }: ArenaActionPanelProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState("");
+  const [startingTeam, setStartingTeam] = useState(false);
 
   const registrationOpen = status === "REGISTRATION_OPEN";
   const isFull = maxParticipants !== null && entrantCount >= maxParticipants;
@@ -108,6 +113,13 @@ export function ArenaActionPanel({
       ? `${entrantCount} of ${maxParticipants} in`
       : `${entrantCount} in`;
 
+  /**
+   * Every branch below returns early, and the team dialog has to outlive all
+   * of them - a modal mounted inside one branch unmounts the moment the click
+   * that opened it changes which branch renders. The panel is built here and
+   * the dialog is a sibling of whatever it produced.
+   */
+  const panel = (() => {
   /* ---------------------------------------------------------------- host */
   if (relationship === "host") {
     return (
@@ -148,10 +160,27 @@ export function ArenaActionPanel({
               ? "The build window is open. Ship something."
               : status === "IDEA_PHASE"
                 ? "Planning time. Decide what you are making before the clock starts."
-                : registrationOpen
-                  ? "Your seat is held. Nothing else to do until it starts."
-                  : "Entries are closed. See you at the demo."}
+                : !registrationOpen
+                  ? "Entries are closed. See you at the demo."
+                  : isTeam && viewerTeamName
+                    ? `You are on ${viewerTeamName}. Fill the empty seats and you are set.`
+                    : isTeam
+                      ? "You are in, but not on a team yet. Start one, or take a seat in the lobby below."
+                      : "Your seat is held. Nothing else to do until it starts."}
           </Note>
+
+          {/* The missing half of a team arena. Until this existed, entering one
+              produced a solo entry and there was no way to form a team at
+              all. */}
+          {registrationOpen && isTeam && !viewerTeamName && (
+            <button
+              type="button"
+              onClick={() => setStartingTeam(true)}
+              className={PRIMARY}
+            >
+              Start a team
+            </button>
+          )}
 
           {registrationOpen && (
             <button
@@ -246,23 +275,61 @@ export function ArenaActionPanel({
           </>
         ) : (
           <>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => post("join", undefined, `You're in: ${arenaTitle}`)}
-              className={PRIMARY}
-            >
-              {busy ? "…" : "Enter this arena"}
-            </button>
-            <Note>
-              {isTeam
-                ? "Free to enter. Teams form once you are in."
-                : "Free to enter. Solo, and you can leave any time before it starts."}
-            </Note>
+            {isTeam ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setStartingTeam(true)}
+                  className={PRIMARY}
+                >
+                  Start a team
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => post("join", undefined, `You're in: ${arenaTitle}`)}
+                  className={QUIET}
+                >
+                  {busy ? "…" : "Enter on your own"}
+                </button>
+                <Note>
+                  Free to enter. Start a team and people can take a seat, or
+                  enter alone and join one from the lobby.
+                </Note>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => post("join", undefined, `You're in: ${arenaTitle}`)}
+                  className={PRIMARY}
+                >
+                  {busy ? "…" : "Enter this arena"}
+                </button>
+                <Note>
+                  Free to enter. Solo, and you can leave any time before it
+                  starts.
+                </Note>
+              </>
+            )}
           </>
         )}
       </div>
     </DetailPanel>
+  );
+  })();
+
+  return (
+    <>
+      {panel}
+      <StartTeamDialog
+        open={startingTeam}
+        onOpenChange={setStartingTeam}
+        arenaId={arenaId}
+        arenaTitle={arenaTitle}
+      />
+    </>
   );
 }
 

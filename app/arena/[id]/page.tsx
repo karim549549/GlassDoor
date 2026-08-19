@@ -147,6 +147,11 @@ export default async function ArenaDetailPage({ params }: PageProps) {
 
   const organizerName = arena.creator.fullName || arena.creator.handle;
 
+  const prizeAmount =
+    arena.hasPrizePool && arena.totalPrizePool && arena.totalPrizePool > 0
+      ? arena.totalPrizePool
+      : null;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Event",
@@ -166,7 +171,49 @@ export default async function ArenaDetailPage({ params }: PageProps) {
         ? "https://schema.org/EventCancelled"
         : "https://schema.org/EventScheduled",
     ...(location ? { location } : {}),
-    ...(organizerName ? { organizer: { "@type": "Person", name: organizerName } } : {}),
+    ...(organizerName
+      ? {
+          organizer: {
+            "@type": "Person",
+            name: organizerName,
+            ...(arena.creator.handle
+              ? { url: `${getSiteUrl()}/u/${arena.creator.handle}` }
+              : {}),
+          },
+        }
+      : {}),
+
+    /**
+     * `offers` is what makes an Event eligible for the richer search result -
+     * without it Google has the event but no idea whether anyone can get in,
+     * and renders the plain listing. Every arena is free, which is the single
+     * most persuasive fact about entering one, so it is worth stating in the
+     * markup as well as on the page.
+     */
+    offers: {
+      "@type": "Offer",
+      price: 0,
+      priceCurrency: arena.prizeCurrency,
+      availability:
+        status === "REGISTRATION_OPEN"
+          ? "https://schema.org/InStock"
+          : "https://schema.org/SoldOut",
+      url: canonicalUrl,
+      validFrom: arena.registrationStart,
+    },
+
+    ...(arena.maxParticipants
+      ? {
+          maximumAttendeeCapacity: arena.maxParticipants,
+          remainingAttendeeCapacity: Math.max(
+            0,
+            arena.maxParticipants - arena.entrantCount
+          ),
+        }
+      : {}),
+
+    // Prize money is a fact about the event, and schema.org has a field for it.
+    ...(prizeAmount ? { award: `${prizeAmount.toLocaleString()} ${arena.prizeCurrency}` } : {}),
   };
 
   const statusCopy = STATUS_COPY[status] ?? { label: status, tone: "past" as const };
@@ -207,10 +254,9 @@ export default async function ArenaDetailPage({ params }: PageProps) {
     arena.requireWriteup && "A short write-up",
   ].filter(Boolean) as string[];
 
-  const prize =
-    arena.hasPrizePool && arena.totalPrizePool && arena.totalPrizePool > 0
-      ? `${arena.totalPrizePool.toLocaleString()} ${arena.prizeCurrency}`
-      : null;
+  const prize = prizeAmount
+    ? `${prizeAmount.toLocaleString()} ${arena.prizeCurrency}`
+    : null;
 
   const places = [
     ["1st", arena.firstPlacePrize],
@@ -219,6 +265,23 @@ export default async function ArenaDetailPage({ params }: PageProps) {
   ].filter(([, amount]) => typeof amount === "number" && amount > 0) as [string, number][];
 
   const registrationOpen = status === "REGISTRATION_OPEN" || status === "SCHEDULED";
+
+  /**
+   * The viewer's team, named from the roster rather than fetched again: the
+   * entry probe already told us which team they are on, and the participant
+   * list already carries every team's name.
+   */
+  const viewerTeamName =
+    arena.participants.find((p) => p.teamId && p.teamId === meta.viewerTeamId)?.teamName ??
+    null;
+
+  /** Only an open team arena can gain a member, and only from someone free. */
+  const canJoinTeam =
+    arena.isTeam &&
+    status === "REGISTRATION_OPEN" &&
+    viewer.relationship !== "guest" &&
+    viewer.relationship !== "host" &&
+    meta.viewerTeamId === null;
   const hasRun = now >= new Date(arena.implPhaseEnd);
 
   /**
@@ -233,9 +296,12 @@ export default async function ArenaDetailPage({ params }: PageProps) {
       count: arena.isTeam ? arena.teamCount : arena.entrantCount,
       content: (
         <ArenaParticipants
+          arenaId={arena.id}
           participants={arena.participants}
           isTeam={arena.isTeam}
           maxTeamSize={arena.maxTeamSize}
+          viewerTeamId={meta.viewerTeamId}
+          canJoinTeam={canJoinTeam}
         />
       ),
     },
@@ -362,6 +428,7 @@ export default async function ArenaDetailPage({ params }: PageProps) {
                 entrantCount={arena.entrantCount}
                 maxParticipants={arena.maxParticipants}
                 isTeam={arena.isTeam}
+                viewerTeamName={viewerTeamName}
                 isEditable={!hasRun && status !== "CANCELED"}
               />
 

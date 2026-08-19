@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { Prisma, type ArenaAuthority, type DifficultyTier, type PrizeCurrency } from "@prisma/client";
 import { mayHavePrizePool, type ArenaAuthorityValue } from "./authority";
 import prisma from "@/lib/server/prisma";
@@ -32,6 +33,12 @@ export interface ArenaDetailMeta {
   isOwner: boolean;
   isRegistered: boolean;
   totalParticipants: number;
+  /**
+   * The team the viewer is on, if any. Comes free with the entry probe, and
+   * is what lets the lobby say "you are here" instead of offering a seat on a
+   * team the reader is already sitting in.
+   */
+  viewerTeamId: string | null;
   /**
    * Always true when a row is returned at all - `getArenaDetail` refuses
    * rather than reporting. Retained so a caller that still checks it keeps
@@ -208,6 +215,35 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
 }
 
 /**
+ * The arena row, deduplicated across one request.
+ *
+ * `generateMetadata` and the page body both need it, and they ask with
+ * different viewers - null for metadata, the reader's id for the page - so a
+ * `cache()` around `getArenaDetail` deduplicated nothing for anyone signed
+ * in: every arena page ran the detail query twice.
+ *
+ * Cached here instead, on the part that does not depend on the viewer. Keyed
+ * on two strings rather than the `ArenaRef` object because React's `cache`
+ * compares arguments by identity, and two calls building their own `{ kind,
+ * id }` would miss every time.
+ */
+const loadArenaRow = cache(async (kind: ArenaRef["kind"], value: string) => {
+  /**
+   * Either form resolves. The slug is canonical and what every link now
+   * carries; the id is what legacy `title-uuid` links carry and what client
+   * code holds, and the page redirects one to the other rather than serving
+   * an arena at two addresses.
+   */
+  const identity: Prisma.ArenaWhereInput =
+    kind === "id" ? { id: value } : { slug: value };
+
+  return prisma.arena.findFirst({
+    where: { ...identity, isDeleted: false, publishedAt: { not: null } },
+    select: ARENA_DETAIL_SELECT,
+  });
+});
+
+/**
  * One arena, or null if this viewer may not see it.
  *
  * Returning null rather than a payload-plus-a-flag is the change that matters.
@@ -229,19 +265,7 @@ export async function getArenaDetail(
   ref: ArenaRef,
   currentUserId: string | null
 ): Promise<{ arena: ArenaDetailRow; meta: ArenaDetailMeta } | null> {
-  /**
-   * Either form resolves. The slug is canonical and what every link now
-   * carries; the id is what legacy `title-uuid` links carry and what client
-   * code holds, and the page redirects one to the other rather than serving
-   * an arena at two addresses.
-   */
-  const identity: Prisma.ArenaWhereInput =
-    ref.kind === "id" ? { id: ref.id } : { slug: ref.slug };
-
-  const arena = await prisma.arena.findFirst({
-    where: { ...identity, isDeleted: false, publishedAt: { not: null } },
-    select: ARENA_DETAIL_SELECT,
-  });
+  const arena = await loadArenaRow(ref.kind, ref.kind === "id" ? ref.id : ref.slug);
 
   if (!arena) {
     return null;
@@ -261,7 +285,7 @@ export async function getArenaDetail(
             { team: { members: { some: { userId: currentUserId } } } },
           ],
         },
-        select: { id: true },
+        select: { id: true, teamId: true },
       })
     : Promise.resolve(null));
 
@@ -280,6 +304,7 @@ export async function getArenaDetail(
       isOwner,
       isRegistered,
       totalParticipants: arena._count.entries,
+      viewerTeamId: viewerEntry?.teamId ?? null,
       canAccessPrivate: true,
     },
   };

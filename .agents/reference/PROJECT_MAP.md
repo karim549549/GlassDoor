@@ -6,7 +6,7 @@
 Auto-derived inventory of Devs Arena. Read this before exploring the codebase —
 it exists so an agent does not spend tokens rediscovering structure.
 
-Generated from 36 models, 37 API routes, 23 pages, 17 test files.
+Generated from 36 models, 38 API routes, 23 pages, 17 test files.
 
 ## Data model (36 models, 19 migrations)
 
@@ -63,7 +63,7 @@ Generated from 36 models, 37 API routes, 23 pages, 17 test files.
 - `20260819163000_arena_slug_backfill_fix`
 - `20260819180000_arena_rules_list`
 
-## API routes (37)
+## API routes (38)
 
 | Route | Methods | Auth | Rate limited |
 |---|---|---|---|
@@ -82,6 +82,7 @@ Generated from 36 models, 37 API routes, 23 pages, 17 test files.
 | `/api/arena/[id]/rubric` | GET, POST, PATCH | requireUser | yes |
 | `/api/arena/[id]/submit` | POST, GET | requireUser | yes |
 | `/api/arena/[id]/teams` | POST | requireUser | yes |
+| `/api/arena/[id]/teams/[teamId]/join` | POST | requireUser | yes |
 | `/api/auth/callback` | GET | public | no |
 | `/api/auth/change-password` | POST | requireUser | yes |
 | `/api/auth/login` | POST | public | yes |

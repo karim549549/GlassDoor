@@ -41,6 +41,8 @@ const participantSchema = z.object({
   avatarUrl: z.string().nullable(),
   /** Present when this entry is a team's, so the list can group. */
   teamName: z.string().nullable(),
+  /** The team row, so the lobby can offer a seat on it. Not a person. */
+  teamId: z.string().nullable(),
   isTeamLeader: z.boolean(),
 });
 
@@ -173,6 +175,7 @@ function participantsOf(raw: ArenaDetailRow): ArenaDetailDto["participants"] {
         handle: member.user.handle,
         avatarUrl: member.user.avatarUrl,
         teamName: entry.team!.name,
+        teamId: entry.team!.id,
         isTeamLeader: member.isLeader,
       }));
     }
@@ -186,6 +189,7 @@ function participantsOf(raw: ArenaDetailRow): ArenaDetailDto["participants"] {
         handle: entry.user.handle,
         avatarUrl: entry.user.avatarUrl,
         teamName: null,
+        teamId: null,
         isTeamLeader: false,
       },
     ];

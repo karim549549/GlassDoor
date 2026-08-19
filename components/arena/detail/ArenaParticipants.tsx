@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/providers/ToastProvider";
+import { logger } from "@/lib/client/logger";
 import type { ArenaDetailDto } from "@/lib/arena/dto";
 
 /**
@@ -108,18 +111,37 @@ function TeamCard({
   name,
   members,
   maxTeamSize,
+  isMine,
+  onJoin,
+  joining,
+  canJoin,
 }: {
   name: string;
   members: Participant[];
   maxTeamSize: number;
+  /** The viewer is on this team. */
+  isMine: boolean;
+  onJoin: (teamId: string) => void;
+  joining: boolean;
+  /** Registration is open and the viewer is not already on a team. */
+  canJoin: boolean;
 }) {
   const free = Math.max(0, maxTeamSize - members.length);
+  const teamId = members[0]?.teamId ?? null;
 
   return (
-    <li className="flex flex-col border border-foreground/15 bg-card">
+    <li
+      className={`flex flex-col border bg-card ${isMine ? "border-orange" : "border-foreground/15"}`}
+    >
       <div className="flex items-baseline justify-between gap-3 border-b border-foreground/12 px-4 py-2.5">
-        <h3 className="min-w-0 truncate font-sans text-sm font-semibold text-foreground">
-          {name}
+        <h3 className="flex min-w-0 items-baseline gap-2 truncate font-sans text-sm font-semibold text-foreground">
+          <span className="truncate">{name}</span>
+          {/* A word, not just the border colour. */}
+          {isMine && (
+            <span className="shrink-0 font-mono text-[0.5rem] font-bold uppercase tracking-[0.16em] text-orange-ink">
+              yours
+            </span>
+          )}
         </h3>
         <span className="shrink-0 font-mono text-[0.55rem] font-bold uppercase tracking-[0.14em] tabular-nums text-foreground/55">
           {members.length}/{maxTeamSize}
@@ -144,24 +166,77 @@ function TeamCard({
       </ul>
 
       {free > 0 && (
-        <p className="mt-auto border-t border-foreground/10 px-4 py-2 font-mono text-[0.55rem] uppercase tracking-[0.14em] text-orange-ink">
-          {free === 1 ? "1 seat left" : `${free} seats left`}
-        </p>
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-foreground/10 px-4 py-2">
+          <span className="font-mono text-[0.55rem] uppercase tracking-[0.14em] text-orange-ink">
+            {free === 1 ? "1 seat left" : `${free} seats left`}
+          </span>
+
+          {canJoin && teamId && (
+            <button
+              type="button"
+              disabled={joining}
+              onClick={() => onJoin(teamId)}
+              className="cursor-pointer border-2 border-orange bg-orange px-3 py-1 font-mono text-[0.55rem] font-bold uppercase tracking-[0.14em] text-[#0E0E0D] transition-all hover:bg-transparent hover:text-orange-ink active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+            >
+              {joining ? "…" : "Take a seat"}
+            </button>
+          )}
+        </div>
       )}
     </li>
   );
 }
 
 export function ArenaParticipants({
+  arenaId,
   participants,
   isTeam,
   maxTeamSize,
+  viewerTeamId,
+  canJoinTeam,
 }: {
+  arenaId: string;
   participants: Participant[];
   isTeam: boolean;
   maxTeamSize: number;
+  /** The viewer's own team, so their card says so and offers no seat. */
+  viewerTeamId: string | null;
+  /** Signed in, registration open, and not already on a team. */
+  canJoinTeam: boolean;
 }) {
+  const router = useRouter();
+  const { toast } = useToast();
   const [expanded, setExpanded] = useState(false);
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  const join = async (teamId: string) => {
+    setJoiningId(teamId);
+    try {
+      const res = await fetch(`/api/arena/${arenaId}/teams/${teamId}/join`, {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        toast(data.error || "Could not join that team.", "error");
+        return;
+      }
+
+      toast("You're on the team.", "success");
+      // Server-rendered: the roster, the seat count and the action panel all
+      // keep showing the state from before the click without this.
+      router.refresh();
+    } catch (err) {
+      logger.error("Join team failed", {
+        arenaId,
+        teamId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      toast("Network error. Nothing changed.", "error");
+    } finally {
+      setJoiningId(null);
+    }
+  };
 
   if (participants.length === 0) {
     return (
@@ -192,9 +267,21 @@ export function ArenaParticipants({
     <div className="flex flex-col gap-6">
       {shownTeams.length > 0 && (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {shownTeams.map(([name, members]) => (
-            <TeamCard key={name} name={name} members={members} maxTeamSize={maxTeamSize} />
-          ))}
+          {shownTeams.map(([name, members]) => {
+            const teamId = members[0]?.teamId ?? null;
+            return (
+              <TeamCard
+                key={name}
+                name={name}
+                members={members}
+                maxTeamSize={maxTeamSize}
+                isMine={teamId !== null && teamId === viewerTeamId}
+                canJoin={canJoinTeam}
+                joining={joiningId === teamId}
+                onJoin={join}
+              />
+            );
+          })}
         </ul>
       )}
 
