@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ArenaCountdown } from "./ArenaCountdown";
 import { authorityBadge } from "./panels";
@@ -56,7 +57,11 @@ export function ArenaMasthead({
       />
       <BackgroundGrid opacity={0.07} patternSize={28} />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-6 pt-12 md:px-10 md:pb-8 md:pt-16">
+      {/* The same rail every other arena surface uses. It was max-w-6xl -
+          1152px - while the board's content underneath its own band runs to
+          1700px, so on a wide screen the two disagreed by about 275px a side
+          and this page simply threw the width away. */}
+      <ArenaContainer className="relative z-10 pb-6 pt-12 md:pb-8 md:pt-16">
         {/* Title left, clock right. The asymmetry is the point: a single
             centred column is what every other band on the site does. */}
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
@@ -130,12 +135,12 @@ export function ArenaMasthead({
             />
           )}
         </div>
-      </div>
+      </ArenaContainer>
 
       {/* The spine. One hairline, one line of facts, edge to edge - the thing
           that makes the band read as a masthead rather than a title card. */}
       <div className="relative z-10 border-t border-background/15">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 px-6 py-3 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-background/65 md:px-10">
+        <ArenaContainer className="flex flex-wrap items-center gap-x-5 gap-y-2 py-3 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-background/65">
           {/* Slashes as separators, in the accent. They are the only ornament
               on the band and they do a job: at this size the facts would
               otherwise run together into one grey line. */}
@@ -157,7 +162,7 @@ export function ArenaMasthead({
               <span className="font-bold text-orange">{prize}</span>
             </>
           )}
-        </div>
+        </ArenaContainer>
       </div>
     </header>
   );

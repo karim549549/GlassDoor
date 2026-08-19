@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/providers/ToastProvider";
 import { logger } from "@/lib/client/logger";
 import { DetailPanel } from "./panels";
+import { CancelArenaDialog } from "./CancelArenaDialog";
 
 /**
  * Everything only the host sees: who has been invited, who to invite next, and
@@ -41,6 +42,8 @@ const STATUS_LABEL: Record<HostInvitation["status"], string> = {
 
 export function ArenaHostSections({
   arenaId,
+  arenaTitle,
+  entrantCount,
   invitations: initial,
   inviteCode,
   isPrivate,
@@ -48,6 +51,9 @@ export function ArenaHostSections({
   canCancel,
 }: {
   arenaId: string;
+  arenaTitle: string;
+  /** Named in the cancel dialog, because it is what makes it consequential. */
+  entrantCount: number;
   invitations: HostInvitation[];
   /** Host only, by construction - the DTO does not emit it to anyone else. */
   inviteCode: string | null;
@@ -253,49 +259,29 @@ export function ArenaHostSections({
       {canCancel && (
         <DetailPanel title="Call it off">
           <div className="flex flex-col gap-3 px-4 py-4">
-            {confirmingCancel ? (
-              <>
-                <p className="font-sans text-[0.8rem] leading-relaxed text-foreground">
-                  Everyone who entered will see this arena marked as called off.
-                  It cannot be reopened.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    disabled={canceling}
-                    onClick={cancelArena}
-                    className="cursor-pointer border-2 border-accent bg-accent px-4 py-2 font-mono text-[0.55rem] font-bold uppercase tracking-[0.14em] text-background transition-all hover:bg-transparent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
-                  >
-                    {canceling ? "…" : "Yes, call it off"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={canceling}
-                    onClick={() => setConfirmingCancel(false)}
-                    className="cursor-pointer border-b border-transparent px-1 py-2 font-mono text-[0.55rem] uppercase tracking-[0.14em] text-foreground/60 transition-colors hover:border-foreground/40 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
-                  >
-                    Keep it
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="font-sans text-[0.8rem] leading-relaxed text-foreground/70">
-                  The page stays up and says what happened, so anyone who
-                  cleared their Saturday finds out rather than turning up.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setConfirmingCancel(true)}
-                  className="cursor-pointer self-start border border-accent/60 px-4 py-2 font-mono text-[0.55rem] font-bold uppercase tracking-[0.14em] text-accent transition-colors hover:border-accent hover:bg-accent hover:text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
-                >
-                  Call this arena off
-                </button>
-              </>
-            )}
+            <p className="font-sans text-[0.8rem] leading-relaxed text-foreground/70">
+              The page stays up and says what happened, so anyone who cleared
+              their Saturday finds out rather than turning up.
+            </p>
+            <button
+              type="button"
+              onClick={() => setConfirmingCancel(true)}
+              className="cursor-pointer self-start border border-accent/60 px-4 py-2 font-mono text-[0.55rem] font-bold uppercase tracking-[0.14em] text-accent transition-colors hover:border-accent hover:bg-accent hover:text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+            >
+              Call this arena off
+            </button>
           </div>
         </DetailPanel>
       )}
+
+      <CancelArenaDialog
+        open={confirmingCancel}
+        onOpenChange={setConfirmingCancel}
+        onConfirm={cancelArena}
+        busy={canceling}
+        arenaTitle={arenaTitle}
+        entrantCount={entrantCount}
+      />
     </div>
   );
 }

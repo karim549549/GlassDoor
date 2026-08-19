@@ -9,6 +9,7 @@ import { listInvitationsForArena } from "@/lib/arena/invitation-service";
 import { resolveViewer, toArenaDetailDto } from "@/lib/arena/dto";
 import { deriveArenaStatus } from "@/lib/arena/status";
 import { getOptionalUser } from "@/lib/server/auth/require-user";
+import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { ArenaMasthead } from "@/components/arena/detail/ArenaMasthead";
 import { ArenaPhaseline } from "@/components/arena/detail/ArenaPhaseline";
@@ -256,7 +257,7 @@ export default async function ArenaDetailPage({ params }: PageProps) {
           implPhaseEnd={arena.implPhaseEnd}
         />
 
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-10 md:px-10 md:py-12">
+        <ArenaContainer className="relative z-10 py-10 md:py-12">
           {status === "CANCELED" && (
             <p className="mb-8 border-l-4 border-accent bg-card px-5 py-4 font-sans text-sm leading-relaxed text-foreground">
               <strong className="font-bold">This arena was called off.</strong> The
@@ -269,7 +270,7 @@ export default async function ArenaDetailPage({ params }: PageProps) {
               the same weight as "Where" and "Hand in" was most of why the page
               read as a listing: seven identical panels, one of which happened
               to contain the writing. */}
-          <article className="mb-12 max-w-3xl">
+          <article className="mb-12 max-w-[68ch]">
             <div className="flex items-center gap-3">
               <span className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.28em] text-orange-ink">
                 The brief
@@ -293,7 +294,7 @@ export default async function ArenaDetailPage({ params }: PageProps) {
             )}
           </article>
 
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[19rem_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[21rem_minmax(0,1fr)]">
             <aside className="flex flex-col gap-6">
               <ArenaActionPanel
                 arenaId={arena.id}
@@ -381,11 +382,11 @@ export default async function ArenaDetailPage({ params }: PageProps) {
 
               {hasRun && <ArenaLeaderboard arenaId={arena.id} />}
 
-              <ArenaComments arenaId={arena.id} />
-
               {invitations?.ok && (
                 <ArenaHostSections
                   arenaId={arena.id}
+                  arenaTitle={arena.title}
+                  entrantCount={arena.entrantCount}
                   invitations={invitations.data.map((i) => ({
                     id: i.id,
                     status: i.status,
@@ -404,7 +405,19 @@ export default async function ArenaDetailPage({ params }: PageProps) {
               )}
             </div>
           </div>
-        </div>
+
+          {/* Last, and across the whole rail.
+
+              It sat in the right-hand column beside a sidebar, which gave a
+              threaded discussion about two thirds of the page to indent
+              replies into - and put it above the host's own sections, so a
+              host scrolled past everyone else's comments to reach their
+              invitation roster. Comments are what you read after the page,
+              not part of it. */}
+          <section className="mt-12 border-t-2 border-foreground pt-10">
+            <ArenaComments arenaId={arena.id} />
+          </section>
+        </ArenaContainer>
       </main>
     </>
   );

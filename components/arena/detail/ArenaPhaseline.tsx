@@ -1,3 +1,4 @@
+import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { scheduleSegments, formatDuration } from "@/lib/arena/schedule-presets";
 import type { ArenaStatus } from "@/lib/arena/status";
 
@@ -88,7 +89,7 @@ export function ArenaPhaseline(props: ArenaPhaselineProps) {
 
   return (
     <section aria-label="Schedule" className="border-y border-foreground/15 bg-card">
-      <div className="mx-auto w-full max-w-6xl px-6 py-6 md:px-10 md:py-8">
+      <ArenaContainer className="py-6 md:py-8">
         <div className="grid grid-cols-1 gap-px border border-foreground/12 bg-foreground/12 sm:grid-cols-3">
           {stages.map((stage) => {
             const live = stage.active.includes(props.status);
@@ -180,7 +181,7 @@ export function ArenaPhaseline(props: ArenaPhaselineProps) {
             </figcaption>
           </figure>
         )}
-      </div>
+      </ArenaContainer>
     </section>
   );
 }

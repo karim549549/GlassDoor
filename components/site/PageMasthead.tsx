@@ -1,3 +1,4 @@
+import { ArenaContainer } from "@/components/arena/ArenaContainer";
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 
 /**
@@ -59,9 +60,10 @@ export function PageMasthead({
       />
       <BackgroundGrid opacity={0.07} patternSize={28} />
 
-      <div
-        className={`relative z-10 mx-auto w-full max-w-6xl px-6 md:px-10 ${PADDING[size]}`}
-      >
+      {/* The same rail the content below it uses. It ran max-w-6xl while the
+          board's rows ran to 1700px, so on a wide screen the headline sat
+          inset from the list it introduced. */}
+      <ArenaContainer className={`relative z-10 ${PADDING[size]}`}>
         <span className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.3em] text-orange">
           [ {eyebrow} ]
         </span>
@@ -76,7 +78,7 @@ export function PageMasthead({
           </p>
         )}
         {children}
-      </div>
+      </ArenaContainer>
     </div>
   );
 }
