@@ -2,11 +2,10 @@ import React from "react";
 import { Logo } from "./Logo";
 
 interface NavBrandProps {
-  isScrolled: boolean;
   isDarkTheme: boolean;
 }
 
-export function NavBrand({ isScrolled, isDarkTheme }: NavBrandProps) {
+export function NavBrand({ isDarkTheme }: NavBrandProps) {
   return (
     <div className="flex items-center gap-3">
       <Logo />

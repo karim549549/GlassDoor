@@ -11,8 +11,6 @@ import {
   Copy,
   Check,
   Download,
-  Award,
-  Terminal,
 } from "lucide-react";
 import type { ProofPacketSnapshot } from "@/lib/proof/proof-service";
 

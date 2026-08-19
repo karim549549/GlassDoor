@@ -4,11 +4,7 @@ import Link from "next/link";
 import React from "react";
 import { NAV_LINKS } from "./nav-links-data";
 
-interface NavTabsProps {
-  isDarkTheme: boolean;
-}
-
-export function NavTabs({ isDarkTheme }: NavTabsProps) {
+export function NavTabs() {
   const linkClass = "font-mono text-[0.6rem] opacity-55 hover:opacity-100 transition-opacity uppercase tracking-wider cursor-pointer text-current";
 
   // No breakpoint of its own: the only caller already gates this behind

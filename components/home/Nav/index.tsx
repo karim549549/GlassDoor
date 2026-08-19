@@ -51,14 +51,14 @@ export function Nav() {
         }`}
       >
         {/* Left Section: Branding */}
-        <NavBrand isScrolled={isScrolled} isDarkTheme={isDarkTheme} />
+        <NavBrand isDarkTheme={isDarkTheme} />
 
         {/* Center Section: Search on Left, Tabs on Right (Desktop only) */}
         <div className="hidden lg:flex items-center gap-6">
           <Suspense fallback={null}>
             <NavSearch isDarkTheme={isDarkTheme} />
           </Suspense>
-          <NavTabs isDarkTheme={isDarkTheme} />
+          <NavTabs />
         </div>
 
         {/* Right Section: User Menu / Actions & Responsive Burger Menu */}

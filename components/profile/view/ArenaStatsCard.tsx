@@ -18,10 +18,6 @@ export const ArenaStatsCard = React.memo(function ArenaStatsCard({
     (e) => e.submission?.proofPacket && !e.submission.proofPacket.isRevoked
   ).length;
 
-  const highestRating =
-    ratingStates.length > 0
-      ? Math.max(...ratingStates.map((s) => Math.round(s.rating)))
-      : rating || 1500;
 
   return (
     <div className="relative overflow-hidden border-2 border-foreground bg-white p-6 font-mono text-[0.65rem] uppercase tracking-wider shadow-[4px_4px_0px_0px_var(--foreground)] flex flex-col justify-between gap-5">

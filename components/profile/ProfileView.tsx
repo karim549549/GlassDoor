@@ -82,10 +82,7 @@ export function ProfileView({ userProfile, isOwner }: ProfileViewProps) {
         </div>
 
         {/* Bottom Row: Full-width Arena Performance Record Card */}
-        <ArenaPerformanceRecord
-          arenaEntries={profile.arenaEntries}
-          createdAt={profile.createdAt}
-        />
+        <ArenaPerformanceRecord arenaEntries={profile.arenaEntries} />
       </div>
 
       {/* Edit Profile Modal Dialog */}

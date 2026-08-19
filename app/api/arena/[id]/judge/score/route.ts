@@ -17,10 +17,7 @@ const scoreSchema = z.object({
   feedbackText: z.string().optional().nullable(),
 });
 
-export async function POST(
-  request: NextRequest,
-  _context: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest) {
   return withApiErrorHandling(
     "Judge score submission API error",
     async () => {

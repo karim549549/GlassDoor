@@ -1,6 +1,5 @@
 import "server-only";
 import prisma from "@/lib/server/prisma";
-import type { RatingDomain } from "@prisma/client";
 
 export interface LeaderboardStanding {
   submissionId: string;

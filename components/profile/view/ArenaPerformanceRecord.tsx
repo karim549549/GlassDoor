@@ -1,16 +1,14 @@
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, ExternalLink, Award, Calendar, FileCode, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, ExternalLink, Award, FileCode, CheckCircle2 } from "lucide-react";
 import type { UserArenaEntry } from "../types";
 
 interface ArenaPerformanceRecordProps {
   arenaEntries?: UserArenaEntry[];
-  createdAt?: string | Date;
 }
 
 export const ArenaPerformanceRecord = React.memo(function ArenaPerformanceRecord({
   arenaEntries = [],
-  createdAt,
 }: ArenaPerformanceRecordProps) {
   const proofPackets = arenaEntries
     .filter((e) => e.submission?.proofPacket && !e.submission.proofPacket.isRevoked)

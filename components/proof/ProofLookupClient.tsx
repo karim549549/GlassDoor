@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Search, ArrowRight, Award, Lock, GitCommit, FileCheck } from "lucide-react";
+import { ShieldCheck, Search, ArrowRight, Award, Lock, GitCommit } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export function ProofLookupClient() {
