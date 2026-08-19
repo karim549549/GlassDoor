@@ -64,19 +64,23 @@ export type ReceivedInvitationRow = Prisma.ArenaInvitationGetPayload<{
 }>;
 
 /**
- * Invite one person, by handle.
+ * Who to invite: someone picked from a list, or a handle typed by hand.
  *
- * Handle rather than user id, because that is what a host knows. A host types
- * the name they saw on someone's profile; asking them for a uuid would mean
- * building a person-picker before the feature could ship at all.
+ * The handle path shipped first because it needed no UI. It has one real
+ * limit, which the picker exposes: a user who has never set a handle cannot be
+ * named by one, and most people here have not set one. Searching finds them by
+ * full name and hands back an id, so the id path is what the dialog uses and
+ * the handle path is the fallback for someone typing.
  */
+export type InviteTarget = { kind: "handle"; handle: string } | { kind: "id"; userId: string };
+
 export async function sendInvitation(params: {
   arenaId: string;
   senderId: string;
-  handle: string;
+  target: InviteTarget;
   now?: Date;
 }): Promise<InvitationResult<ArenaInvitationRow>> {
-  const { arenaId, senderId, handle, now = new Date() } = params;
+  const { arenaId, senderId, target, now = new Date() } = params;
 
   const arena = await prisma.arena.findFirst({
     where: { id: arenaId, isDeleted: false },
@@ -110,13 +114,25 @@ export async function sendInvitation(params: {
     };
   }
 
-  const receiver = await prisma.user.findFirst({
-    where: { handle: { equals: handle.trim().replace(/^@/, ""), mode: "insensitive" } },
-    select: { id: true },
-  });
+  const receiver =
+    target.kind === "id"
+      ? await prisma.user.findUnique({ where: { id: target.userId }, select: { id: true } })
+      : await prisma.user.findFirst({
+          where: {
+            handle: { equals: target.handle.trim().replace(/^@/, ""), mode: "insensitive" },
+          },
+          select: { id: true },
+        });
 
   if (!receiver) {
-    return { ok: false, status: 404, error: "No one here goes by that handle." };
+    return {
+      ok: false,
+      status: 404,
+      error:
+        target.kind === "id"
+          ? "That account no longer exists."
+          : "No one here goes by that handle.",
+    };
   }
 
   if (receiver.id === senderId) {

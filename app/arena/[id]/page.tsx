@@ -386,12 +386,14 @@ export default async function ArenaDetailPage({ params }: PageProps) {
                 <ArenaHostSections
                   arenaId={arena.id}
                   arenaTitle={arena.title}
+                  hostId={viewerUser!.id}
                   entrantCount={arena.entrantCount}
                   invitations={invitations.data.map((i) => ({
                     id: i.id,
                     status: i.status,
                     createdAt: i.createdAt.toISOString(),
                     receiver: {
+                      id: i.receiver.id,
                       fullName: i.receiver.fullName,
                       handle: i.receiver.handle,
                       avatarUrl: i.receiver.avatarUrl,

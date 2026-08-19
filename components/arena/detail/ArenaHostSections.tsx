@@ -6,6 +6,7 @@ import { useToast } from "@/components/providers/ToastProvider";
 import { logger } from "@/lib/client/logger";
 import { DetailPanel } from "./panels";
 import { CancelArenaDialog } from "./CancelArenaDialog";
+import { InvitePeopleDialog } from "./InvitePeopleDialog";
 
 /**
  * Everything only the host sees: who has been invited, who to invite next, and
@@ -22,6 +23,8 @@ export interface HostInvitation {
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   createdAt: string;
   receiver: {
+    /** Needed so the picker can mark someone already invited. */
+    id: string;
     fullName: string | null;
     handle: string | null;
     avatarUrl: string | null;
@@ -43,6 +46,7 @@ const STATUS_LABEL: Record<HostInvitation["status"], string> = {
 export function ArenaHostSections({
   arenaId,
   arenaTitle,
+  hostId,
   entrantCount,
   invitations: initial,
   inviteCode,
@@ -52,6 +56,8 @@ export function ArenaHostSections({
 }: {
   arenaId: string;
   arenaTitle: string;
+  /** The host reading this, so the picker can leave them out of its own results. */
+  hostId: string;
   /** Named in the cancel dialog, because it is what makes it consequential. */
   entrantCount: number;
   invitations: HostInvitation[];
@@ -66,41 +72,38 @@ export function ArenaHostSections({
   const router = useRouter();
   const { toast } = useToast();
   const [invitations, setInvitations] = useState(initial);
-  const [handle, setHandle] = useState("");
-  const [sending, setSending] = useState(false);
+  const [inviting, setInviting] = useState(false);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [canceling, setCanceling] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
 
-  const send = async () => {
-    const trimmed = handle.trim();
-    if (!trimmed) return;
-
-    setSending(true);
+  /**
+   * Returns the error rather than toasting it, so the dialog can show the
+   * message next to the row that caused it. A toast fired from inside a modal
+   * lands behind or beside it and reads as belonging to the page underneath.
+   */
+  const invite = async (person: { userId: string; name: string }): Promise<string | null> => {
     try {
       const res = await fetch(`/api/arena/${arenaId}/invitations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handle: trimmed }),
+        body: JSON.stringify({ userId: person.userId }),
       });
       const data = await res.json();
 
       if (!res.ok || data.error) {
-        toast(data.error || "Could not send that invitation.", "error");
-        return;
+        return data.error || "Could not send that invitation.";
       }
 
       setInvitations((prev) => [data.invitation, ...prev]);
-      setHandle("");
-      toast("Invitation sent.", "success");
+      toast(`Invited ${person.name}.`, "success");
+      return null;
     } catch (err) {
       logger.error("Invitation send failed", {
         arenaId,
         error: err instanceof Error ? err.message : String(err),
       });
-      toast("Network error. Nothing was sent.", "error");
-    } finally {
-      setSending(false);
+      return "Network error. Nothing was sent.";
     }
   };
 
@@ -149,39 +152,17 @@ export function ArenaHostSections({
         aside={invitations.length > 0 ? `${accepted} of ${invitations.length} in` : undefined}
       >
         {canStillInvite ? (
-          <div className="flex flex-col gap-2 border-b border-foreground/10 px-4 py-4">
-            <label
-              htmlFor="invite-handle"
-              className="font-mono text-[0.5rem] font-bold uppercase tracking-[0.18em] text-foreground/50"
+          <div className="flex flex-col gap-2.5 border-b border-foreground/10 px-4 py-4">
+            {/* A button, not a field. Typing a handle only ever worked for the
+                minority who have set one, and it asked the host to remember a
+                string exactly rather than recognise a face. */}
+            <button
+              type="button"
+              onClick={() => setInviting(true)}
+              className="cursor-pointer border-2 border-foreground bg-foreground px-4 py-2.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.14em] text-background transition-all hover:bg-transparent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
             >
-              Invite by handle
-            </label>
-            <div className="flex gap-2">
-              <input
-                id="invite-handle"
-                value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                onKeyDown={(e) => {
-                  // The form is one field and one button; Enter should send it.
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    void send();
-                  }
-                }}
-                placeholder="@someone"
-                autoComplete="off"
-                spellCheck={false}
-                className="min-w-0 flex-1 border border-foreground/25 bg-background px-3 py-2 font-mono text-xs text-foreground placeholder:text-foreground/35 focus-visible:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
-              />
-              <button
-                type="button"
-                disabled={sending || handle.trim().length === 0}
-                onClick={send}
-                className="cursor-pointer border-2 border-foreground bg-foreground px-4 py-2 font-mono text-[0.55rem] font-bold uppercase tracking-[0.14em] text-background transition-all hover:bg-transparent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
-              >
-                {sending ? "…" : "Invite"}
-              </button>
-            </div>
+              Invite someone
+            </button>
             <p className="font-sans text-[0.78rem] leading-relaxed text-foreground/60">
               They get a card on their board and enter with one click — no code
               to pass around, and declining costs them nothing.
@@ -273,6 +254,15 @@ export function ArenaHostSections({
           </div>
         </DetailPanel>
       )}
+
+      <InvitePeopleDialog
+        open={inviting}
+        onOpenChange={setInviting}
+        arenaTitle={arenaTitle}
+        onInvite={invite}
+        invitedIds={invitations.map((i) => i.receiver.id)}
+        hiddenIds={[hostId]}
+      />
 
       <CancelArenaDialog
         open={confirmingCancel}

@@ -11,13 +11,18 @@ interface RouteContext {
 }
 
 /**
- * A handle, with or without the @ someone will inevitably paste along with it.
- * Bounds match `lib/user`'s own handle rules closely enough to reject junk
- * before it reaches a query.
+ * A picked person, or a typed handle.
+ *
+ * Two shapes rather than one optional-everything object, so "neither was
+ * supplied" is a parse failure instead of something the handler has to check.
+ * The handle branch tolerates the @ someone will inevitably paste along with
+ * it; the bounds match `lib/user`'s own handle rules closely enough to reject
+ * junk before it reaches a query.
  */
-const inviteSchema = z.object({
-  handle: z.string().trim().min(2).max(40),
-});
+const inviteSchema = z.union([
+  z.object({ userId: z.string().uuid() }),
+  z.object({ handle: z.string().trim().min(2).max(40) }),
+]);
 
 /** The roster of invitations on one arena. Host only. */
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -69,13 +74,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       const parsed = inviteSchema.safeParse(await request.json());
       if (!parsed.success) {
-        return NextResponse.json({ error: "Enter a handle." }, { status: 400 });
+        return NextResponse.json({ error: "Pick someone to invite." }, { status: 400 });
       }
 
       const result = await sendInvitation({
         arenaId: uuid,
         senderId: user.id,
-        handle: parsed.data.handle,
+        target:
+          "userId" in parsed.data
+            ? { kind: "id", userId: parsed.data.userId }
+            : { kind: "handle", handle: parsed.data.handle },
       });
 
       if (!result.ok) {

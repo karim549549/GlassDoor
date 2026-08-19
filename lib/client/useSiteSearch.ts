@@ -38,7 +38,16 @@ interface Settled {
   failed: boolean;
 }
 
-export function useSiteSearch(query: string) {
+export interface SiteSearchOptions {
+  /**
+   * Restrict to one group. The invite picker asks for people only, where an
+   * arena hit would be a result you cannot act on.
+   */
+  only?: "people" | "arenas";
+}
+
+export function useSiteSearch(query: string, options: SiteSearchOptions = {}) {
+  const { only } = options;
   const trimmed = query.trim();
   const [settled, setSettled] = useState<Settled>({ key: "", groups: [], failed: false });
 
@@ -55,7 +64,10 @@ export function useSiteSearch(query: string) {
 
     (async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
+        const params = new URLSearchParams({ q: trimmed });
+        if (only) params.set("only", only);
+
+        const res = await fetch(`/api/search?${params}`, {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`Search failed: ${res.status}`);
@@ -71,7 +83,7 @@ export function useSiteSearch(query: string) {
     })();
 
     return () => controller.abort();
-  }, [trimmed, tooShort]);
+  }, [trimmed, tooShort, only]);
 
   const answered = !tooShort && settled.key === trimmed;
 

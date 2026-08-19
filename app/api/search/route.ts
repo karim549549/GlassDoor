@@ -42,6 +42,31 @@ export interface SearchGroup {
 /** Five per group: enough to recognise the right one, short enough to scan. */
 const PER_GROUP = 5;
 
+const GROUP_KEYS = ["arenas", "people"] as const;
+type GroupKey = (typeof GROUP_KEYS)[number];
+
+/**
+ * `?only=people` narrows the response to one group.
+ *
+ * Added for the invite picker, which is looking for a person and would show
+ * arena results as noise. It is a filter on this route rather than a second
+ * endpoint on purpose: `listArenas` carries the visibility rules that keep
+ * private arenas off public surfaces, and a parallel search endpoint is
+ * exactly where that would get reintroduced by someone writing their own
+ * query.
+ *
+ * An unknown or absent value means every group, so a malformed parameter
+ * widens the answer rather than emptying it.
+ */
+function requestedGroups(raw: string | null): Set<GroupKey> {
+  const asked = (raw ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s): s is GroupKey => (GROUP_KEYS as readonly string[]).includes(s));
+
+  return asked.length > 0 ? new Set(asked) : new Set(GROUP_KEYS);
+}
+
 export async function GET(request: NextRequest) {
   return withApiErrorHandling("Search API error", async () => {
     const q = (request.nextUrl.searchParams.get("q") ?? "").trim();
@@ -53,15 +78,19 @@ export async function GET(request: NextRequest) {
     }
 
     const viewer = await getOptionalUser();
+    const wanted = requestedGroups(request.nextUrl.searchParams.get("only"));
 
+    // A group nobody asked for is a query nobody pays for.
     const [arenaResult, people] = await Promise.all([
-      listArenas({
-        ...DEFAULT_LIST_PARAMS,
-        limit: PER_GROUP,
-        search: q,
-        userId: viewer?.id ?? null,
-      }),
-      searchUsers(q, PER_GROUP),
+      wanted.has("arenas")
+        ? listArenas({
+            ...DEFAULT_LIST_PARAMS,
+            limit: PER_GROUP,
+            search: q,
+            userId: viewer?.id ?? null,
+          })
+        : Promise.resolve({ arenas: [] as Awaited<ReturnType<typeof listArenas>>["arenas"] }),
+      wanted.has("people") ? searchUsers(q, PER_GROUP) : Promise.resolve([]),
     ]);
 
     const groups: SearchGroup[] = ([
