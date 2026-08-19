@@ -59,6 +59,7 @@ export default async function EditArenaPage({ params }: PageProps) {
     maxTeamSize: arena.maxTeamSize,
     maxParticipants: arena.maxParticipants,
     allowLeaderAccessControl: arena.allowLeaderAccessControl,
+    defaultTeamJoinPolicy: arena.defaultTeamJoinPolicy,
     hasPrizePool: arena.hasPrizePool,
     totalPrizePool: money(arena.totalPrizePool),
     prizeCurrency: arena.prizeCurrency,

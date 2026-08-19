@@ -34,6 +34,7 @@ export interface EditableArena {
   maxTeamSize: number;
   maxParticipants: number | null;
   allowLeaderAccessControl: boolean | null;
+  defaultTeamJoinPolicy: string;
   hasPrizePool: boolean;
   totalPrizePool: number | null;
   prizeCurrency: string;
@@ -73,6 +74,8 @@ function toFormValues(arena: EditableArena): Partial<ArenaFormInput> {
     maxTeamSize: arena.maxTeamSize,
     maxParticipants: arena.maxParticipants,
     allowLeaderAccessControl: arena.allowLeaderAccessControl ?? true,
+    defaultTeamJoinPolicy:
+      arena.defaultTeamJoinPolicy as ArenaFormInput["defaultTeamJoinPolicy"],
     hasPrizePool: arena.hasPrizePool,
     totalPrizePool: arena.totalPrizePool,
     prizeCurrency: arena.prizeCurrency as ArenaFormInput["prizeCurrency"],

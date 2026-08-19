@@ -8,7 +8,7 @@ it exists so an agent does not spend tokens rediscovering structure.
 
 Generated from 36 models, 38 API routes, 23 pages, 17 test files.
 
-## Data model (36 models, 19 migrations)
+## Data model (36 models, 20 migrations)
 
 - `prisma/schema/arena/arena.prisma` — Arena, ArenaEntry, ArenaInvitation, ArenaTeam, ArenaTeamMember
 - `prisma/schema/arena/comment.prisma` — ArenaComment
@@ -41,6 +41,7 @@ Generated from 36 models, 38 API routes, 23 pages, 17 test files.
 - `NotificationKind` — ARENA_STARTING · ARENA_RESULTS_PUBLISHED · CONNECTION_JOINED_ARENA · JUDGE_ASSIGNED · SUBMISSION_SCORED · APPEAL_RESOLVED · PROOF_PACKET_ISSUED · COMPANY_INVITE
 - `PrizeCurrency` — EGP · USD · EUR · SAR · AED
 - `RatingDomain` — FULL_STACK_WEB · BACKEND_DISTRIBUTED · FRONTEND_MOBILE · AI_MACHINE_LEARNING · DATA_ENGINEERING · CYBERSECURITY_ETHICAL_HACKING · SYSTEMS_DEV_OPS · EMBEDDED_IOT · BLOCKCHAIN_WEB3
+- `TeamJoinPolicy` — OPEN · INVITE_ONLY
 
 ### Migrations (chronological; never edit an applied one)
 - `20260707113427_init`
@@ -62,6 +63,7 @@ Generated from 36 models, 38 API routes, 23 pages, 17 test files.
 - `20260819160000_arena_slug`
 - `20260819163000_arena_slug_backfill_fix`
 - `20260819180000_arena_rules_list`
+- `20260819200000_team_lifecycle_and_join_policy`
 
 ## API routes (38)
 

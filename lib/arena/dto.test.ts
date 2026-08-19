@@ -9,6 +9,15 @@ const INVITE_CODE = "SECRET-42";
 
 const d = (iso: string) => new Date(iso);
 
+/** Nobody in these fixtures has a settled rating; see the test that covers it. */
+const person = (fullName: string | null, handle: string | null, over = {}) => ({
+  fullName,
+  handle,
+  avatarUrl: null,
+  ratingStates: [] as { domain: string; rating: number; deviation: number }[],
+  ...over,
+});
+
 /**
  * A row shaped like `ARENA_DETAIL_SELECT` returns. Cast rather than derived
  * because the Prisma payload type carries `Decimal` fields this test has no
@@ -20,6 +29,8 @@ function row(over: Partial<ArenaDetailRow> = {}): ArenaDetailRow {
     id: "arena-1",
     title: "The most devious video player",
     slug: "the-most-devious-video-player",
+    domain: "FULL_STACK_WEB",
+    allowLeaderAccessControl: true,
     description: "Build it.",
     rules: ["No rules."],
     authority: "COMMUNITY",
@@ -61,7 +72,7 @@ function row(over: Partial<ArenaDetailRow> = {}): ArenaDetailRow {
       {
         id: "entry-solo",
         joinedAt: d("2026-08-02T00:00:00Z"),
-        user: { fullName: "Solo Dev", handle: "solo", avatarUrl: null },
+        user: person("Solo Dev", "solo"),
         team: null,
       },
       {
@@ -71,9 +82,14 @@ function row(over: Partial<ArenaDetailRow> = {}): ArenaDetailRow {
         team: {
           id: "team-1",
           name: "Night Shift",
+          joinPolicy: "OPEN",
           members: [
-            { isLeader: true, user: { fullName: "Lead", handle: "lead", avatarUrl: null } },
-            { isLeader: false, user: { fullName: "Second", handle: "second", avatarUrl: null } },
+            { isLeader: true, joinedAt: d("2026-08-03T00:00:00Z"), user: person("Lead", "lead") },
+            {
+              isLeader: false,
+              joinedAt: d("2026-08-04T00:00:00Z"),
+              user: person("Second", "second"),
+            },
           ],
         },
       },
@@ -145,7 +161,7 @@ test("someone with no name at all is still nameable", () => {
       {
         id: "entry-solo",
         joinedAt: d("2026-08-02T00:00:00Z"),
-        user: { fullName: null, handle: null, avatarUrl: null },
+        user: person(null, null),
         team: null,
       },
     ],
@@ -153,6 +169,53 @@ test("someone with no name at all is still nameable", () => {
 
   const { participants } = toArenaDetailDto(anonymous, "REGISTRATION_OPEN", guest);
   assert.equal(participants[0].displayName, "Someone");
+});
+
+test("a rating is shown only once Glicko is confident in it", () => {
+  const guest = resolveViewer({ userId: null, creatorId: HOST_ID, isRegistered: false });
+
+  const rated = row({
+    entries: [
+      {
+        id: "entry-solo",
+        joinedAt: d("2026-08-02T00:00:00Z"),
+        user: person("Settled", "settled", {
+          // The arena's domain, low deviation: a real measurement.
+          ratingStates: [{ domain: "FULL_STACK_WEB", rating: 1723.4, deviation: 60 }],
+        }),
+        team: null,
+      },
+      {
+        id: "entry-two",
+        joinedAt: d("2026-08-02T00:00:00Z"),
+        user: person("Provisional", "prov", {
+          // One result in: a guess with a number on it.
+          ratingStates: [{ domain: "FULL_STACK_WEB", rating: 1900, deviation: 300 }],
+        }),
+        team: null,
+      },
+      {
+        id: "entry-three",
+        joinedAt: d("2026-08-02T00:00:00Z"),
+        user: person("Elsewhere", "else", {
+          // Rated, but in a domain this arena is not judged in.
+          ratingStates: [{ domain: "CYBERSECURITY_ETHICAL_HACKING", rating: 1800, deviation: 40 }],
+        }),
+        team: null,
+      },
+    ],
+  } as Partial<ArenaDetailRow>);
+
+  const { participants } = toArenaDetailDto(rated, "REGISTRATION_OPEN", guest);
+
+  assert.deepEqual(
+    participants.map((p) => [p.displayName, p.rating]),
+    [
+      ["Settled", 1723],
+      ["Provisional", null],
+      ["Elsewhere", null],
+    ]
+  );
 });
 
 test("relationship is derived once, and a host is never also an entrant", () => {

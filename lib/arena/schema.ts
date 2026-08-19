@@ -106,6 +106,15 @@ export const arenaBaseSchema = z.object({
   minTeamSize: z.coerce.number().min(1, "Min team size is 1").default(1),
   maxTeamSize: z.coerce.number().min(1, "Max team size is 1").default(1),
   maxParticipants: z.coerce.number().optional().nullable(),
+  /**
+   * The two settings a host makes on behalf of every team.
+   *
+   * `defaultTeamJoinPolicy` is what a new team starts as;
+   * `allowLeaderAccessControl` is whether its leader may change it. Both were
+   * only meaningful once teams could actually gain a second member - before
+   * that every team was one person and the door was decorative.
+   */
+  defaultTeamJoinPolicy: z.enum(["OPEN", "INVITE_ONLY"]).default("OPEN"),
   allowLeaderAccessControl: z.boolean().optional().nullable().default(true),
 
   // Submission Rules

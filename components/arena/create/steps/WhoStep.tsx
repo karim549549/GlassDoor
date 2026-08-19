@@ -71,6 +71,42 @@ export function WhoStep({
         </div>
       )}
 
+      {/* The host's two decisions on behalf of every team. Team-only, because
+          on a solo arena there is no door to have a policy about. */}
+      {isTeam && (
+        <>
+          <BinaryChoice
+            label="Who can join a team"
+            hint="What every team on this arena starts as"
+            name="team-join-policy"
+            value={watch("defaultTeamJoinPolicy") === "INVITE_ONLY"}
+            onChange={(next) =>
+              setValue("defaultTeamJoinPolicy", next ? "INVITE_ONLY" : "OPEN", {
+                shouldValidate: true,
+              })
+            }
+            offLabel="Anyone"
+            offDetail="Free seats can be taken from the board"
+            onLabel="Invite only"
+            onDetail="The leader picks who fills them"
+          />
+
+          <BinaryChoice
+            label="Can team leaders change that?"
+            hint="Turn this off to make your choice apply to every team"
+            name="leader-access-control"
+            value={watch("allowLeaderAccessControl") ?? true}
+            onChange={(next) =>
+              setValue("allowLeaderAccessControl", next, { shouldValidate: true })
+            }
+            offLabel="No"
+            offDetail="Your setting is the whole arena's"
+            onLabel="Yes"
+            onDetail="Each team decides for itself"
+          />
+        </>
+      )}
+
       <Field
         label="Cap on entrants"
         hint="Leave empty for no limit"

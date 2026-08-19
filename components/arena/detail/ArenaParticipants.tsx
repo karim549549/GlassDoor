@@ -86,6 +86,17 @@ function PersonLine({ person }: { person: Participant }) {
           leads
         </span>
       )}
+      {/* Blank rather than 1500 where someone has never been rated. A default
+          dressed as a measurement is worse than an honest gap - and right now
+          that is everyone, because nothing can be judged yet. */}
+      {person.rating !== null && (
+        <span
+          title="Rating in this arena's domain"
+          className="ml-auto shrink-0 font-mono text-[0.6rem] font-bold tabular-nums text-foreground/60"
+        >
+          {person.rating}
+        </span>
+      )}
     </>
   );
 
@@ -128,6 +139,7 @@ function TeamCard({
 }) {
   const free = Math.max(0, maxTeamSize - members.length);
   const teamId = members[0]?.teamId ?? null;
+  const policy = members[0]?.teamJoinPolicy ?? "OPEN";
 
   return (
     <li
@@ -169,9 +181,12 @@ function TeamCard({
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-foreground/10 px-4 py-2">
           <span className="font-mono text-[0.55rem] uppercase tracking-[0.14em] text-orange-ink">
             {free === 1 ? "1 seat left" : `${free} seats left`}
+            {policy === "INVITE_ONLY" && (
+              <span className="ml-2 text-foreground/55">· invite only</span>
+            )}
           </span>
 
-          {canJoin && teamId && (
+          {canJoin && teamId && policy !== "INVITE_ONLY" && (
             <button
               type="button"
               disabled={joining}

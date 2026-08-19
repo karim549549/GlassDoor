@@ -10,6 +10,8 @@ interface LeaderboardStanding {
   rank: number | null;
   entrantName: string;
   isTeam: boolean;
+  /** Leader first. Empty for a solo entry. */
+  members: { name: string; handle: string | null; isLeader: boolean }[];
   score: number | null;
   proofPacketSlug: string | null;
 }
@@ -137,6 +139,29 @@ export function ArenaLeaderboard({ arenaId }: ArenaLeaderboardProps) {
                   {standing.isTeam && <Users className="h-3 w-3 shrink-0 text-muted-foreground" />}
                   <span className="truncate">{standing.entrantName}</span>
                 </span>
+
+                {/* A team places as one, so the members carry no rank of their
+                    own - but a leaderboard that names only the team hides the
+                    thing people came to see, which is who was in the room. */}
+                {standing.members.length > 0 && (
+                  <p className="font-sans text-[0.75rem] leading-snug text-muted-foreground">
+                    {standing.members.map((m, i) => (
+                      <span key={m.name + i}>
+                        {i > 0 && ", "}
+                        {m.handle ? (
+                          <Link
+                            href={`/u/${m.handle}`}
+                            className="underline-offset-2 hover:text-foreground hover:underline"
+                          >
+                            {m.name}
+                          </Link>
+                        ) : (
+                          m.name
+                        )}
+                      </span>
+                    ))}
+                  </p>
+                )}
                 {standing.proofPacketSlug ? (
                   <Link
                     href={`/proof/${standing.proofPacketSlug}`}

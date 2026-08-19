@@ -65,6 +65,7 @@ const CREATE_DEFAULTS: Partial<ArenaFormInput> = {
   minTeamSize: 2,
   maxTeamSize: 4,
   allowLeaderAccessControl: true,
+  defaultTeamJoinPolicy: "OPEN",
   requireGithubUrl: true,
   requireFigmaUrl: false,
   requireVideoUrl: true,

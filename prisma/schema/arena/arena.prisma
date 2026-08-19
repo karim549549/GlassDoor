@@ -16,6 +16,16 @@ enum RatingDomain {
   BLOCKCHAIN_WEB3
 }
 
+/// Whether strangers can take a free seat, or only people the leader invites.
+///
+/// The one setting a team genuinely needs: it is the difference between "fill
+/// this with anyone" and "these are my friends". An arena sets the default and
+/// decides, through `allowLeaderAccessControl`, whether leaders may change it.
+enum TeamJoinPolicy {
+  OPEN
+  INVITE_ONLY
+}
+
 enum DifficultyTier {
   NOVICE
   INTERMEDIATE
@@ -121,7 +131,11 @@ model Arena {
   minTeamSize              Int               @default(1)
   maxTeamSize              Int               @default(1)
   maxParticipants          Int?              
+  /// Whether a team leader may change their own team's join policy. When
+  /// false, every team on the arena keeps `defaultTeamJoinPolicy`.
   allowLeaderAccessControl Boolean?          @default(true)
+  /// What every team on this arena starts as.
+  defaultTeamJoinPolicy    TeamJoinPolicy    @default(OPEN)
   
   // Submission Toggles
   requireGithubUrl         Boolean           @default(true)
@@ -217,7 +231,10 @@ model ArenaTeam {
   id        String            @id @default(uuid()) @db.Uuid
   arenaId   String            @db.Uuid
   arena     Arena             @relation(fields: [arenaId], references: [id], onDelete: Cascade)
-  name      String              
+  name      String
+  /// Starts from the arena's default; the leader may change it only where
+  /// `Arena.allowLeaderAccessControl` says so.
+  joinPolicy TeamJoinPolicy   @default(OPEN)
   members   ArenaTeamMember[]
   entries   ArenaEntry[]
   
@@ -235,8 +252,12 @@ model ArenaTeamMember {
   userId    String    @db.Uuid
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   isLeader  Boolean   @default(false)
+  /// Succession order. When a leader leaves, the earliest-joined member left
+  /// takes over - the only rule that needs a decision from nobody.
+  joinedAt  DateTime  @default(now())
 
   @@index([userId])
+  @@index([teamId, joinedAt])
   @@id([teamId, userId])
   @@map("arena_team_members")
 }

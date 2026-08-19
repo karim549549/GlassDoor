@@ -137,6 +137,8 @@ export const ARENA_DETAIL_SELECT = {
   id: true,
   title: true,
   slug: true,
+  domain: true,
+  allowLeaderAccessControl: true,
   description: true,
   rules: true,
   authority: true,
@@ -182,20 +184,43 @@ export const ARENA_DETAIL_SELECT = {
    * page: someone who quit is not a participant, and shipping their row so the
    * client can hide it is how they become visible again after a refactor.
    */
+  /**
+   * `ratingStates` comes along because the lobby shows each person's rating,
+   * and it is selected rather than joined per row: nine domains per user is a
+   * handful of extra rows on a query that already runs, against an N+1 the
+   * moment anyone reaches for it later.
+   */
   entries: {
     where: { withdrawnAt: null },
     select: {
       id: true,
       joinedAt: true,
-      user: { select: { fullName: true, handle: true, avatarUrl: true } },
+      user: {
+        select: {
+          fullName: true,
+          handle: true,
+          avatarUrl: true,
+          ratingStates: { select: { domain: true, rating: true, deviation: true } },
+        },
+      },
       team: {
         select: {
           id: true,
           name: true,
+          joinPolicy: true,
           members: {
+            orderBy: { joinedAt: "asc" },
             select: {
               isLeader: true,
-              user: { select: { fullName: true, handle: true, avatarUrl: true } },
+              joinedAt: true,
+              user: {
+                select: {
+                  fullName: true,
+                  handle: true,
+                  avatarUrl: true,
+                  ratingStates: { select: { domain: true, rating: true, deviation: true } },
+                },
+              },
             },
           },
         },

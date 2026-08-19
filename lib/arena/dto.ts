@@ -43,6 +43,23 @@ const participantSchema = z.object({
   teamName: z.string().nullable(),
   /** The team row, so the lobby can offer a seat on it. Not a person. */
   teamId: z.string().nullable(),
+  /** OPEN or INVITE_ONLY, for the team this entry belongs to. */
+  teamJoinPolicy: z.string().nullable(),
+  /**
+   * Glicko rating in the arena's own domain, rounded.
+   *
+   * The arena's domain rather than a single cross-domain number, because there
+   * is no such column: `RatingState` is per (user, domain) and a "global"
+   * figure would be an average this codebase has never defined. The domain the
+   * arena is judged in is also the only one that answers the question a
+   * teammate is actually asking.
+   *
+   * Null where the person has never been rated in it - which is everyone right
+   * now, since nothing can be judged and `rating_states` is empty. Null renders
+   * as "unrated", not as 1500: a default dressed as a measurement is worse than
+   * an honest blank.
+   */
+  rating: z.number().nullable(),
   isTeamLeader: z.boolean(),
 });
 
@@ -155,13 +172,33 @@ function displayNameOf(user: { fullName: string | null; handle: string | null })
 }
 
 /**
+ * The person's rating in this arena's domain, or null.
+ *
+ * A high deviation means Glicko is not confident yet - a rating built from one
+ * result is a guess with a number on it - so anything above 250 is reported as
+ * unrated rather than as a figure a teammate would read as settled. 350 is the
+ * starting deviation, so this also filters out anyone who has never competed.
+ */
+function ratingIn(
+  user: { ratingStates: { domain: string; rating: number; deviation: number }[] },
+  domain: string
+): number | null {
+  const state = user.ratingStates.find((r) => r.domain === domain);
+  if (!state || state.deviation > 250) return null;
+  return Math.round(state.rating);
+}
+
+/**
  * Flattens entries and their teams into one participant list.
  *
  * A team entry contributes its members; a solo entry contributes its user. The
  * page previously received both `entries` and `teams` - overlapping views of
  * the same people - and had to reconcile them itself.
  */
-function participantsOf(raw: ArenaDetailRow): ArenaDetailDto["participants"] {
+function participantsOf(
+  raw: ArenaDetailRow,
+  domain: string
+): ArenaDetailDto["participants"] {
   type Participant = ArenaDetailDto["participants"][number];
 
   // The annotation is load-bearing: the team branch widens `teamName` to
@@ -176,6 +213,8 @@ function participantsOf(raw: ArenaDetailRow): ArenaDetailDto["participants"] {
         avatarUrl: member.user.avatarUrl,
         teamName: entry.team!.name,
         teamId: entry.team!.id,
+        teamJoinPolicy: entry.team!.joinPolicy,
+        rating: ratingIn(member.user, domain),
         isTeamLeader: member.isLeader,
       }));
     }
@@ -190,6 +229,8 @@ function participantsOf(raw: ArenaDetailRow): ArenaDetailDto["participants"] {
         avatarUrl: entry.user.avatarUrl,
         teamName: null,
         teamId: null,
+        teamJoinPolicy: null,
+        rating: ratingIn(entry.user, domain),
         isTeamLeader: false,
       },
     ];
@@ -249,7 +290,7 @@ export function toArenaDetailDto(
     creator: raw.creator,
     company: raw.company,
 
-    participants: participantsOf(raw),
+    participants: participantsOf(raw, raw.domain),
     entrantCount: raw._count.entries,
     teamCount: raw._count.teams,
   });

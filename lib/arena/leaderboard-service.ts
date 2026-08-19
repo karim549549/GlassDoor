@@ -13,6 +13,15 @@ export interface LeaderboardStanding {
   /** Team name for a squad entry, the solo entrant's handle/name otherwise. */
   entrantName: string;
   isTeam: boolean;
+  /**
+   * Who was on the team, leader first. Empty for a solo entry.
+   *
+   * A team standing named only the team, which is the wrong unit for the
+   * thing a leaderboard is for: people want to see who was in the room. The
+   * order is team by score, then the individuals inside it - a team places
+   * together, so there is no per-member score to sort by.
+   */
+  members: { name: string; handle: string | null; isLeader: boolean }[];
   score: number | null;
   /** Slug of a live (non-revoked) proof packet, if one has been issued. */
   proofPacketSlug: string | null;
@@ -63,7 +72,18 @@ export async function getArenaLeaderboard(arenaId: string): Promise<ArenaLeaderb
       finalScore: true,
       entry: {
         select: {
-          team: { select: { name: true } },
+          team: {
+            select: {
+              name: true,
+              members: {
+                orderBy: [{ isLeader: "desc" }, { joinedAt: "asc" }],
+                select: {
+                  isLeader: true,
+                  user: { select: { fullName: true, handle: true } },
+                },
+              },
+            },
+          },
           user: { select: { fullName: true, handle: true } },
         },
       },
@@ -94,6 +114,11 @@ export async function getArenaLeaderboard(arenaId: string): Promise<ArenaLeaderb
       rank,
       entrantName: teamName || soloName || (soloHandle ? `@${soloHandle}` : "Unnamed entrant"),
       isTeam: Boolean(s.entry.team),
+      members: (s.entry.team?.members ?? []).map((m) => ({
+        name: m.user.fullName ?? (m.user.handle ? `@${m.user.handle}` : "Someone"),
+        handle: m.user.handle,
+        isLeader: m.isLeader,
+      })),
       score: s.finalScore,
       proofPacketSlug:
         s.proofPacket && !s.proofPacket.isRevoked ? s.proofPacket.slug : null,
