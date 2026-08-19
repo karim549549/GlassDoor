@@ -1,8 +1,15 @@
 "use client";
 
-import type { UseFormRegister, UseFormSetValue, UseFormWatch, FieldErrors } from "react-hook-form";
-import { type ArenaFormInput, RULES_MAX } from "@/lib/arena/schema";
-import { CharCount, FieldLabel, LineTextarea } from "../fields";
+import type {
+  Control,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+  FieldErrors,
+} from "react-hook-form";
+import type { ArenaFormInput } from "@/lib/arena/schema";
+import { FieldLabel } from "../fields";
+import { RulesField } from "./RulesField";
 
 const DELIVERABLES = [
   {
@@ -36,11 +43,14 @@ const DELIVERABLES = [
  * real input kept underneath for keyboard and screen-reader behaviour.
  */
 export function HandInStep({
+  control,
   register,
   errors,
   watch,
   setValue,
 }: {
+  /** Only the rules list needs it - `useFieldArray` takes a control, not a register. */
+  control: Control<ArenaFormInput>;
   register: UseFormRegister<ArenaFormInput>;
   errors: FieldErrors<ArenaFormInput>;
   watch: UseFormWatch<ArenaFormInput>;
@@ -100,23 +110,11 @@ export function HandInStep({
         </ul>
       </fieldset>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <FieldLabel htmlFor="arena-rules" error={errors.rulesText?.message}>
-            Anything else
-          </FieldLabel>
-          <CharCount value={watch("rulesText") ?? ""} max={RULES_MAX} />
-        </div>
-        <LineTextarea
-          id="arena-rules"
-          rows={6}
-          maxLength={RULES_MAX}
-          placeholder="No pre-built starters. Any stack. Be nice in the chat."
-          invalid={Boolean(errors.rulesText)}
-          className="max-w-[72ch]"
-          {...register("rulesText")}
-        />
-      </div>
+      <RulesField
+        control={control}
+        register={register}
+        error={errors.rules?.message}
+      />
     </div>
   );
 }

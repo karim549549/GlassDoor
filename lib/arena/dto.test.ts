@@ -21,7 +21,7 @@ function row(over: Partial<ArenaDetailRow> = {}): ArenaDetailRow {
     title: "The most devious video player",
     slug: "the-most-devious-video-player",
     description: "Build it.",
-    rulesText: "No rules.",
+    rules: ["No rules."],
     authority: "COMMUNITY",
     difficulty: "MEDIUM",
     publishedAt: d("2026-08-01T00:00:00Z"),

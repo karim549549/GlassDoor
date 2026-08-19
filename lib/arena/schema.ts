@@ -9,7 +9,15 @@ import { validateArenaTimeline } from "@/lib/arena/formats";
  */
 export const TITLE_MAX = 90;
 export const DESCRIPTION_MAX = 1200;
-export const RULES_MAX = 2000;
+/** One rule. Long enough for a sentence, short enough to stay a bullet. */
+export const RULE_MAX = 160;
+/**
+ * How many rules an arena may carry.
+ *
+ * Not a technical limit - it is the point at which a list stops being rules
+ * and becomes terms and conditions, which is not what this field is for.
+ */
+export const RULES_MAX_COUNT = 12;
 
 /**
  * The enum values, once.
@@ -105,10 +113,22 @@ export const arenaBaseSchema = z.object({
   requireFigmaUrl: z.boolean().default(false),
   requireVideoUrl: z.boolean().default(false),
   requireWriteup: z.boolean().default(true),
-  rulesText: z
-    .string()
-    .max(RULES_MAX, `Rules must be at most ${RULES_MAX} characters`)
-    .default(""),
+  /**
+   * House rules, one per entry.
+   *
+   * Was a single textarea, and every host used it the way the seed data did -
+   * a run of short sentences, because that is what rules are. Collecting them
+   * as a list means the page can render them as one without guessing where a
+   * rule ends, and a host cannot accidentally write a paragraph.
+   *
+   * Blank entries are dropped rather than rejected: an empty row is somebody
+   * mid-thought or a stray Enter, not an error worth blocking a submit on.
+   */
+  rules: z
+    .array(z.string().trim().max(RULE_MAX, `Keep each rule under ${RULE_MAX} characters`))
+    .max(RULES_MAX_COUNT, `${RULES_MAX_COUNT} rules is plenty`)
+    .default([])
+    .transform((entries) => entries.map((r) => r.trim()).filter(Boolean)),
 
 });
 

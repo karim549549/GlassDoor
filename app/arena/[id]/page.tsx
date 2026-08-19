@@ -285,15 +285,32 @@ export default async function ArenaDetailPage({ params }: PageProps) {
             {/* Rules sit on the card ground rather than on paper, which is the
                 whole distinction: the brief is writing, the rules are
                 reference. Nobody reads house rules top to bottom - they check
-                them - so they get a box, a smaller size and markers. */}
-            {arena.rulesText.trim().length > 0 && (
+                them - so they are a list, in a box, at a size that says
+                "check me" rather than "read me".
+
+                A real `<ol>`, so it is a list to a screen reader too, and the
+                markers are drawn rather than inherited: the default disc
+                carries no accent and no numbering worth reading aloud. */}
+            {arena.rules.length > 0 && (
               <aside className="mt-8 border border-foreground/15 bg-card">
                 <h2 className="border-b border-foreground/12 px-5 py-2.5 font-mono text-[0.55rem] font-bold uppercase tracking-[0.18em] text-foreground/70">
                   House rules
                 </h2>
-                <div className="px-5 py-4">
-                  <ArenaBrief markdown={arena.rulesText} variant="rules" />
-                </div>
+                <ol className="divide-y divide-foreground/10">
+                  {arena.rules.map((rule, i) => (
+                    <li key={rule} className="flex gap-3 px-5 py-2.5">
+                      <span
+                        aria-hidden
+                        className="shrink-0 pt-px font-mono text-[0.6rem] font-bold tabular-nums text-orange-ink"
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="font-sans text-[0.9rem] leading-[1.6] text-foreground">
+                        {rule}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
               </aside>
             )}
           </article>

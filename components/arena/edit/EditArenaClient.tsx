@@ -22,7 +22,7 @@ export interface EditableArena {
   slug: string;
   title: string;
   description: string;
-  rulesText: string;
+  rules: string[];
   difficulty: string;
   locationType: string;
   locationName: string | null;
@@ -61,7 +61,7 @@ function toFormValues(arena: EditableArena): Partial<ArenaFormInput> {
   return {
     title: arena.title,
     description: arena.description,
-    rulesText: arena.rulesText,
+    rules: arena.rules,
     difficulty: arena.difficulty as ArenaFormInput["difficulty"],
     locationType: arena.locationType as ArenaFormInput["locationType"],
     locationName: arena.locationName,

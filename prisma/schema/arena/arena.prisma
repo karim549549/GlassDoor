@@ -128,7 +128,17 @@ model Arena {
   requireFigmaUrl          Boolean           @default(false)
   requireVideoUrl          Boolean           @default(false)
   requireWriteup           Boolean           @default(true)
-  rulesText                String            @default("") @db.Text
+  /// House rules, one per entry.
+  ///
+  /// Was `rulesText`, a free-text blob. Every arena filled it with a run of
+  /// short sentences - "Original work only. Any stack. Be nice in the chat." -
+  /// because that is what rules are, and rendering it as a paragraph made
+  /// three separate rules read as one piece of prose nobody scans.
+  ///
+  /// A list column rather than a convention about newlines: a convention is
+  /// something the next writer breaks, and there is no meaningful state where
+  /// two rules belong in one string.
+  rules                    String[]
   
   // Company & Sponsorship
   companyId                String?           @db.Uuid

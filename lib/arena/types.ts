@@ -138,7 +138,7 @@ export const ARENA_DETAIL_SELECT = {
   title: true,
   slug: true,
   description: true,
-  rulesText: true,
+  rules: true,
   authority: true,
   difficulty: true,
   publishedAt: true,

@@ -191,7 +191,7 @@ async function main() {
         requireGithubUrl: true,
         requireVideoUrl: true,
         requireWriteup: true,
-        rulesText: "Original work only. Any stack. Be nice in the chat.",
+        rules: ["Original work only.", "Any stack.", "Be nice in the chat."],
       },
     });
   }

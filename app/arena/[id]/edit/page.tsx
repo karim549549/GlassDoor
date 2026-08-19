@@ -47,7 +47,7 @@ export default async function EditArenaPage({ params }: PageProps) {
     slug: arena.slug,
     title: arena.title,
     description: arena.description,
-    rulesText: arena.rulesText,
+    rules: arena.rules,
     difficulty: arena.difficulty,
     locationType: arena.locationType,
     locationName: arena.locationName,

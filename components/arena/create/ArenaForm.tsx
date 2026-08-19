@@ -299,7 +299,13 @@ export function ArenaForm({ mode, initialValues, onSubmit }: ArenaFormProps) {
           </div>
           <div hidden={activeStep !== "handin"} className="step-in">
             <StepPanel index={6} title="Hand in" lead="What a team has to produce by the time submissions lock.">
-              <HandInStep register={register} errors={errors} watch={watch} setValue={setValue} />
+              <HandInStep
+                control={control}
+                register={register}
+                errors={errors}
+                watch={watch}
+                setValue={setValue}
+              />
             </StepPanel>
           </div>
         </div>

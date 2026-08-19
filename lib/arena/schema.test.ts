@@ -18,7 +18,7 @@ function validPayload(overrides: Record<string, unknown> = {}) {
     title: "Cairo Systems Arena",
     description: "Build a partition-tolerant service under load.",
     format: "ARENA",
-    rulesText: "Original work only.",
+    rules: ["Original work only."],
     registrationStart: iso("2026-09-01T00:00:00Z"),
     registrationEnd: iso("2026-09-05T00:00:00Z"),
     ideaPhaseStart: iso("2026-09-05T00:00:00Z"),

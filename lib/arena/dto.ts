@@ -50,7 +50,7 @@ export const arenaDetailDtoSchema = z.object({
   /** The canonical URL segment. Every link to this arena is built from it. */
   slug: z.string(),
   description: z.string(),
-  rulesText: z.string(),
+  rules: z.array(z.string()),
   status: z.string(),
   authority: z.string(),
   difficulty: z.string(),
@@ -204,7 +204,7 @@ export function toArenaDetailDto(
     title: raw.title,
     slug: raw.slug,
     description: raw.description,
-    rulesText: raw.rulesText,
+    rules: raw.rules,
     status,
     authority: raw.authority,
     difficulty: raw.difficulty,

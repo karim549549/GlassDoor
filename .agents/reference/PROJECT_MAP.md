@@ -8,7 +8,7 @@ it exists so an agent does not spend tokens rediscovering structure.
 
 Generated from 36 models, 37 API routes, 23 pages, 17 test files.
 
-## Data model (36 models, 18 migrations)
+## Data model (36 models, 19 migrations)
 
 - `prisma/schema/arena/arena.prisma` — Arena, ArenaEntry, ArenaInvitation, ArenaTeam, ArenaTeamMember
 - `prisma/schema/arena/comment.prisma` — ArenaComment
@@ -61,6 +61,7 @@ Generated from 36 models, 37 API routes, 23 pages, 17 test files.
 - `20260819120000_arena_invitation_unique_receiver`
 - `20260819160000_arena_slug`
 - `20260819163000_arena_slug_backfill_fix`
+- `20260819180000_arena_rules_list`
 
 ## API routes (37)
 

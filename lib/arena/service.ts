@@ -140,7 +140,9 @@ export async function listArenas(params: ListArenasParams): Promise<ListArenasRe
       OR: [
         { title: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
-        { rulesText: { contains: search, mode: "insensitive" } },
+        // Rules are deliberately not searched. They are boilerplate - every
+        // arena says "original work only" - so matching them returned the
+        // whole board for words nobody meant as a query.
       ],
     });
   }
@@ -379,7 +381,7 @@ export async function createArena(
       requireFigmaUrl: data.requireFigmaUrl,
       requireVideoUrl: data.requireVideoUrl,
       requireWriteup: data.requireWriteup,
-      rulesText: data.rulesText || "",
+      rules: data.rules,
       creatorId: data.creatorId,
     },
   });
@@ -401,7 +403,7 @@ const ARENA_EDIT_FORM_SELECT = {
   title: true,
   slug: true,
   description: true,
-  rulesText: true,
+  rules: true,
   difficulty: true,
   creatorId: true,
   canceledAt: true,
@@ -626,7 +628,7 @@ export async function updateArena(
       requireFigmaUrl: data.requireFigmaUrl,
       requireVideoUrl: data.requireVideoUrl,
       requireWriteup: data.requireWriteup,
-      rulesText: data.rulesText || "",
+      rules: data.rules,
     },
   });
 
